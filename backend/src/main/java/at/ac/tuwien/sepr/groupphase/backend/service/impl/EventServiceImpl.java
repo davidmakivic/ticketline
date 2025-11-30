@@ -1,11 +1,14 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
@@ -20,14 +23,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event update(Event event) {
-        // optional: check if exists
         return eventRepository.save(event);
     }
 
     @Override
     public Event findById(int id) {
         return eventRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Event not found with id " + id));
+            .orElseThrow(() -> new NotFoundException("Event not found with id " + id));
     }
 
     @Override
