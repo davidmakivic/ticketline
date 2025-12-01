@@ -1,4 +1,10 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
-public class OrderDto {
+import java.time.Instant;
+
+public record OrderDto(
+    Long id,
+    long totalPriceCents,
+    Instant createdAt
+) {
 }
