@@ -48,7 +48,7 @@ public class EventEndpointTest {
     void testCreateEvent() throws Exception {
         EventDto dto = EventTestDataFactory.create(1, EventType.CONCERT);
 
-        mockMvc.perform(post("/events")
+        mockMvc.perform(post("/api/events")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -65,13 +65,13 @@ public class EventEndpointTest {
     void testGetEventById() throws Exception {
         EventDto dto = EventTestDataFactory.create(10, EventType.FESTIVAL);
 
-        mockMvc.perform(post("/events")
+        mockMvc.perform(post("/api/events")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/events/10"))
+        mockMvc.perform(get("/api/events/10"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.title").value("Test Event 10"))
             .andExpect(jsonPath("$.category").value("FESTIVAL"));
@@ -84,19 +84,19 @@ public class EventEndpointTest {
         EventDto e1 = EventTestDataFactory.create(20, EventType.CONCERT);
         EventDto e2 = EventTestDataFactory.create(21, EventType.MUSICAL);
 
-        mockMvc.perform(post("/events")
+        mockMvc.perform(post("/api/events")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(e1))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk());
 
-        mockMvc.perform(post("/events")
+        mockMvc.perform(post("/api/events")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(e2))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES))                )
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/events"))
+        mockMvc.perform(get("/api/events"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].category").exists());
@@ -106,7 +106,7 @@ public class EventEndpointTest {
     @Transactional
     @Test
     void testGetEventNotFound() throws Exception {
-        mockMvc.perform(get("/events/999"))
+        mockMvc.perform(get("/api/events/999"))
             .andExpect(status().is4xxClientError());
     }
 }
