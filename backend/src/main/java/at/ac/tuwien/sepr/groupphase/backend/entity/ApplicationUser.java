@@ -244,7 +244,7 @@ public class ApplicationUser {
             return this;
         }
 
-        public ApplicationUser.ApplicationUserBuilder withApplicationUserStatus(UserStatus userStatus) {
+        public ApplicationUser.ApplicationUserBuilder withUserStatus(UserStatus userStatus) {
             this.userStatus = userStatus;
             return this;
         }
