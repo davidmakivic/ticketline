@@ -15,23 +15,31 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
-    public OrderServiceImpl(OrderRepository orderRepository,
-                            OrderMapper orderMapper) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
     }
 
     @Override
     public List<OrderDto> getAllOrders() {
-        return orderRepository.findAllByOrderByCreatedAtDesc().stream()
+        return orderRepository.findAllByOrderByCreatedAtDesc()
+            .stream()
             .map(orderMapper::toDto)
             .toList();
     }
 
     @Override
-    public OrderDto getOrder(long orderId) {
-        Order order = orderRepository.findById(orderId)
+    public OrderDto getOrder(long id) {
+        Order order = orderRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Order not found"));
         return orderMapper.toDto(order);
+    }
+
+    @Override
+    public List<OrderDto> getOrdersByUser(Integer userId) {
+        return orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
+            .stream()
+            .map(orderMapper::toDto)
+            .toList();
     }
 }

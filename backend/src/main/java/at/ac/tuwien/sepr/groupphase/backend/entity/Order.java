@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,10 +9,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -22,8 +25,13 @@ public class Order {
     @Column(name = "order_id")
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private ApplicationUser user;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private List<Ticket> tickets;
 
     @Column(name = "total_price_cents", nullable = false)
     private long totalPriceCents;
@@ -34,8 +42,8 @@ public class Order {
 
     protected Order() {}
 
-    public Order(Long userId, long totalPriceCents) {
-        this.userId = userId;
+    public Order(ApplicationUser user, long totalPriceCents) {
+        this.user = user;
         this.totalPriceCents = totalPriceCents;
     }
 
@@ -43,8 +51,12 @@ public class Order {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public ApplicationUser getUser() {
+        return user;
+    }
+
+    public List<Ticket> getTickets() {
+        return tickets;
     }
 
     public long getTotalPriceCents() {
