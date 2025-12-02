@@ -28,8 +28,8 @@ public class EventDataGenerator {
     }
 
     @PostConstruct
-    public void generateEventData(){
-        if(eventRepository.findAll().size() > 0){
+    public void generateEventData() {
+        if (eventRepository.findAll().size() > 0) {
             LOGGER.debug("Event already generated");
         } else {
             LOGGER.debug("generating {} message entries", NUMBER_OF_EVENTS_TO_GENERATE);
