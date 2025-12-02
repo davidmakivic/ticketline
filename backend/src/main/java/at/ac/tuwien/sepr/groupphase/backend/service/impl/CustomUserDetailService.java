@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
@@ -7,6 +8,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.service.UserService;
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
+import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -64,6 +67,26 @@ public class CustomUserDetailService implements UserService {
             return applicationUser;
         }
         throw new NotFoundException(String.format("Could not find the user with the email address %s", email));
+    }
+
+    @Override
+    public ApplicationUser createApplicationUser(UserCreateDto dto) {
+        ApplicationUser newUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+            .withEmail(dto.getEmail())
+            .withPassword(passwordEncoder.encode(dto.getPassword()))
+            .withFirstName(dto.getFirstName())
+            .withLastName(dto.getLastName())
+            .withZipCode(dto.getZipCode())
+            .withCity(dto.getCity())
+            .withAddress(dto.getAddress())
+            .withRole(Roles.USER)
+            .withRewardPoints(0)
+            .withCreatedAt(LocalDateTime.now())
+            .withUserStatus(UserStatus.UNVERIFIED)
+            .withFailedLoginAttempts(0)
+            .build();
+
+        return userRepository.save(newUser);
     }
 
     @Override
