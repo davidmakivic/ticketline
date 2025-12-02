@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +29,15 @@ public interface UserService extends UserDetailsService {
      * @return a application user
      */
     ApplicationUser findApplicationUserByEmail(String email);
+
+
+    /**
+     * Creates a new application user.
+     *
+     * @param dto Dto containing the information of the new user
+     * @return the new created application user
+     */
+    ApplicationUser createApplicationUser(UserCreateDto dto);
 
     /**
      * Log in a user.

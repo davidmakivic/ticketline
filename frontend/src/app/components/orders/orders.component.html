@@ -1,0 +1,21 @@
+<div class="container">
+  <h2>Orders</h2>
+
+  <div *ngIf="loading">Loading...</div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="orders.length === 0 && !loading">
+    No orders available.
+  </div>
+
+  <div *ngFor="let o of orders" class="order-card">
+    <div>ID: {{ o.id }}</div>
+    <div>User: {{ o.userId }}</div>
+    <div>Total: {{ toEuro(o.totalPriceCents) }}</div>
+    <div>Created: {{ o.createdAt | date: 'medium' }}</div>
+    <div>Tickets: {{ o.ticketIds.length }}</div>
+  </div>
+</div>
