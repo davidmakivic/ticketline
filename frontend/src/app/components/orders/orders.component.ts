@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OrdersService } from '../../services/order.service';
+import { OrdersService } from '../../services/orders.service';
 import { OrderDto } from '../../dtos/order.dto';
 
 @Component({
@@ -8,7 +8,7 @@ import { OrderDto } from '../../dtos/order.dto';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './orders.component.html',
-  styleUrls: ['./orders.component.css']
+  styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent {
 
@@ -29,7 +29,7 @@ export class OrdersComponent {
         this.orders = data;
         this.loading = false;
       },
-      error: err => {
+      error: () => {
         this.error = 'Could not load orders';
         this.loading = false;
       }
@@ -37,6 +37,6 @@ export class OrdersComponent {
   }
 
   toEuro(cents: number): string {
-    return (cents / 100).toFixed(2) + " €";
+    return (cents / 100).toFixed(2) + ' €';
   }
 }
