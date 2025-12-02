@@ -19,6 +19,13 @@ const routes: Routes = [
     loadComponent: () =>
       import('./components/orders/orders.component')
         .then(m => m.OrdersComponent)
+  },
+  {
+    path: 'tickets',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/tickets/tickets.component')
+        .then(m => m.TicketsComponent)
   }
 ];
 
