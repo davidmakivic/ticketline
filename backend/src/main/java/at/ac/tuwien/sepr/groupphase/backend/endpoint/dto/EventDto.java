@@ -7,7 +7,7 @@ public class EventDto {
     private String title;
     private String description;
     private EventType category;
-    private int durationMinutes;
+    private Integer durationMinutes;
 
     public EventDto() {
     }
@@ -44,11 +44,11 @@ public class EventDto {
         this.category = category;
     }
 
-    public int getDurationMinutes() {
+    public Integer getDurationMinutes() {
         return durationMinutes;
     }
 
-    public void setDurationMinutes(int durationMinutes) {
+    public void setDurationMinutes(Integer durationMinutes) {
         this.durationMinutes = durationMinutes;
     }
 }

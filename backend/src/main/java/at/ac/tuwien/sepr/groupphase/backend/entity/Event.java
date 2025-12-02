@@ -29,9 +29,9 @@ public class Event {
     private EventType category;
 
     @Column(name = "duration_minutes")
-    private int durationMinutes;
+    private Integer durationMinutes;
 
-    public Event(String title, String description, EventType category, int durationMinutes) {
+    public Event(String title, String description, EventType category, Integer durationMinutes) {
         this.title = title;
         this.description = description;
         this.category = category;
@@ -72,11 +72,11 @@ public class Event {
         this.category = category;
     }
 
-    public int getDurationMinutes() {
+    public Integer getDurationMinutes() {
         return durationMinutes;
     }
 
-    public void setDurationMinutes(int durationMinutes) {
+    public void setDurationMinutes(Integer durationMinutes) {
         this.durationMinutes = durationMinutes;
     }
 }
