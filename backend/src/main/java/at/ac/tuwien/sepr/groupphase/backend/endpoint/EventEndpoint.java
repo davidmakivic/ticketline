@@ -35,7 +35,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/{id}")
-    public EventDto getById(@PathVariable int id) {
+    public EventDto getById(@PathVariable Long id) {
         return eventMapper.eventToEventDto(eventService.findById(id));
     }
 
