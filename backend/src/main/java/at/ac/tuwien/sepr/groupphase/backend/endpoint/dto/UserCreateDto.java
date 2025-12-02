@@ -68,14 +68,14 @@ public class UserCreateDto {
 
     @Override
     public String toString() {
-        return "UserCreateDto{" +
-            "email='" + email + '\'' +
-            ", password='" + password + '\'' +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            ", zipCode='" + zipCode + '\'' +
-            ", city='" + city + '\'' +
-            ", address='" + address + '\'' +
-            '}';
+        return "UserCreateDto{"
+            + "email='" + email + '\''
+            + ", password='" + password + '\''
+            + ", firstName='" + firstName + '\''
+            + ", lastName='" + lastName + '\''
+            + ", zipCode='" + zipCode + '\''
+            + ", city='" + city + '\''
+            + ", address='" + address + '\''
+            + '}';
     }
 }

@@ -2,7 +2,6 @@ package at.ac.tuwien.sepr.groupphase.backend.type;
 
 /**
  * Status of the user account
- * <p>
  * UNLOCKED ... account is not locked
  * LOCKED ... account is locked
  * UNVERIFIED ... email of the account was not verified

@@ -2,7 +2,14 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
@@ -255,21 +262,21 @@ public class ApplicationUser {
         }
 
         public ApplicationUser build() {
-            ApplicationUser ApplicationUser = new ApplicationUser();
-            ApplicationUser.setUserId(userId);
-            ApplicationUser.setEmail(email);
-            ApplicationUser.setPasswordHash(passwordHash);
-            ApplicationUser.setFirstName(firstName);
-            ApplicationUser.setLastName(lastName);
-            ApplicationUser.setZipCode(zipCode);
-            ApplicationUser.setCity(city);
-            ApplicationUser.setAddress(address);
-            ApplicationUser.setRole(role);
-            ApplicationUser.setRewardPoints(rewardPoints);
-            ApplicationUser.setCreatedAt(createdAt);
-            ApplicationUser.setUserStatus(userStatus);
-            ApplicationUser.setFailedLoginAttempts(failedLoginAttempts);
-            return ApplicationUser;
+            ApplicationUser applicationUser = new ApplicationUser();
+            applicationUser.setUserId(userId);
+            applicationUser.setEmail(email);
+            applicationUser.setPasswordHash(passwordHash);
+            applicationUser.setFirstName(firstName);
+            applicationUser.setLastName(lastName);
+            applicationUser.setZipCode(zipCode);
+            applicationUser.setCity(city);
+            applicationUser.setAddress(address);
+            applicationUser.setRole(role);
+            applicationUser.setRewardPoints(rewardPoints);
+            applicationUser.setCreatedAt(createdAt);
+            applicationUser.setUserStatus(userStatus);
+            applicationUser.setFailedLoginAttempts(failedLoginAttempts);
+            return applicationUser;
         }
     }
 }

@@ -32,7 +32,7 @@ public interface UserService extends UserDetailsService {
 
 
     /**
-     * Creates a new application user
+     * Creates a new application user.
      *
      * @param dto Dto containing the information of the new user
      * @return the new created application user
