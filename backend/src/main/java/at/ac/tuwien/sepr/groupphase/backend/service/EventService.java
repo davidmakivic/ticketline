@@ -7,7 +7,7 @@ import java.util.List;
 public interface EventService {
     Event create(Event event);
 
-    Event update(Event event);
+    Event update(Long id, Event event);
 
     Event findById(Long id);
 
