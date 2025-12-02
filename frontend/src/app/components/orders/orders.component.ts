@@ -16,7 +16,7 @@ export class OrdersComponent {
   error: string | null = null;
   orders: OrderDto[] = [];
 
-  constructor(private orderService: OrdersService) {
+constructor(private orderService: OrdersService) {
     this.load();
   }
 
@@ -29,7 +29,7 @@ export class OrdersComponent {
         this.orders = data;
         this.loading = false;
       },
-      error: err => {
+      error: () => {
         this.error = 'Could not load orders';
         this.loading = false;
       }
@@ -37,6 +37,6 @@ export class OrdersComponent {
   }
 
   toEuro(cents: number): string {
-    return (cents / 100).toFixed(2) + " €";
+    return (cents / 100).toFixed(2) + ' €';
   }
 }

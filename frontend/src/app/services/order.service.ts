@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrderDto } from '../dtos/order.dto';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class OrdersService {
 
   private readonly baseUrl = '/api/orders';
@@ -16,5 +18,9 @@ export class OrdersService {
 
   getOne(id: number): Observable<OrderDto> {
     return this.http.get<OrderDto>(`${this.baseUrl}/${id}`);
+  }
+
+  getByUser(userId: number): Observable<OrderDto[]> {
+    return this.http.get<OrderDto[]>(`${this.baseUrl}/user/${userId}`);
   }
 }

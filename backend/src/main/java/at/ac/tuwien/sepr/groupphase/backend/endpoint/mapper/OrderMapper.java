@@ -10,8 +10,10 @@ public class OrderMapper {
     public OrderDto toDto(Order order) {
         return new OrderDto(
             order.getId(),
+            order.getUser().getUserId().longValue(),
             order.getTotalPriceCents(),
-            order.getCreatedAt()
+            order.getCreatedAt(),
+            order.getTickets().stream().map(t -> t.getId()).toList()
         );
     }
 }

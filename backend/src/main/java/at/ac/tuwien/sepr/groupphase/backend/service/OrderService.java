@@ -8,5 +8,7 @@ public interface OrderService {
 
     List<OrderDto> getAllOrders();
 
-    OrderDto getOrder(long orderId);
+    OrderDto getOrder(long id);
+
+    List<OrderDto> getOrdersByUser(Integer userId);
 }
