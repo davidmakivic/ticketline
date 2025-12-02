@@ -8,14 +8,12 @@ import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDateTime;
 
-@Profile("generateData")
 @Component
 public class UserDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -62,6 +60,10 @@ public class UserDataGenerator {
                 user.setRole(Roles.USER);
                 user.setRewardPoints(i);
                 user.setCreatedAt(LocalDateTime.of(2025, 11, 2, 3, 4));
+                if (i == 1) {
+                    user.setEmail("user@email.com");
+                }
+
                 if (i % 2 == 0) {
                     user.setUserStatus(UserStatus.LOCKED);
                     user.setFailedLoginAttempts(5);
