@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OrdersService } from '../../services/orders.service';
+import { OrdersService } from '../../services/order.service';
 import { OrderDto } from '../../dtos/order.dto';
 
 @Component({
@@ -8,7 +8,7 @@ import { OrderDto } from '../../dtos/order.dto';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './orders.component.html',
-  styleUrls: ['./orders.component.scss']
+  styleUrls: ['./orders.component.css']
 })
 export class OrdersComponent {
 
@@ -16,7 +16,7 @@ export class OrdersComponent {
   error: string | null = null;
   orders: OrderDto[] = [];
 
-  constructor(private orderService: OrdersService) {
+constructor(private orderService: OrdersService) {
     this.load();
   }
 
