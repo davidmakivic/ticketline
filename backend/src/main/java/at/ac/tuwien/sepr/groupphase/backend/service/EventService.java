@@ -9,9 +9,9 @@ public interface EventService {
 
     Event update(Event event);
 
-    Event findById(int id);
+    Event findById(Long id);
 
     List<Event> findAll();
 
-    void delete(int id);
+    void delete(Long id);
 }

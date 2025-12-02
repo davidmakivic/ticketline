@@ -23,7 +23,6 @@ public class EventServiceTest {
     @Test
     void testCreateEvent() {
         Event e = new Event();
-        e.setId(1);
         e.setTitle("Test Event");
         e.setDescription("Desc");
         e.setCategory(EventType.CONCERT);
@@ -38,14 +37,12 @@ public class EventServiceTest {
     @Test
     void testFindAll() {
         Event e1 = new Event();
-        e1.setId(2);
         e1.setTitle("A");
         e1.setDescription("Desc");
         e1.setCategory(EventType.FESTIVAL);
         e1.setDurationMinutes(10);
 
         Event e2 = new Event();
-        e2.setId(3);
         e2.setTitle("B");
         e2.setCategory(EventType.MUSICAL);
         e2.setDurationMinutes(20);
