@@ -8,5 +8,5 @@ public record OrderDto(
     Long userId,
     long totalPriceCents,
     Instant createdAt,
-    List<Integer> ticketIds
+    List<Long> ticketIds
 ) {}

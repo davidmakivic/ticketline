@@ -7,11 +7,11 @@ import java.util.List;
 public interface EventService {
     Event create(Event event);
 
-    Event update(Event event);
+    Event update(Long id, Event event);
 
-    Event findById(int id);
+    Event findById(Long id);
 
     List<Event> findAll();
 
-    void delete(int id);
+    void delete(Long id);
 }

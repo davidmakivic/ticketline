@@ -3,28 +3,20 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 
 public class EventDto {
-    private int id;
+    private Long id;
     private String title;
     private String description;
     private EventType category;
-    private int durationMinutes;
-
-    public EventDto(int id, String title, String description, EventType category, int durationMinutes) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.category = category;
-        this.durationMinutes = durationMinutes;
-    }
+    private Integer durationMinutes;
 
     public EventDto() {
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -52,11 +44,11 @@ public class EventDto {
         this.category = category;
     }
 
-    public int getDurationMinutes() {
+    public Integer getDurationMinutes() {
         return durationMinutes;
     }
 
-    public void setDurationMinutes(int durationMinutes) {
+    public void setDurationMinutes(Integer durationMinutes) {
         this.durationMinutes = durationMinutes;
     }
 }

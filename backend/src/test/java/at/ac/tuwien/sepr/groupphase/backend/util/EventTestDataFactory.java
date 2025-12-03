@@ -4,13 +4,12 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 
 public class EventTestDataFactory {
-    public static EventDto create(int id, EventType type) {
+    public static EventDto create(EventType type) {
         EventDto dto = new EventDto();
-        dto.setId(id);
-        dto.setTitle("Test Event " + id);
-        dto.setDescription("Description " + id);
+        dto.setTitle("Test Event");
+        dto.setDescription("Description");
         dto.setCategory(type);
-        dto.setDurationMinutes(30 + id);
+        dto.setDurationMinutes(30);
         return dto;
     }
 }
