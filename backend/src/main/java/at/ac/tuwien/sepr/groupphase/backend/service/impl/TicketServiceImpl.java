@@ -29,7 +29,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDto findById(int id) {
+    public TicketDto findById(Long id) {
         Ticket ticket = ticketRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Ticket with id " + id + " not found"));
         return ticketMapper.ticketToTicketDto(ticket);
@@ -41,7 +41,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Long id) {
         if (!ticketRepository.existsById(id)) {
             throw new EntityNotFoundException("Ticket with id " + id + " not found");
         }

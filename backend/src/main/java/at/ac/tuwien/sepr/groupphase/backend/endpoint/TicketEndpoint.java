@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
 
 
 import java.util.List;
@@ -29,5 +31,12 @@ public class TicketEndpoint {
     @Operation(summary = "Get all tickets", security = @SecurityRequirement(name = "apiKey"))
     public List<TicketDto> getAll() {
         return ticketService.findAll();
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping
+    @Operation(summary = "Create ticket", security = @SecurityRequirement(name = "apiKey"))
+    public TicketDto create(@RequestBody TicketDto ticketDto) {
+        return ticketService.create(ticketDto);
     }
 }

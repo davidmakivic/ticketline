@@ -4,17 +4,17 @@ import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 
 public class TicketDto {
 
-    private int id;
-    private int performanceId;
-    private int seatId;
-    private int orderId;
-    private int priceFinalCents;
+    private Long id;
+    private Long performanceId;
+    private Long seatId;
+    private Long orderId;
+    private Long priceFinalCents;
     private TicketStatus status;
 
     public TicketDto() {
     }
 
-    public TicketDto(int id, int performanceId, int seatId, int orderId, int priceFinalCents, TicketStatus status) {
+    public TicketDto(Long id, Long performanceId, Long seatId, Long orderId, Long priceFinalCents, TicketStatus status) {
         this.id = id;
         this.performanceId = performanceId;
         this.seatId = seatId;
@@ -23,43 +23,43 @@ public class TicketDto {
         this.status = status;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public int getPerformanceId() {
+    public Long getPerformanceId() {
         return performanceId;
     }
 
-    public void setPerformanceId(int performanceId) {
+    public void setPerformanceId(Long performanceId) {
         this.performanceId = performanceId;
     }
 
-    public int getSeatId() {
+    public Long getSeatId() {
         return seatId;
     }
 
-    public void setSeatId(int seatId) {
+    public void setSeatId(Long seatId) {
         this.seatId = seatId;
     }
 
-    public int getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(int orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 
-    public int getPriceFinalCents() {
+    public Long getPriceFinalCents() {
         return priceFinalCents;
     }
 
-    public void setPriceFinalCents(int priceFinalCents) {
+    public void setPriceFinalCents(Long priceFinalCents) {
         this.priceFinalCents = priceFinalCents;
     }
 
