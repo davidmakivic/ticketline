@@ -17,19 +17,19 @@ public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ticket_id")
-    private int id;
+    private Long id;
 
     @Column(name = "performance_id", nullable = false)
-    private int performanceId;
+    private Long performanceId;
 
     @Column(name = "seat_id")
-    private int seatId;
+    private Long seatId;
 
     @Column(name = "order_id", nullable = false)
-    private int orderId;
+    private Long orderId;
 
     @Column(name = "price_final_cents")
-    private int priceFinalCents;
+    private Long priceFinalCents;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -37,7 +37,7 @@ public class Ticket {
 
     public Ticket() {}
 
-    public Ticket(int performanceId, int seatId, int orderId, Integer priceFinalCents, TicketStatus status) {
+    public Ticket(Long performanceId, Long seatId, Long orderId, Long priceFinalCents, TicketStatus status) {
         this.performanceId = performanceId;
         this.seatId = seatId;
         this.orderId = orderId;
@@ -45,43 +45,43 @@ public class Ticket {
         this.status = status;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public int getPerformanceId() {
+    public Long getPerformanceId() {
         return performanceId;
     }
 
-    public void setPerformanceId(int performanceId) {
+    public void setPerformanceId(Long performanceId) {
         this.performanceId = performanceId;
     }
 
-    public int getSeatId() {
+    public Long getSeatId() {
         return seatId;
     }
 
-    public void setSeatId(int seatId) {
+    public void setSeatId(Long seatId) {
         this.seatId = seatId;
     }
 
-    public int getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(int orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 
-    public int getPriceFinalCents() {
+    public Long getPriceFinalCents() {
         return priceFinalCents;
     }
 
-    public void setPriceFinalCents(int priceFinalCents) {
+    public void setPriceFinalCents(Long priceFinalCents) {
         this.priceFinalCents = priceFinalCents;
     }
 
