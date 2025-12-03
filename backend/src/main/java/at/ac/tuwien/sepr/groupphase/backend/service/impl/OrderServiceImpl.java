@@ -5,7 +5,10 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.OrderMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,26 +23,30 @@ public class OrderServiceImpl implements OrderService {
         this.orderMapper = orderMapper;
     }
 
+    /** Holt alle Orders und mapped sie zu DTOs. */
     @Override
     public List<OrderDto> getAllOrders() {
-        return orderRepository.findAllByOrderByCreatedAtDesc()
-            .stream()
-            .map(orderMapper::toDto)
-            .toList();
+        return orderMapper.orderListToOrderDtoList(
+            orderRepository.findAllByOrderByCreatedAtDesc()
+        );
     }
 
+    /** Holt eine Order nach ID und mapped sie zu DTO. */
     @Override
     public OrderDto getOrder(long id) {
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Order not found"));
-        return orderMapper.toDto(order);
+            .orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")
+            );
+
+        return orderMapper.orderToOrderDto(order);
     }
 
+    /** Holt alle Orders eines Users. */
     @Override
     public List<OrderDto> getOrdersByUser(Integer userId) {
-        return orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
-            .stream()
-            .map(orderMapper::toDto)
-            .toList();
+        return orderMapper.orderListToOrderDtoList(
+            orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
+        );
     }
 }
