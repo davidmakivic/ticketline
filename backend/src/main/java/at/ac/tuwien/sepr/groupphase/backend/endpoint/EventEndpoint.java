@@ -23,31 +23,27 @@ import java.util.List;
 public class EventEndpoint {
 
     private final EventService eventService;
-    private final EventMapper eventMapper;
 
-    public EventEndpoint(EventService eventService, EventMapper eventMapper) {
+    public EventEndpoint(EventService eventService) {
         this.eventService = eventService;
-        this.eventMapper = eventMapper;
     }
 
     @Secured("ROLE_ADMIN")
     @PostMapping
     public EventDto create(@RequestBody EventDto dto) {
-        var saved = eventService.create(eventMapper.eventDtoToEvent(dto));
-        return eventMapper.eventToEventDto(saved);
+        return eventService.create(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public EventDto update(@PathVariable Long id, @RequestBody EventDto dto) {
-        var saved = eventService.update(id, eventMapper.eventDtoToEvent(dto));
-        return eventMapper.eventToEventDto(saved);
+        return eventService.update(id, dto);
     }
 
     @PermitAll
     @GetMapping("/{id}")
     public EventDto getById(@PathVariable Long id) {
-        return eventMapper.eventToEventDto(eventService.findById(id));
+        return eventService.findById(id);
     }
 
     @PermitAll
@@ -55,7 +51,6 @@ public class EventEndpoint {
     public List<EventDto> getAll() {
         return eventService.findAll()
             .stream()
-            .map(eventMapper::eventToEventDto)
             .toList();
     }
 

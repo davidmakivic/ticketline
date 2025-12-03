@@ -22,31 +22,27 @@ import java.util.List;
 @RequestMapping("/api/artists")
 public class ArtistEndpoint {
     private final ArtistService artistService;
-    private final ArtistMapper artistMapper;
 
-    public ArtistEndpoint(ArtistService artistService, ArtistMapper artistMapper) {
+    public ArtistEndpoint(ArtistService artistService) {
         this.artistService = artistService;
-        this.artistMapper = artistMapper;
     }
 
     @Secured("ROLE_ADMIN")
     @PostMapping
     public ArtistDto create(@RequestBody ArtistDto dto) {
-        var saved = artistService.create(artistMapper.artistDtoToArtist(dto));
-        return artistMapper.artistToArtistDto(saved);
+        return artistService.create(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public ArtistDto update(@PathVariable Long id, @RequestBody ArtistDto dto) {
-        var saved = artistService.update(id, artistMapper.artistDtoToArtist(dto));
-        return artistMapper.artistToArtistDto(saved);
+        return artistService.update(id, dto);
     }
 
     @PermitAll
     @GetMapping("/{id}")
     public ArtistDto getById(@PathVariable Long id) {
-        return artistMapper.artistToArtistDto(artistService.findById(id));
+        return artistService.findById(id);
     }
 
 
@@ -55,7 +51,6 @@ public class ArtistEndpoint {
     public List<ArtistDto> getAll() {
         return artistService.findAll()
             .stream()
-            .map(artistMapper::artistToArtistDto)
             .toList();
     }
 

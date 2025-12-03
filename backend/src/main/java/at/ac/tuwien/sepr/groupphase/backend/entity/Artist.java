@@ -8,7 +8,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "artists")
@@ -30,6 +34,9 @@ public class Artist {
     @Enumerated(EnumType.STRING)
     @Column(name = "artist_type")
     private ArtistType artistType;
+
+    @ManyToMany(mappedBy = "artists")
+    private Set<Event> events = new HashSet<>();
 
     public Artist(String firstName, String lastName, String stageName, ArtistType artistType) {
         this.firstName = firstName;
@@ -78,5 +85,13 @@ public class Artist {
 
     public void setArtistType(ArtistType artistType) {
         this.artistType = artistType;
+    }
+
+    public Set<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(Set<Event> events) {
+        this.events = events;
     }
 }
