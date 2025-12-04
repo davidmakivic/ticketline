@@ -10,7 +10,7 @@ public class HallCreateDto {
 
     public HallCreateDto() {}
 
-    public HallCreateDto(Long venueId, String name,JsonNode layoutMetadata) {
+    public HallCreateDto(Long venueId, String name, JsonNode layoutMetadata) {
         this.layoutMetadata = layoutMetadata;
         this.venueId = venueId;
         this.name = name;
