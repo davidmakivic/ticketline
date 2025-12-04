@@ -45,12 +45,12 @@ public class Hall {
 
     public void addSector(Sector sector) {
         this.sectors.add(sector);
-        sector.setHallId(this.id);
+        sector.setHall(this);
     }
 
     public void removeSector(Sector sector) {
         this.sectors.remove(sector);
-        sector.setHallId(null);
+        sector.setHall(null);
     }
 
     public Long getId() {

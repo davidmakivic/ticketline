@@ -54,7 +54,7 @@ public class SectorServiceImpl implements SectorService {
         existing.setName(sector.getName());
         existing.setType(sector.getType());
         existing.setPriceCategory(sector.getPriceCategory());
-        existing.setHallId(sector.getHallId());
+        existing.setHall(sector.getHall());
 
         Sector updatedSector = sectorRepository.save(existing);
         return sectorMapper.sectorToSectorDto(updatedSector);

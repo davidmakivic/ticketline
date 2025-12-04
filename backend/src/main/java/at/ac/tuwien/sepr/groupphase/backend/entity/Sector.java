@@ -5,9 +5,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,8 +22,9 @@ public class Sector {
     @Column(name = "sector_id")
     private Long id;
 
-    @Column(name = "hall_id", nullable = false)
-    private Long hallId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "hall_id", nullable = false)
+    private Hall hall;
 
     @Column(name = "name")
     private String name;
@@ -35,8 +39,8 @@ public class Sector {
     public Sector() {
     }
 
-    public Sector(Long hallId, String name, SectorType type, String priceCategory) {
-        this.hallId = hallId;
+    public Sector(Hall hall, String name, SectorType type, String priceCategory) {
+        this.hall = hall;
         this.name = name;
         this.type = type;
         this.priceCategory = priceCategory;
@@ -50,12 +54,12 @@ public class Sector {
         this.id = id;
     }
 
-    public Long getHallId() {
-        return hallId;
+    public Hall getHall() {
+        return hall;
     }
 
-    public void setHallId(Long hallId) {
-        this.hallId = hallId;
+    public void setHall(Hall hall) {
+        this.hall = hall;
     }
 
     public String getName() {

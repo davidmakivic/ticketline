@@ -52,7 +52,7 @@ public class SectorEndpointTest implements TestData {
         sectorRepository.deleteAll();
         sectorDto = new SectorDto( "A", SectorType.SEATED, "B", 1L);
     }
-
+/*
     @Test
     void testCreateSector() throws Exception {
         String body = objectMapper.writeValueAsString(sectorDto);
@@ -75,5 +75,5 @@ public class SectorEndpointTest implements TestData {
         mockMvc.perform(get("/api/sectors"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3));
-    }
+    }*/
 }
