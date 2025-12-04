@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.groupphase.backend.util;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 
+import java.util.HashSet;
+
 public class ArtistTestDataFactory {
     public static ArtistDto create(ArtistType type, String stageName) {
         ArtistDto artist = new ArtistDto();
@@ -10,6 +12,7 @@ public class ArtistTestDataFactory {
         artist.setLastName("Test");
         artist.setStageName(stageName);
         artist.setArtistType(type);
+        artist.setEvents(new HashSet<>());
         return artist;
     }
 }

@@ -1,6 +1,10 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
+import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class EventDto {
     private Long id;
@@ -8,6 +12,7 @@ public class EventDto {
     private String description;
     private EventType category;
     private Integer durationMinutes;
+    private Set<Artist> artists = new HashSet<>();
 
     public EventDto() {
     }
@@ -50,5 +55,13 @@ public class EventDto {
 
     public void setDurationMinutes(Integer durationMinutes) {
         this.durationMinutes = durationMinutes;
+    }
+
+    public Set<Artist> getArtists() {
+        return artists;
+    }
+
+    public void setArtists(Set<Artist> artists) {
+        this.artists = artists;
     }
 }

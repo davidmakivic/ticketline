@@ -1,17 +1,22 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 
 import java.util.List;
 
 public interface EventService {
-    Event create(Event event);
+    EventDto create(EventDto event);
 
-    Event update(Long id, Event event);
+    EventDto update(Long id, EventDto event);
 
-    Event findById(Long id);
+    EventDto findById(Long id);
 
-    List<Event> findAll();
+    List<EventDto> findAll();
+
+    void addArtist(Long eventId, Long artistId);
+
+    void removeArtist(Long eventId, Long artistId);
 
     void delete(Long id);
 }

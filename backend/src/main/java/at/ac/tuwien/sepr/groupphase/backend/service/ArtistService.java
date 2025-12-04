@@ -1,19 +1,24 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
 
 import java.util.List;
 
 public interface ArtistService {
-    Artist create(Artist artist);
+    ArtistDto create(ArtistDto artist);
 
-    Artist update(Long id, Artist artist);
+    ArtistDto update(Long id, ArtistDto artist);
 
-    Artist findById(Long id);
+    ArtistDto findById(Long id);
 
-    List<Artist> findAll();
+    List<ArtistDto> findAll();
 
-    List<Artist> findByName(String name);
+    void addEvent(Long artistId, Long eventId);
+
+    void deleteEvent(Long artistId, Long eventId);
+
+    List<ArtistDto> findByName(String name);
 
     void delete(Long id);
 }

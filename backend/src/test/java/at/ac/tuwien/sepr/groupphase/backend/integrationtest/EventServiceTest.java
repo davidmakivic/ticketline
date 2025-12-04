@@ -1,9 +1,14 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
+import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
+import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +32,9 @@ public class EventServiceTest {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private ArtistService artistService;
+
     @BeforeEach
     public void beforeEach() {
         eventRepository.deleteAll();
@@ -35,13 +43,13 @@ public class EventServiceTest {
     @Transactional
     @Test
     void testCreateEvent() {
-        Event e = new Event();
+        EventDto e = new EventDto();
         e.setTitle("Test Event");
         e.setDescription("Desc");
         e.setCategory(EventType.CONCERT);
         e.setDurationMinutes(30);
 
-        Event saved = eventService.create(e);
+        EventDto saved = eventService.create(e);
 
         assertThat(saved.getTitle()).isEqualTo("Test Event");
     }
@@ -49,22 +57,22 @@ public class EventServiceTest {
     @Transactional
     @Test
     void testUpdateEvent() {
-        Event e = new Event();
+        EventDto e = new EventDto();
         e.setTitle("Original");
         e.setDescription("Original Desc");
         e.setCategory(EventType.CONCERT);
         e.setDurationMinutes(30);
 
-        Event saved = eventService.create(e);
+        EventDto saved = eventService.create(e);
         Long id = saved.getId();
 
-        Event updated = new Event();
+        EventDto updated = new EventDto();
         updated.setTitle("Updated Title");
         updated.setDescription("Updated Desc");
         updated.setCategory(EventType.MUSICAL);
         updated.setDurationMinutes(60);
 
-        Event result = eventService.update(id, updated);
+        EventDto result = eventService.update(id, updated);
 
         assertThat(result.getTitle()).isEqualTo("Updated Title");
         assertThat(result.getCategory()).isEqualTo(EventType.MUSICAL);
@@ -73,7 +81,7 @@ public class EventServiceTest {
     @Transactional
     @Test
     void testUpdateEventNotFound() {
-        Event updated = new Event();
+        EventDto updated = new EventDto();
         updated.setTitle("Doesn't matter");
 
         assertThatThrownBy(() -> eventService.update(999L, updated))
@@ -83,13 +91,13 @@ public class EventServiceTest {
     @Transactional
     @Test
     void testFindAll() {
-        Event e1 = new Event();
+        EventDto e1 = new EventDto();
         e1.setTitle("A");
         e1.setDescription("Desc");
         e1.setCategory(EventType.FESTIVAL);
         e1.setDurationMinutes(10);
 
-        Event e2 = new Event();
+        EventDto e2 = new EventDto();
         e2.setTitle("B");
         e2.setCategory(EventType.MUSICAL);
         e2.setDurationMinutes(20);
@@ -97,7 +105,7 @@ public class EventServiceTest {
         eventService.create(e1);
         eventService.create(e2);
 
-        List<Event> result = eventService.findAll();
+        List<EventDto> result = eventService.findAll();
 
         assertThat(result).hasSizeGreaterThanOrEqualTo(2);
     }
@@ -105,13 +113,13 @@ public class EventServiceTest {
     @Transactional
     @Test
     void testDeleteEvent() {
-        Event e = new Event();
+        EventDto e = new EventDto();
         e.setTitle("To be deleted");
         e.setDescription("Desc");
         e.setCategory(EventType.CONCERT);
         e.setDurationMinutes(45);
 
-        Event saved = eventService.create(e);
+        EventDto saved = eventService.create(e);
         Long id = saved.getId();
 
         assertThat(eventService.findById(id)).isNotNull();
@@ -120,5 +128,59 @@ public class EventServiceTest {
 
         assertThatThrownBy(() -> eventService.findById(id))
             .isInstanceOf(NotFoundException.class);
+    }
+
+    @Transactional
+    @Test
+    void testAddArtistToEvent() {
+        EventDto event = new EventDto();
+        event.setTitle("My Event");
+        event.setDescription("Desc");
+        event.setCategory(EventType.CONCERT);
+        event.setDurationMinutes(60);
+
+        EventDto savedEvent = eventService.create(event);
+
+        ArtistDto artist = new ArtistDto();
+        artist.setFirstName("John");
+        artist.setLastName("Smith");
+        artist.setStageName("JS");
+        artist.setArtistType(ArtistType.SOLO);
+
+        ArtistDto savedArtist = artistService.create(artist);
+
+        eventService.addArtist(savedEvent.getId(), savedArtist.getId());
+
+        EventDto updated = eventService.findById(savedEvent.getId());
+
+        assertThat(updated.getArtists()).hasSize(1);
+    }
+
+    @Transactional
+    @Test
+    void testRemoveArtistFromEvent() {
+        EventDto event = new EventDto();
+        event.setTitle("My Event");
+        event.setDescription("Desc");
+        event.setCategory(EventType.CONCERT);
+        event.setDurationMinutes(60);
+
+        EventDto savedEvent = eventService.create(event);
+
+        ArtistDto artist = new ArtistDto();
+        artist.setFirstName("Anna");
+        artist.setLastName("Jones");
+        artist.setStageName("AJ");
+        artist.setArtistType(ArtistType.SOLO);
+
+        ArtistDto savedArtist = artistService.create(artist);
+
+        eventService.addArtist(savedEvent.getId(), savedArtist.getId());
+
+        eventService.removeArtist(savedEvent.getId(), savedArtist.getId());
+
+        EventDto updated = eventService.findById(savedEvent.getId());
+
+        assertThat(updated.getArtists()).isEmpty();
     }
 }

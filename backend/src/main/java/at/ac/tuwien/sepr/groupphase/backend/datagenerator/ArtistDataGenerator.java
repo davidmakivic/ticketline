@@ -20,6 +20,7 @@ public class ArtistDataGenerator {
     private static final String TEST_ARTIST_LASTNAME = "Artist Last";
     private static final String TEST_ARTIST_STAGENAME = "Artist STAGENAME";
 
+
     private final ArtistRepository artistRepository;
 
     public ArtistDataGenerator(ArtistRepository artistRepository) {
