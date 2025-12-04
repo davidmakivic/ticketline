@@ -9,6 +9,18 @@ public class UserCreateDto {
     String city;
     String address;
 
+    public UserCreateDto() {
+    }
+
+    public UserCreateDto(String email, String password, String firstName, String lastName, String zipCode, String city, String address) {
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.zipCode = zipCode;
+        this.city = city;
+        this.address = address;
+    }
 
     public String getEmail() {
         return email;
