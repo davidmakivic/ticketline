@@ -1,0 +1,103 @@
+package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
+
+import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
+import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
+import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
+import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
+import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
+import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import static at.ac.tuwien.sepr.groupphase.backend.basetest.TestData.ADMIN_ROLES;
+import static at.ac.tuwien.sepr.groupphase.backend.basetest.TestData.ADMIN_USER;
+
+import java.time.LocalDateTime;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@Transactional
+@AutoConfigureMockMvc
+public class OrderEndpointTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JwtTokenizer jwtTokenizer;
+
+    @Autowired
+    private SecurityProperties securityProperties;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @BeforeEach
+    void setup() {
+        orderRepository.deleteAll();
+        userRepository.deleteAll();
+
+        ApplicationUser u = ApplicationUser.ApplicationUserBuilder
+            .aApplicationUser()
+            .withEmail("test@example.com")
+            .withPassword("hashed")
+            .withFirstName("Test")
+            .withLastName("User")
+            .withZipCode("1234")
+            .withCity("Vienna")
+            .withAddress("Street 1")
+            .withRole(Roles.USER)
+            .withRewardPoints(0)
+            .withCreatedAt(LocalDateTime.now())
+            .withUserStatus(UserStatus.UNLOCKED)
+            .withFailedLoginAttempts(0)
+            .build();
+
+        userRepository.save(u);
+    }
+
+    @Test
+    void testGetAllOrders_emptyList() throws Exception {
+        mockMvc.perform(get("/api/orders")
+                .header(securityProperties.getAuthHeader(),
+                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void testGetOrder_notFound() throws Exception {
+        mockMvc.perform(get("/api/orders/999")
+                .header(securityProperties.getAuthHeader(),
+                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetOrdersByUser_success() throws Exception {
+        ApplicationUser u = userRepository.findAll().get(0);
+
+        Order o = new Order(u, 1500);
+        orderRepository.save(o);
+
+        mockMvc.perform(get("/api/orders/user/" + u.getUserId())
+                .header(securityProperties.getAuthHeader(),
+                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].totalPriceCents").value(1500));
+    }
+}
