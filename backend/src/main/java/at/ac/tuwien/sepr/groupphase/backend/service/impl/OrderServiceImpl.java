@@ -57,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDto> getOrdersByUser(Integer userId) {
+    public List<OrderDto> getOrdersByUser(Long userId) {
 
         List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId);
 
