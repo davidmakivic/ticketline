@@ -45,12 +45,17 @@ public class OrderDto {
 
     @Override
     public String toString() {
-        return "OrderDto{" +
-            "id=" + id +
-            ", userId=" + userId +
-            ", totalPriceCents=" + totalPriceCents +
-            ", createdAt=" + createdAt +
-            ", ticketIds=" + ticketIds +
-            '}';
+        return "OrderDto{"
+            +
+            "id=" + id
+            +
+            ", userId=" + userId
+            +
+            ", totalPriceCents=" + totalPriceCents
+            +
+            ", createdAt=" + createdAt
+            +
+            ", ticketIds=" + ticketIds
+            + '}';
     }
 }
