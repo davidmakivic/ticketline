@@ -1,16 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
@@ -41,7 +31,7 @@ public class Order {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected Order() {}
+    public Order() {}
 
     public Order(ApplicationUser user, long totalPriceCents) {
         this.user = user;
@@ -66,5 +56,17 @@ public class Order {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public void setTickets(List<Ticket> tickets) {
+        this.tickets = tickets;
+    }
+
+    public void setUser(ApplicationUser user) {
+        this.user = user;
+    }
+
+    public void setTotalPriceCents(long totalPriceCents) {
+        this.totalPriceCents = totalPriceCents;
     }
 }
