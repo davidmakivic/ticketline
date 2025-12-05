@@ -23,11 +23,9 @@ import java.util.List;
 public class SectorEndpoint {
 
     private final SectorService sectorService;
-    private final SectorMapper sectorMapper;
 
-    public SectorEndpoint(SectorService sectorService, SectorMapper sectorMapper) {
+    public SectorEndpoint(SectorService sectorService) {
         this.sectorService = sectorService;
-        this.sectorMapper = sectorMapper;
     }
 
     @PermitAll
@@ -51,15 +49,13 @@ public class SectorEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public SectorDto create(@RequestBody SectorDto dto) {
-        //var saved = sectorService.create(sectorMapper.sectorDtoToSector(dto));
         return sectorService.create(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public SectorDto update(@PathVariable Long id, @RequestBody SectorDto dto) {
-        //var updated = sectorService.update(id, sectorMapper.sectorDtoToSector(dto));
-        return sectorService.update(id, sectorMapper.sectorDtoToSector(dto));
+        return sectorService.update(id, dto);
     }
 
     @Secured("ROLE_ADMIN")

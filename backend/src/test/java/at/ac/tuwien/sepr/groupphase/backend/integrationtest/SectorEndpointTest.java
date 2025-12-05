@@ -2,8 +2,12 @@ package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
+import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 
@@ -40,6 +44,9 @@ public class SectorEndpointTest implements TestData {
     private SectorRepository sectorRepository;
 
     @Autowired
+    private HallRepository hallRepository;
+
+    @Autowired
     private JwtTokenizer jwtTokenizer;
 
     @Autowired
@@ -47,12 +54,31 @@ public class SectorEndpointTest implements TestData {
 
     private SectorDto sectorDto;
 
+    private Hall hall;
+
+    private Venue venue;
+
+    @Autowired
+    private VenueRepository venueRepository;
+
     @BeforeEach
     void setup() {
         sectorRepository.deleteAll();
-        sectorDto = new SectorDto( "A", SectorType.SEATED, "B", 1L);
+        hallRepository.deleteAll();
+        venueRepository.deleteAll();
+
+        venue = new Venue();
+        venue.setName("Venue");
+        venueRepository.save(venue);
+
+        hall = new Hall();
+        hall.setName("Hall");
+        hall.setVenue(venue);
+        hallRepository.save(hall);
+
+        sectorDto = new SectorDto( "A", SectorType.SEATED, "B", hall.getId());
     }
-/*
+
     @Test
     void testCreateSector() throws Exception {
         String body = objectMapper.writeValueAsString(sectorDto);
@@ -68,12 +94,34 @@ public class SectorEndpointTest implements TestData {
 
     @Test
     void testGetAllSectors() throws Exception {
-        sectorRepository.save(new Sector(1L, "A", SectorType.SEATED, "B"));
-        sectorRepository.save(new Sector(1L, "B", SectorType.VIP, "C"));
-        sectorRepository.save(new Sector(1L, "C", SectorType.STANDING, "A"));
+        Venue venue = new Venue();
+        venue.setName("Venue");
+        venueRepository.save(venue);
+
+        Hall hall1 = new Hall();
+        hall1.setName("Hall1");
+        hall1.setVenue(venue);
+        hallRepository.save(hall1);
+
+        Hall hall2 = new Hall();
+        hall2.setName("Hall2");
+        hall2.setVenue(venue);
+        hallRepository.save(hall2);
+
+        Hall hall3 = new Hall();
+        hall3.setName("Hall3");
+        hall3.setVenue(venue);
+        hallRepository.save(hall3);
+
+        hallRepository.save(hall1);
+        hallRepository.save(hall2);
+        hallRepository.save(hall3);
+        sectorRepository.save(new Sector(hall1, "A", SectorType.SEATED, "B"));
+        sectorRepository.save(new Sector(hall2, "B", SectorType.VIP, "C"));
+        sectorRepository.save(new Sector(hall3, "C", SectorType.STANDING, "A"));
 
         mockMvc.perform(get("/api/sectors"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3));
-    }*/
+    }
 }

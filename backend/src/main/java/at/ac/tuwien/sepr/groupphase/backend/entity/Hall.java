@@ -35,7 +35,7 @@ public class Hall {
     private String name;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "layout_metadata", columnDefinition = "jsonb")
+    @Column(name = "layout_metadata")
     private JsonNode layoutMetadata;
 
     @OneToMany(mappedBy = "hall", cascade = CascadeType.ALL, orphanRemoval = true)
