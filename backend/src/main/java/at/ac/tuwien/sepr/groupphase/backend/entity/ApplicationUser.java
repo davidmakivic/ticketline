@@ -21,39 +21,50 @@ public class ApplicationUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Integer userId;
+    private Long userId;
+
     @Column(nullable = false, unique = true)
     private String email;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
+
     @Column(name = "last_name", nullable = false)
     private String lastName;
+
     @Column(name = "zip_code", nullable = false)
     private String zipCode;
+
     @Column(nullable = false)
     private String city;
+
     @Column(nullable = false)
     private String address;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Roles role;
+
     @Column(name = "reward_points", nullable = false)
     private Integer rewardPoints;
-    @CreationTimestamp
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
     @Column(name = "user_status")
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
+
     @Column(name = "failed_login_attempts", nullable = false)
     private Integer failedLoginAttempts;
 
     public ApplicationUser() {
     }
 
-    public ApplicationUser(Integer userId, String email, String passwordHash, String firstName, String lastName,
+    public ApplicationUser(Long userId, String email, String passwordHash, String firstName, String lastName,
                            String zipCode, String city, String address, Roles role, Integer rewardPoints,
                            LocalDateTime createdAt, UserStatus status, Integer failedLoginAttempts
     ) {
@@ -72,7 +83,7 @@ public class ApplicationUser {
         this.failedLoginAttempts = failedLoginAttempts;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -124,7 +135,7 @@ public class ApplicationUser {
         return failedLoginAttempts;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -177,7 +188,7 @@ public class ApplicationUser {
     }
 
     public static final class ApplicationUserBuilder {
-        private Integer userId;
+        private Long userId;
         private String email;
         private String passwordHash;
         private String firstName;
@@ -198,7 +209,7 @@ public class ApplicationUser {
             return new ApplicationUser.ApplicationUserBuilder();
         }
 
-        public ApplicationUser.ApplicationUserBuilder withId(Integer id) {
+        public ApplicationUser.ApplicationUserBuilder withId(Long id) {
             this.userId = id;
             return this;
         }

@@ -5,8 +5,9 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.OrderMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
-
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,7 +24,6 @@ public class OrderServiceImpl implements OrderService {
         this.orderMapper = orderMapper;
     }
 
-    /** Holt alle Orders und mapped sie zu DTOs. */
     @Override
     public List<OrderDto> getAllOrders() {
         return orderMapper.orderListToOrderDtoList(
@@ -31,22 +31,53 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-    /** Holt eine Order nach ID und mapped sie zu DTO. */
     @Override
     public OrderDto getOrder(long id) {
         Order order = orderRepository.findById(id)
-            .orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")
-            );
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null) {
+            return orderMapper.orderToOrderDto(order);
+        }
+
+        String email = auth.getName();
+
+        boolean isAdmin = auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isOwner = order.getUser().getEmail().equals(email);
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+        }
 
         return orderMapper.orderToOrderDto(order);
     }
 
-    /** Holt alle Orders eines Users. */
     @Override
-    public List<OrderDto> getOrdersByUser(Integer userId) {
-        return orderMapper.orderListToOrderDtoList(
-            orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
-        );
+    public List<OrderDto> getOrdersByUser(Long userId) {
+
+        List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null) {
+            return orderMapper.orderListToOrderDtoList(orders);
+        }
+
+        String email = auth.getName();
+
+        boolean isAdmin = auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isOwner = !orders.isEmpty() && orders.get(0).getUser().getEmail().equals(email);
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+        }
+
+        return orderMapper.orderListToOrderDtoList(orders);
     }
 }
