@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.VenueService;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;
@@ -29,7 +31,7 @@ public class VenueEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PostMapping
-    public VenueDto createVenue(@RequestBody VenueDto venueDto) {
+    public VenueDto createVenue(@RequestBody VenueCreateDto venueDto) {
         return venueService.create(venueDto);
     }
 
@@ -54,7 +56,7 @@ public class VenueEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
-    public VenueDto updateVenue(@PathVariable("id") Long id, @RequestBody VenueDto venueDto) {
+    public VenueDto updateVenue(@PathVariable("id") Long id, @RequestBody VenueUpdateDto venueDto) {
         return venueService.update(id, venueDto);
     }
 }
