@@ -38,7 +38,7 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueDto> findAll() {
-        return venueMapper.venueListToTicketDtoList(venueRepository.findAll());
+        return venueMapper.venueListToVenueDtoList(venueRepository.findAll());
     }
 
     @Override

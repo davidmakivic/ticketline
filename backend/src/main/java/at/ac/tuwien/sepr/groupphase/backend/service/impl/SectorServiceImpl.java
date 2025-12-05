@@ -2,10 +2,13 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
+import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,10 +17,12 @@ import java.util.List;
 public class SectorServiceImpl implements SectorService {
 
     private final SectorRepository sectorRepository;
+    private final HallRepository hallRepository;
     private final SectorMapper sectorMapper;
 
-    public SectorServiceImpl(SectorRepository sectorRepository, SectorMapper sectorMapper) {
+    public SectorServiceImpl(SectorRepository sectorRepository, HallRepository hallRepository, SectorMapper sectorMapper) {
         this.sectorRepository = sectorRepository;
+        this.hallRepository = hallRepository;
         this.sectorMapper = sectorMapper;
     }
 
@@ -41,20 +46,43 @@ public class SectorServiceImpl implements SectorService {
 
     @Override
     public SectorDto create(SectorDto sector) {
-        // ID wird von DB generiert
-        Sector savedSector = sectorRepository.save(sectorMapper.sectorDtoToSector(sector));
+        if (sector.getHallId() == null) {
+            throw new EntityNotFoundException("Hall with id " + sector.getHallId() + " not found");
+        }
+
+        Hall hall = hallRepository.findById(sector.getHallId())
+            .orElseThrow(() -> new EntityNotFoundException("Hall with id " + sector.getHallId() + " not found"));
+
+        Sector entity = sectorMapper.sectorDtoToSector(sector);
+        entity.setHall(hall);
+
+        Sector savedSector = sectorRepository.save(entity);
         return sectorMapper.sectorToSectorDto(savedSector);
     }
 
     @Override
-    public SectorDto update(Long id, Sector sector) {
+    public SectorDto update(Long id, SectorDto sector) {
         Sector existing = sectorRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Sector not found with id: " + id));
 
-        existing.setName(sector.getName());
-        existing.setType(sector.getType());
-        existing.setPriceCategory(sector.getPriceCategory());
-        existing.setHallId(sector.getHallId());
+        if (sector.getName() != null) {
+            existing.setName(sector.getName());
+        }
+
+        if (sector.getType() != null) {
+            existing.setType(sector.getType());
+        }
+
+        if (sector.getPriceCategory() != null) {
+            existing.setPriceCategory(sector.getPriceCategory());
+        }
+
+        if (sector.getHallId() != null) {
+            Hall hall =  hallRepository.findById(sector.getHallId())
+                .orElseThrow(() -> new EntityNotFoundException("Venue with id: " + id + " not found"));
+
+            existing.setHall(hall);
+        }
 
         Sector updatedSector = sectorRepository.save(existing);
         return sectorMapper.sectorToSectorDto(updatedSector);
