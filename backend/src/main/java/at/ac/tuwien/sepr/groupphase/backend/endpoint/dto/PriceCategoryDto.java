@@ -7,7 +7,7 @@ public class PriceCategoryDto {
     private String priceCategory;
 
 
-    public PriceCategoryDto(String name, String priceCategory, double price) {
+    public PriceCategoryDto(String priceCategory, double price) {
         this.priceCategory = priceCategory;
         this.price = price;
     }
