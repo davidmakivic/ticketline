@@ -1,26 +1,19 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-public class HallCreateDto {
+public class HallUpdateDto {
 
-    @NotNull
     private Long venueId;
-
-    @NotBlank
     private String name;
-
-    @NotNull
     private JsonNode layoutMetadata;
 
-    public HallCreateDto() {}
+    public HallUpdateDto() {}
 
-    public HallCreateDto(Long venueId, String name, JsonNode layoutMetadata) {
-        this.layoutMetadata = layoutMetadata;
+    public HallUpdateDto(Long venueId, String name, JsonNode layoutMetadata) {
         this.venueId = venueId;
         this.name = name;
+        this.layoutMetadata = layoutMetadata;
     }
 
     public Long getVenueId() {

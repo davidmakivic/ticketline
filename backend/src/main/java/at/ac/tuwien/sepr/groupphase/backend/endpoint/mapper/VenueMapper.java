@@ -12,5 +12,5 @@ public interface VenueMapper {
 
     Venue venueDtoToVenue(VenueDto venueDto);
 
-    List<VenueDto> venueListToTicketDtoList(List<Venue> venue);
+    List<VenueDto> venueListToVenueDtoList(List<Venue> venue);
 }
