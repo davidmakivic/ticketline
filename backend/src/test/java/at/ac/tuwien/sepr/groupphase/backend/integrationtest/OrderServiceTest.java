@@ -8,15 +8,14 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,6 +51,7 @@ public class OrderServiceTest {
         user.setAddress("Teststraße 1");
         user.setCity("Wien");
         user.setZipCode("1010");
+        user.setCreatedAt(LocalDateTime.of(2025, 12, 11, 11, 11));
         user.setRewardPoints(0);
         user.setFailedLoginAttempts(0);
         user = userRepository.save(user);

@@ -5,7 +5,6 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.OrderMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,7 +22,9 @@ public class OrderServiceImpl implements OrderService {
         this.orderMapper = orderMapper;
     }
 
-    /** Holt alle Orders und mapped sie zu DTOs. */
+    /**
+     * Holt alle Orders und mapped sie zu DTOs.
+     */
     @Override
     public List<OrderDto> getAllOrders() {
         return orderMapper.orderListToOrderDtoList(
@@ -31,7 +32,9 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-    /** Holt eine Order nach ID und mapped sie zu DTO. */
+    /**
+     * Holt eine Order nach ID und mapped sie zu DTO.
+     */
     @Override
     public OrderDto getOrder(long id) {
         Order order = orderRepository.findById(id)
@@ -42,9 +45,11 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.orderToOrderDto(order);
     }
 
-    /** Holt alle Orders eines Users. */
+    /**
+     * Holt alle Orders eines Users.
+     */
     @Override
-    public List<OrderDto> getOrdersByUser(Integer userId) {
+    public List<OrderDto> getOrdersByUser(Long userId) {
         return orderMapper.orderListToOrderDtoList(
             orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
         );

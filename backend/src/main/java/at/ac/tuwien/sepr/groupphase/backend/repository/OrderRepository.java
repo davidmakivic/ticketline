@@ -9,6 +9,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByOrderByCreatedAtDesc();
 
-    List<Order> findAllByUser_UserIdOrderByCreatedAtDesc(Integer userId);
+    List<Order> findAllByUser_UserIdOrderByCreatedAtDesc(Long userId);
 
 }
