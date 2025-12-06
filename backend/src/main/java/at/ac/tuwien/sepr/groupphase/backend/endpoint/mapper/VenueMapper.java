@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
 import org.mapstruct.Mapper;
@@ -12,5 +13,7 @@ public interface VenueMapper {
 
     Venue venueDtoToVenue(VenueDto venueDto);
 
-    List<VenueDto> venueListToTicketDtoList(List<Venue> venue);
+    Venue venueCreateDtoToVenue(VenueCreateDto venueCreateDto);
+
+    List<VenueDto> venueListToVenueDtoList(List<Venue> venue);
 }

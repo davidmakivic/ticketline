@@ -1,11 +1,16 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "venues")
@@ -30,6 +35,9 @@ public class Venue {
     @Column(name = "postal_code")
     private String postalCode;
 
+    @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Hall> halls = new ArrayList<>();
+
     public Venue() {}
 
     public Venue(String name, String street, String city, String country, String postalCode) {
@@ -38,6 +46,16 @@ public class Venue {
         this.city = city;
         this.country = country;
         this.postalCode = postalCode;
+    }
+
+    public void addHall(Hall hall) {
+        this.halls.add(hall);
+        hall.setVenue(this);
+    }
+
+    public void removeHall(Hall hall) {
+        this.halls.remove(hall);
+        hall.setVenue(null);
     }
 
     public Long getId() {

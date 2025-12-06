@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.groupphase.backend.unittests;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,12 +20,13 @@ public class SeatMapperTest {
 
     @Test
     void testSeatToSeatDtoAndBack() {
-        Seat seat = new Seat(1, 2, 3L); // row, number, sectorId
+        Sector sector = new Sector();
+        Seat seat = new Seat(1, 2, sector); // row, number, sectorId
         SeatDto dto = seatMapper.seatToSeatDto(seat);
         assertEquals(seat.getId(), dto.getId());
         assertEquals(seat.getRowNumber(), dto.getRowNumber());
         assertEquals(seat.getSeatNumber(), dto.getSeatNumber());
-        assertEquals(seat.getSectorId(), dto.getSectorId());
+        assertEquals(seat.getSector().getId(), dto.getSectorId());
 
         Seat mappedBack = seatMapper.seatDtoToSeat(dto);
         assertEquals(seat.getId(), mappedBack.getId());
@@ -32,7 +34,8 @@ public class SeatMapperTest {
 
     @Test
     void testSeatListMapping() {
-        List<Seat> seats = List.of(new Seat(1,1,1L), new Seat(2,2,1L));
+        Sector sector = new Sector();
+        List<Seat> seats = List.of(new Seat(1,1,sector), new Seat(2,2,sector));
         List<SeatDto> dtos = seatMapper.seatListToSeatDtoList(seats);
         assertEquals(2, dtos.size());
     }

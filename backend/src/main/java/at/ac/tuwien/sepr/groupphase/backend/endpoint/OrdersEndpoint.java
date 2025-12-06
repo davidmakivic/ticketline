@@ -20,21 +20,27 @@ public class OrdersEndpoint {
         this.orderService = orderService;
     }
 
-    /** Gibt alle Orders zurück. */
+    /**
+     * Gibt alle Orders zurück.
+     */
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public List<OrderDto> getAllOrders() {
         return orderService.getAllOrders();
     }
 
-    /** Gibt eine bestimmte Order zurück. */
+    /**
+     * Gibt eine bestimmte Order zurück.
+     */
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
     public OrderDto getOrderById(@PathVariable long id) {
         return orderService.getOrder(id);
     }
 
-    /** Gibt alle Orders eines bestimmten Users. */
+    /**
+     * Gibt alle Orders eines bestimmten Users.
+     */
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/user/{userId}")
     public List<OrderDto> getByUser(@PathVariable Long userId) {

@@ -12,7 +12,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OrderMapperTest {
 
@@ -20,7 +20,7 @@ public class OrderMapperTest {
 
     private ApplicationUser createUser() {
         ApplicationUser user = new ApplicationUser();
-        user.setUserId(1);
+        user.setUserId(1L);
         user.setEmail("test@test.com");
         user.setPasswordHash("pw");
         user.setFirstName("Test");

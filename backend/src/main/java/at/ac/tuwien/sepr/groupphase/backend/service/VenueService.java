@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueUpdateDto;
 
 import java.util.List;
 
@@ -12,7 +14,7 @@ public interface VenueService {
      * @param venueDto the venue to be created
      * @return a dto of the created venue
      */
-    VenueDto create(VenueDto venueDto);
+    VenueDto create(VenueCreateDto venueDto);
 
     /**
      * Finds a venue specifies by its Id.
@@ -43,5 +45,5 @@ public interface VenueService {
      * @param updatedVenue the new venue
      * @return a dto of the newly updated venue
      */
-    VenueDto update(Long id, VenueDto updatedVenue);
+    VenueDto update(Long id, VenueUpdateDto updatedVenue);
 }

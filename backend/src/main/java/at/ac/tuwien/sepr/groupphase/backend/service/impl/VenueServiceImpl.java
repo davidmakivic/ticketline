@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.VenueMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
@@ -22,8 +24,8 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public VenueDto create(VenueDto venue) {
-        Venue saved = venueMapper.venueDtoToVenue(venue);
+    public VenueDto create(VenueCreateDto venue) {
+        Venue saved = venueMapper.venueCreateDtoToVenue(venue);
         venueRepository.save(saved);
         return venueMapper.venuetoVenueDto(saved);
     }
@@ -38,7 +40,7 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueDto> findAll() {
-        return venueMapper.venueListToTicketDtoList(venueRepository.findAll());
+        return venueMapper.venueListToVenueDtoList(venueRepository.findAll());
     }
 
     @Override
@@ -50,7 +52,7 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public VenueDto update(Long id, VenueDto updatedVenue) {
+    public VenueDto update(Long id, VenueUpdateDto updatedVenue) {
         Venue existing = venueRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Venue with id: " + id + " not found"));
 
