@@ -33,7 +33,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto getOrder(long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findByIdWithTickets(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

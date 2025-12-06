@@ -87,7 +87,7 @@ public class OrderServiceTest {
         orderRepository.save(new Order(user, 1000));
         orderRepository.save(new Order(user, 2000));
 
-        List<OrderDto> list = orderService.getOrdersByUser(user.getUserId());
+        List<OrderDto> list = orderService.getOrdersByUser(user.getUserId().longValue());
 
         assertThat(list).hasSize(2);
     }
