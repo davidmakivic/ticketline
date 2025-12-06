@@ -38,7 +38,7 @@ public interface SeatService {
      * @param seat the seat to be created
      * @return the created seat
      */
-    SeatDto create(Seat seat);
+    SeatDto create(SeatDto seat);
 
 
     /**
