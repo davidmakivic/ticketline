@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,13 +26,14 @@ public class PerformanceEndpoint {
         this.performanceService = performanceService;
     }
 
+    @PermitAll
     @GetMapping
     @Operation(summary = "Get all performances", security = @SecurityRequirement(name = "apiKey"))
     public List<PerformanceDto> getAll() {
         return performanceService.findAll();
     }
 
-
+    @PermitAll
     @PostMapping
     @Operation(summary = "Create performance", security = @SecurityRequirement(name = "apiKey"))
     public PerformanceDto create(@RequestBody PerformanceDto dto) {
