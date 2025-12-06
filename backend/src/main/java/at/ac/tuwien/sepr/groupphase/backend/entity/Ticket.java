@@ -23,9 +23,9 @@ public class Ticket {
     @Column(name = "ticket_id")
     private Long id;
 
-    //@ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @Column(name = "performance_id", nullable = false)
-    private Long performanceId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "performance_id", nullable = false)
+    private Performance performance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")
@@ -44,8 +44,8 @@ public class Ticket {
 
     public Ticket() {}
 
-    public Ticket(Long performanceId, Seat seat, Order order, Long priceFinalCents, TicketStatus status) {
-        this.performanceId = performanceId;
+    public Ticket(Performance performance, Seat seat, Order order, Long priceFinalCents, TicketStatus status) {
+        this.performance = performance;
         this.seat = seat;
         this.order = order;
         this.priceFinalCents = priceFinalCents;
@@ -60,12 +60,12 @@ public class Ticket {
         this.id = id;
     }
 
-    public Long getPerformanceId() {
-        return performanceId;
+    public Performance getPerformance() {
+        return performance;
     }
 
-    public void setPerformanceId(Long performanceId) {
-        this.performanceId = performanceId;
+    public void setPerformance(Performance performance) {
+        this.performance = performance;
     }
 
     public Seat getSeat() {
