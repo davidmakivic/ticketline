@@ -10,13 +10,13 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface TicketMapper {
 
-    @Mapping(target = "performanceId", source = "performance.id")
+
+    //@Mapping(target = "performanceId", source = "performance.id")
     @Mapping(target = "seatId", source = "seat.id")
     @Mapping(target = "orderId", source = "order.id")
     TicketDto ticketToTicketDto(Ticket ticket);
 
-
-    @Mapping(target = "performance", ignore = true)
+    //@Mapping(target = "performance", ignore = true)
     @Mapping(target = "seat", ignore = true)
     @Mapping(target = "order", ignore = true)
     Ticket ticketDtoToTicket(TicketDto ticketDto);
