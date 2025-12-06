@@ -8,7 +8,6 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static at.ac.tuwien.sepr.groupphase.backend.basetest.TestData.ADMIN_ROLES;
 import static at.ac.tuwien.sepr.groupphase.backend.basetest.TestData.ADMIN_USER;
-
-import java.time.LocalDateTime;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
@@ -64,7 +61,6 @@ public class OrderEndpointTest {
             .withAddress("Street 1")
             .withRole(Roles.USER)
             .withRewardPoints(0)
-            .withCreatedAt(LocalDateTime.now())
             .withUserStatus(UserStatus.UNLOCKED)
             .withFailedLoginAttempts(0)
             .build();

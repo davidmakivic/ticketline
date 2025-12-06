@@ -10,9 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "users")
@@ -24,24 +26,31 @@ public class ApplicationUser {
     private Long userId;
 
     @Column(nullable = false, unique = true)
+    @Email(regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @Size(max = 255)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Column(name = "first_name", nullable = false)
+    @Size(max = 255)
     private String firstName;
 
     @Column(name = "last_name", nullable = false)
+    @Size(max = 255)
     private String lastName;
 
     @Column(name = "zip_code", nullable = false)
+    @Size(max = 255)
     private String zipCode;
 
     @Column(nullable = false)
+    @Size(max = 255)
     private String city;
 
     @Column(nullable = false)
+    @Size(max = 255)
     private String address;
 
     @Column(nullable = false)
@@ -51,8 +60,9 @@ public class ApplicationUser {
     @Column(name = "reward_points", nullable = false)
     private Integer rewardPoints;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Timestamp createdAt;
 
     @Column(name = "user_status")
     @Enumerated(EnumType.STRING)
@@ -66,7 +76,7 @@ public class ApplicationUser {
 
     public ApplicationUser(Long userId, String email, String passwordHash, String firstName, String lastName,
                            String zipCode, String city, String address, Roles role, Integer rewardPoints,
-                           LocalDateTime createdAt, UserStatus status, Integer failedLoginAttempts
+                           Timestamp createdAt, UserStatus status, Integer failedLoginAttempts
     ) {
         this.userId = userId;
         this.email = email;
@@ -123,7 +133,7 @@ public class ApplicationUser {
         return rewardPoints;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
@@ -175,10 +185,6 @@ public class ApplicationUser {
         this.rewardPoints = rewardPoints;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public void setUserStatus(UserStatus userStatus) {
         this.userStatus = userStatus;
     }
@@ -198,7 +204,6 @@ public class ApplicationUser {
         private String address;
         private Roles role;
         private Integer rewardPoints;
-        private LocalDateTime createdAt;
         private UserStatus userStatus;
         private Integer failedLoginAttempts;
 
@@ -259,10 +264,6 @@ public class ApplicationUser {
             return this;
         }
 
-        public ApplicationUser.ApplicationUserBuilder withCreatedAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
 
         public ApplicationUser.ApplicationUserBuilder withUserStatus(UserStatus userStatus) {
             this.userStatus = userStatus;
@@ -286,7 +287,6 @@ public class ApplicationUser {
             applicationUser.setAddress(address);
             applicationUser.setRole(role);
             applicationUser.setRewardPoints(rewardPoints);
-            applicationUser.setCreatedAt(createdAt);
             applicationUser.setUserStatus(userStatus);
             applicationUser.setFailedLoginAttempts(failedLoginAttempts);
             return applicationUser;
