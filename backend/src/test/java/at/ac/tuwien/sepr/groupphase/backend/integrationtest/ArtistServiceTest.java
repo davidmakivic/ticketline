@@ -179,4 +179,44 @@ public class ArtistServiceTest {
         ArtistDto updated = artistService.findById(savedArtist.getId());
         assertThat(updated.getEvents()).isEmpty();
     }
+
+    @Transactional
+    @Test
+    void testFindByNamePositive() {
+        ArtistDto artist1 = new ArtistDto();
+        artist1.setFirstName("David");
+        artist1.setLastName("Bowie");
+        artist1.setStageName("Ziggy");
+        artist1.setArtistType(ArtistType.SOLO);
+        artistService.create(artist1);
+
+        ArtistDto artist2 = new ArtistDto();
+        artist2.setFirstName("John");
+        artist2.setLastName("Lennon");
+        artist2.setStageName("Beatles");
+        artist2.setArtistType(ArtistType.BAND);
+        artistService.create(artist2);
+
+        List<ArtistDto> result = artistService.findByName("ziggy");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getStageName()).isEqualTo("Ziggy");
+    }
+
+    @Transactional
+    @Test
+    void testFindByNameNegative() {
+        ArtistDto artist = new ArtistDto();
+        artist.setFirstName("Test");
+        artist.setLastName("Artist");
+        artist.setStageName("TestStage");
+        artist.setArtistType(ArtistType.SOLO);
+        artistService.create(artist);
+
+        List<ArtistDto> result = artistService.findByName("nonexistent");
+
+        assertThat(result).isEmpty();
+    }
+
+
 }

@@ -42,6 +42,23 @@ public class ArtistDataGenerator {
                 LOGGER.debug("saving artist {}", artist);
                 artistRepository.save(artist);
             }
+
+            Artist custom1 = new Artist();
+            custom1.setFirstName("Freddie");
+            custom1.setLastName("Mercury");
+            custom1.setStageName("Queen");
+            custom1.setArtistType(ArtistType.BAND);
+            LOGGER.debug("saving artist {}", custom1);
+            artistRepository.save(custom1);
+
+            Artist custom2 = new Artist();
+            custom2.setFirstName("Elvis");
+            custom2.setLastName("Presley");
+            custom2.setStageName("The King");
+            custom2.setArtistType(ArtistType.SOLO);
+            LOGGER.debug("saving artist {}", custom2);
+            artistRepository.save(custom2);
         }
+
     }
 }
