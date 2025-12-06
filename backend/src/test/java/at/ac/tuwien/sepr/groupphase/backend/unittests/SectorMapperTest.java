@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.unittests;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import at.ac.tuwien.sepr.groupphase.backend.type.SectorType;
 import org.junit.jupiter.api.Test;
@@ -20,10 +21,11 @@ public class SectorMapperTest {
 
     @Test
     void testSectorToSectorDtoAndBack() {
-        Sector sector = new Sector(1L, "A", SectorType.SEATED, "B");
+        Hall hall = new Hall();
+        Sector sector = new Sector(hall, "A", SectorType.SEATED, "B");
         SectorDto dto = sectorMapper.sectorToSectorDto(sector);
         assertEquals(sector.getId(), dto.getId());
-        assertEquals(sector.getHallId(), dto.getHallId());
+        assertEquals(sector.getHall().getId(), dto.getHallId());
 
         Sector mappedBack = sectorMapper.sectorDtoToSector(dto);
         assertEquals(sector.getName(), mappedBack.getName());
@@ -31,9 +33,11 @@ public class SectorMapperTest {
 
     @Test
     void testSectorListMapping() {
+        Hall hall1= new Hall();
+        Hall hall2 = new Hall();
         List<Sector> sectors = List.of(
-            new Sector(1L, "A", SectorType.SEATED, "B"),
-            new Sector(1L, "B", SectorType.SEATED, "C")
+            new Sector(hall1, "A", SectorType.SEATED, "B"),
+            new Sector(hall2, "B", SectorType.SEATED, "C")
         );
         List<SectorDto> dtos = sectorMapper.sectorListToSectorDtoList(sectors);
         assertEquals(2, dtos.size());

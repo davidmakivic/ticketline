@@ -1,7 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 
 import java.util.List;
 
@@ -48,7 +47,7 @@ public interface SectorService {
      * @param sector the sector to update the previous sector
      * @return the updated sector
      */
-    SectorDto update(Long id, Sector sector);
+    SectorDto update(Long id, SectorDto sector);
 
 
 

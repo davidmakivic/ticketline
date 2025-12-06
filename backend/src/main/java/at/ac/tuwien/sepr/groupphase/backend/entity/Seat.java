@@ -2,9 +2,12 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -22,16 +25,17 @@ public class Seat {
     @Column(name = "seat_number", nullable = false)
     private int seatNumber;
 
-    @Column(name = "sector_id", nullable = false)
-    private Long sectorId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "sector_id", nullable = false)
+    private Sector sector;
 
     public Seat() {
     }
 
-    public Seat(int rowNumber, int seatNumber, Long sectorId) {
+    public Seat(int rowNumber, int seatNumber, Sector sector) {
         this.rowNumber = rowNumber;
         this.seatNumber = seatNumber;
-        this.sectorId = sectorId;
+        this.sector = sector;
     }
 
     public Long getId() {
@@ -58,11 +62,11 @@ public class Seat {
         this.seatNumber = seatNumber;
     }
 
-    public Long getSectorId() {
-        return sectorId;
+    public Sector getSector() {
+        return sector;
     }
 
-    public void setSectorId(Long sectorId) {
-        this.sectorId = sectorId;
+    public void setSector(Sector sector) {
+        this.sector = sector;
     }
 }

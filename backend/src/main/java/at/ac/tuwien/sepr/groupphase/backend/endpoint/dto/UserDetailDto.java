@@ -6,7 +6,7 @@ import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
 import java.time.LocalDateTime;
 
 public class UserDetailDto {
-    private Integer userId;
+    private Long userId;
     private String email;
     private String firstName;
     private String lastName;
@@ -19,7 +19,7 @@ public class UserDetailDto {
     private UserStatus userStatus;
     private Integer failedLoginAttempts;
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -67,7 +67,7 @@ public class UserDetailDto {
         return failedLoginAttempts;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 

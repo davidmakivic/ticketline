@@ -1,12 +1,21 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.HallDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
+import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 
+import at.ac.tuwien.sepr.groupphase.backend.type.SectorType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +46,15 @@ public class SeatEndpointTest implements TestData {
     private SeatRepository seatRepository;
 
     @Autowired
+    private SectorRepository sectorRepository;
+
+    @Autowired
+    private HallRepository hallRepository;
+
+    @Autowired
+    private VenueRepository venueRepository;
+
+    @Autowired
     private JwtTokenizer jwtTokenizer;
 
     @Autowired
@@ -44,10 +62,35 @@ public class SeatEndpointTest implements TestData {
 
     private SeatDto seatDto;
 
+    private Hall hall;
+
+    private Venue venue;
+
+    private Sector sector;
+
     @BeforeEach
     void setup() {
+        sectorRepository.deleteAll();
+        hallRepository.deleteAll();
+        venueRepository.deleteAll();
+        sectorRepository.deleteAll();
+
+        venue = new Venue();
+        venue.setName("Venue");
+        venueRepository.save(venue);
+
+        hall = new Hall();
+        hall.setName("Hall");
+        hall.setVenue(venue);
+        hallRepository.save(hall);
+
+        sector = new Sector();
+        sector.setType(SectorType.VIP);
+        sector.setHall(hall);
+        sectorRepository.save(sector);
+
         seatRepository.deleteAll();
-        seatDto = new SeatDto(1, 1, 1L);
+        seatDto = new SeatDto(1, 1, sector.getId());
     }
 
     @Test
@@ -65,8 +108,8 @@ public class SeatEndpointTest implements TestData {
 
     @Test
     void testGetAllSeats() throws Exception {
-        seatRepository.save(new Seat(1, 1, 1L));
-        seatRepository.save(new Seat(2, 2, 1L));
+        seatRepository.save(new Seat(1, 1, sector));
+        seatRepository.save(new Seat(2, 2, sector));
 
         mockMvc.perform(get("/api/seats"))
             .andExpect(status().isOk())

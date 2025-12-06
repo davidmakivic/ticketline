@@ -30,6 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class OrderEndpointTest {
 
+    private static final String BASE_PATH = "/api/orders";
+    private static final String USER_PATH = "/api/orders/user/";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -70,8 +73,8 @@ public class OrderEndpointTest {
     }
 
     @Test
-    void testGetAllOrders_emptyList() throws Exception {
-        mockMvc.perform(get("/api/orders")
+    void getAllOrders_whenNoOrdersExist_returnsEmptyList() throws Exception {
+        mockMvc.perform(get(BASE_PATH)
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
@@ -79,21 +82,21 @@ public class OrderEndpointTest {
     }
 
     @Test
-    void testGetOrder_notFound() throws Exception {
-        mockMvc.perform(get("/api/orders/999")
+    void getOrder_whenOrderDoesNotExist_returnsNotFound() throws Exception {
+        mockMvc.perform(get(BASE_PATH + "/999")
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNotFound());
     }
 
     @Test
-    void testGetOrdersByUser_success() throws Exception {
+    void getOrdersByUser_whenUserHasOrders_returnsOrderList() throws Exception {
         ApplicationUser u = userRepository.findAll().get(0);
 
         Order o = new Order(u, 1500);
         orderRepository.save(o);
 
-        mockMvc.perform(get("/api/orders/user/" + u.getUserId())
+        mockMvc.perform(get(USER_PATH + u.getUserId())
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
