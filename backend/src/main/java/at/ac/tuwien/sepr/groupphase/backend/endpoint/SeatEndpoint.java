@@ -22,11 +22,9 @@ import java.util.List;
 @RequestMapping("/api/seats")
 public class SeatEndpoint {
     private final SeatService seatService;
-    private final SeatMapper seatMapper;
 
-    public SeatEndpoint(SeatService seatService, SeatMapper seatMapper) {
+    public SeatEndpoint(SeatService seatService) {
         this.seatService = seatService;
-        this.seatMapper = seatMapper;
     }
 
     // USER: get seat by id
@@ -54,15 +52,13 @@ public class SeatEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public SeatDto create(@RequestBody SeatDto dto) {
-        //var saved = seatService.create(seatMapper.seatDtoToSeat(dto));
-        return seatService.create(seatMapper.seatDtoToSeat(dto));
+        return seatService.create(dto);
     }
 
     // ADMIN: update seat
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public SeatDto update(@PathVariable Long id, @RequestBody SeatDto dto) {
-        //var updated = seatService.update(id, seatMapper.seatDtoToSeat(dto));
         return seatService.update(id, dto);
     }
 
