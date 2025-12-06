@@ -59,7 +59,7 @@ public class UserEndpointTest {
     @Transactional
     @Test
     void testCreateUser_shouldReturnCreatedUser() throws Exception {
-        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "1222", "city", "street 12");
+        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street 12", Roles.USER);
         mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto)))
@@ -81,14 +81,16 @@ public class UserEndpointTest {
     @Test
     @Transactional
     void testCreateUser_shouldStoreCreatedUser() throws Exception {
-        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "1222", "city", "street 12");
+        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street 12", Roles.USER);
 
         MvcResult result = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto)))
             .andReturn();
 
-        String json = result.getResponse().getContentAsString();
+        String json = result.getResponse()
+            .getContentAsString();
+
         UserDetailDto response = objectMapper.readValue(json, UserDetailDto.class);
 
         Long id = response.getUserId();

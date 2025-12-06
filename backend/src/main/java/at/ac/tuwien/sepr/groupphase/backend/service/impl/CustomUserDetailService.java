@@ -76,12 +76,12 @@ public class CustomUserDetailService implements UserService {
             .withPassword(passwordEncoder.encode(dto.getPassword()))
             .withFirstName(dto.getFirstName())
             .withLastName(dto.getLastName())
+            .withCountry(dto.getCountry())
             .withZipCode(dto.getZipCode())
             .withCity(dto.getCity())
             .withAddress(dto.getAddress())
             .withRole(Roles.USER)
             .withRewardPoints(0)
-            .withCreatedAt(LocalDateTime.now())
             .withUserStatus(UserStatus.UNVERIFIED)
             .withFailedLoginAttempts(0)
             .build();

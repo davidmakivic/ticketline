@@ -56,6 +56,7 @@ public class OrderEndpointTest {
             .withPassword("hashed")
             .withFirstName("Test")
             .withLastName("User")
+            .withCountry("Austria")
             .withZipCode("1234")
             .withCity("Vienna")
             .withAddress("Street 1")

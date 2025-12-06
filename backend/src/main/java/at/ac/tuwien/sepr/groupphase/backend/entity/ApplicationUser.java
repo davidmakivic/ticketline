@@ -47,6 +47,10 @@ public class ApplicationUser {
 
     @Column(nullable = false)
     @Size(max = 255)
+    private String country;
+
+    @Column(nullable = false)
+    @Size(max = 255)
     private String city;
 
     @Column(nullable = false)
@@ -83,6 +87,7 @@ public class ApplicationUser {
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.country = country;
         this.zipCode = zipCode;
         this.city = city;
         this.address = address;
@@ -111,6 +116,10 @@ public class ApplicationUser {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getCountry() {
+        return country;
     }
 
     public String getZipCode() {
@@ -165,6 +174,10 @@ public class ApplicationUser {
         this.lastName = lastName;
     }
 
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
@@ -199,6 +212,7 @@ public class ApplicationUser {
         private String passwordHash;
         private String firstName;
         private String lastName;
+        private String country;
         private String zipCode;
         private String city;
         private String address;
@@ -236,6 +250,11 @@ public class ApplicationUser {
 
         public ApplicationUser.ApplicationUserBuilder withLastName(String lastName) {
             this.lastName = lastName;
+            return this;
+        }
+
+        public ApplicationUser.ApplicationUserBuilder withCountry(String country) {
+            this.country = country;
             return this;
         }
 
@@ -282,6 +301,7 @@ public class ApplicationUser {
             applicationUser.setPasswordHash(passwordHash);
             applicationUser.setFirstName(firstName);
             applicationUser.setLastName(lastName);
+            applicationUser.setCountry(country);
             applicationUser.setZipCode(zipCode);
             applicationUser.setCity(city);
             applicationUser.setAddress(address);

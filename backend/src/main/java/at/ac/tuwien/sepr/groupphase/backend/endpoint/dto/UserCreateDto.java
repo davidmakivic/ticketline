@@ -1,18 +1,22 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
+import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
+
 public class UserCreateDto {
     String email;
     String password;
     String firstName;
     String lastName;
+    String country;
     String zipCode;
     String city;
     String address;
+    Roles role;
 
     public UserCreateDto() {
     }
 
-    public UserCreateDto(String email, String password, String firstName, String lastName, String zipCode, String city, String address) {
+    public UserCreateDto(String email, String password, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
@@ -20,6 +24,8 @@ public class UserCreateDto {
         this.zipCode = zipCode;
         this.city = city;
         this.address = address;
+        this.country = country;
+        this.role = role;
     }
 
     public String getEmail() {
@@ -28,6 +34,10 @@ public class UserCreateDto {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getCountry() {
+        return "";
     }
 
     public String getFirstName() {
@@ -48,6 +58,10 @@ public class UserCreateDto {
 
     public String getAddress() {
         return address;
+    }
+
+    public Roles getRole() {
+        return role;
     }
 
     public void setEmail(String email) {
@@ -76,6 +90,10 @@ public class UserCreateDto {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public void setRole(Roles role) {
+        this.role = role;
     }
 
     @Override

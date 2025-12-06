@@ -50,6 +50,7 @@ public class OrderServiceTest {
         user.setAddress("Teststraße 1");
         user.setCity("Wien");
         user.setZipCode("1010");
+        user.setCountry("Austria");
         user.setRewardPoints(0);
         user.setFailedLoginAttempts(0);
 
