@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.UserMapper;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.service.UserService;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
@@ -34,8 +36,9 @@ public class UserEndpoint {
     @PermitAll
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDetailDto createUser(@RequestBody UserCreateDto dto) {
+    public UserDetailDto createUser(@RequestBody UserCreateDto dto) throws ValidationException, ConflictException {
         LOGGER.info("POST /users/create {}", dto);
+
         return userMapper.applicationUserToUserDetailDto(userService.createApplicationUser(dto));
     }
 
