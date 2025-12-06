@@ -26,5 +26,5 @@ public interface OrderService {
      * @param userId the ID of the user whose orders should be retrieved
      * @return a list of orders belonging to the given user
      */
-    List<OrderDto> getOrdersByUser(Integer userId);
+    List<OrderDto> getOrdersByUser(Long userId);
 }

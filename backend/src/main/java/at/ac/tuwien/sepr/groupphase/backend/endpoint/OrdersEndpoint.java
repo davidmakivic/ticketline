@@ -37,7 +37,7 @@ public class OrdersEndpoint {
     /** Gibt alle Orders eines bestimmten Users. */
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/user/{userId}")
-    public List<OrderDto> getByUser(@PathVariable Integer userId) {
+    public List<OrderDto> getByUser(@PathVariable Long userId) {
         return orderService.getOrdersByUser(userId);
     }
 }
