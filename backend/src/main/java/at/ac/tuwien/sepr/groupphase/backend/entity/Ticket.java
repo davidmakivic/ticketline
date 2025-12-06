@@ -1,14 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tickets")
@@ -19,14 +12,17 @@ public class Ticket {
     @Column(name = "ticket_id")
     private Long id;
 
+    //@ManyToOne(fetch = FetchType.LAZY, optional = false)
     @Column(name = "performance_id", nullable = false)
     private Long performanceId;
 
-    @Column(name = "seat_id")
-    private Long seatId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_id")
+    private Seat seat;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     @Column(name = "price_final_cents")
     private Long priceFinalCents;
@@ -37,10 +33,10 @@ public class Ticket {
 
     public Ticket() {}
 
-    public Ticket(Long performanceId, Long seatId, Long orderId, Long priceFinalCents, TicketStatus status) {
+    public Ticket(Long performanceId, Seat seat, Order order, Long priceFinalCents, TicketStatus status) {
         this.performanceId = performanceId;
-        this.seatId = seatId;
-        this.orderId = orderId;
+        this.seat = seat;
+        this.order = order;
         this.priceFinalCents = priceFinalCents;
         this.status = status;
     }
@@ -61,20 +57,20 @@ public class Ticket {
         this.performanceId = performanceId;
     }
 
-    public Long getSeatId() {
-        return seatId;
+    public Seat getSeat() {
+        return seat;
     }
 
-    public void setSeatId(Long seatId) {
-        this.seatId = seatId;
+    public void setSeat(Seat seat) {
+        this.seat = seat;
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public Order getOrder() {
+        return order;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setOrder(Order order) {
+        this.order = order;
     }
 
     public Long getPriceFinalCents() {
