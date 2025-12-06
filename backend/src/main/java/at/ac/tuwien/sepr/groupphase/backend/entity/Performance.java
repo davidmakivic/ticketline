@@ -2,10 +2,14 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 
 import java.util.Date;
 
@@ -15,13 +19,15 @@ public class Performance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "performance_id")
-    private Long performanceId;
+    private Long id;
 
-    @Column(name = "event_id")
-    private Long eventId;
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
+    @JoinColumn(name = "event_id", nullable = false)
+    private Event event;
 
-    @Column(name = "hall_id")
-    private Long hallId;
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
+    @JoinColumn(name = "hall_id")
+    private Hall hall;
 
     @Column(name = "start_time")
     private Date startTime;
@@ -35,28 +41,28 @@ public class Performance {
     public Performance() {
     }
 
-    public Long getPerformanceId() {
-        return performanceId;
+    public Long getId() {
+        return id;
     }
 
-    public void setPerformanceId(Long performanceId) {
-        this.performanceId = performanceId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Long getEventId() {
-        return eventId;
+    public Event getEvent() {
+        return event;
     }
 
-    public void setEventId(Long eventId) {
-        this.eventId = eventId;
+    public void setEvent(Event event) {
+        this.event = event;
     }
 
-    public Long getHallId() {
-        return hallId;
+    public Hall getHall() {
+        return hall;
     }
 
-    public void setHallId(Long hallId) {
-        this.hallId = hallId;
+    public void setHall(Hall hall) {
+        this.hall = hall;
     }
 
     public Date getStartTime() {

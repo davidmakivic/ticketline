@@ -6,8 +6,8 @@ public class PerformanceDto {
     private Long performanceId;
     private Long eventId;
     private Long hallId;
-    private Date starttime;
-    private Date endtime;
+    private Date startTime;
+    private Date endTime;
     private Integer basePriceCents;
 
     public PerformanceDto() {
@@ -37,27 +37,27 @@ public class PerformanceDto {
         this.hallId = hallId;
     }
 
-    public Date getStarttime() {
-        return starttime;
+    public Date getStartTime() {
+        return startTime;
     }
 
-    public void setStarttime(Date starttime) {
-        this.starttime = starttime;
+    public void setStartTime(Date starttime) {
+        this.startTime = starttime;
     }
 
-    public Date getEndtime() {
-        return endtime;
+    public Date getEndTime() {
+        return endTime;
     }
 
-    public void setEndtime(Date endtime) {
-        this.endtime = endtime;
+    public void setEndTime(Date endtime) {
+        this.endTime = endtime;
     }
 
-    public Integer getbasePriceCents() {
+    public Integer getBasePriceCents() {
         return basePriceCents;
     }
 
-    public void setbasePriceCents(Integer basePriceCents) {
+    public void setBasePriceCents(Integer basePriceCents) {
         this.basePriceCents = basePriceCents;
     }
 }

@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.TicketMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
@@ -19,20 +20,20 @@ public class TicketServiceImpl implements TicketService {
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
 
-    //private final PerformanceRepository performanceRepository;
+    private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
     private final OrderRepository orderRepository;
 
     public TicketServiceImpl(
         TicketRepository ticketRepository,
         TicketMapper ticketMapper,
-        //PerformanceRepository performanceRepository,
+        PerformanceRepository performanceRepository,
         SeatRepository seatRepository,
         OrderRepository orderRepository
     ) {
         this.ticketRepository = ticketRepository;
         this.ticketMapper = ticketMapper;
-        //this.performanceRepository = performanceRepository;
+        this.performanceRepository = performanceRepository;
         this.seatRepository = seatRepository;
         this.orderRepository = orderRepository;
     }
@@ -41,11 +42,11 @@ public class TicketServiceImpl implements TicketService {
     public TicketDto create(TicketDto ticketDto) {
         Ticket ticket = ticketMapper.ticketDtoToTicket(ticketDto);
 
-        /*
+
         ticket.setPerformance(
             performanceRepository.getReferenceById(ticketDto.getPerformanceId())
         );
-         */
+
 
         if (ticketDto.getSeatId() != null) {
             ticket.setSeat(
