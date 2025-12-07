@@ -86,7 +86,7 @@ public class PerformanceDataGenerator {
 
             p.setStartTime(start);
             p.setEndTime(end);
-            p.setBasePriceCents(2500 + i * 500);
+            p.setBasePriceCents(2500L + i * 500);
 
             LOGGER.debug("Saving performance {}", p);
             performanceRepository.save(p);

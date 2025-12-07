@@ -14,6 +14,7 @@ import java.util.List;
 
 @Service
 public class PerformanceServiceImpl implements PerformanceService {
+
     private final PerformanceRepository performanceRepository;
     private final PerformanceMapper performanceMapper;
     private final EventRepository eventRepository;

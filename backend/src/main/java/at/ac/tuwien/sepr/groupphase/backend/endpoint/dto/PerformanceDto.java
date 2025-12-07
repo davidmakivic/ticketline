@@ -8,7 +8,7 @@ public class PerformanceDto {
     private Long hallId;
     private Date startTime;
     private Date endTime;
-    private Integer basePriceCents;
+    private Long basePriceCents;
 
     public PerformanceDto() {
     }
@@ -53,11 +53,11 @@ public class PerformanceDto {
         this.endTime = endtime;
     }
 
-    public Integer getBasePriceCents() {
+    public Long getBasePriceCents() {
         return basePriceCents;
     }
 
-    public void setBasePriceCents(Integer basePriceCents) {
+    public void setBasePriceCents(Long basePriceCents) {
         this.basePriceCents = basePriceCents;
     }
 }

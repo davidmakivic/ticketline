@@ -38,7 +38,7 @@ public class PerformanceMappingTest {
         performance.setHall(hall);
         performance.setStartTime(new Date(1733596800000L));
         performance.setEndTime(new Date(1733600400000L));
-        performance.setBasePriceCents(1500);
+        performance.setBasePriceCents(1500L);
         return performance;
     }
 
@@ -66,7 +66,7 @@ public class PerformanceMappingTest {
         dto.setHallId(20L);
         dto.setStartTime(new Date());
         dto.setEndTime(new Date());
-        dto.setBasePriceCents(2000);
+        dto.setBasePriceCents(2000L);
 
         Performance entity = performanceMapper.performanceDtoToPerformance(dto);
 

@@ -3,13 +3,13 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.TicketMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +19,6 @@ public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
-
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
     private final OrderRepository orderRepository;
@@ -39,34 +38,27 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDto create(TicketDto ticketDto) {
-        Ticket ticket = ticketMapper.ticketDtoToTicket(ticketDto);
+    public TicketDto create(TicketDto dto) {
+        Ticket ticket = ticketMapper.ticketDtoToTicket(dto);
 
+        ticket.setPerformance(performanceRepository.getReferenceById(dto.getPerformanceId()));
+        ticket.setOrder(orderRepository.getReferenceById(dto.getOrderId()));
 
-        ticket.setPerformance(
-            performanceRepository.getReferenceById(ticketDto.getPerformanceId())
-        );
-
-
-        if (ticketDto.getSeatId() != null) {
-            ticket.setSeat(
-                seatRepository.getReferenceById(ticketDto.getSeatId())
-            );
+        if (dto.getSeatId() != null) {
+            ticket.setSeat(seatRepository.getReferenceById(dto.getSeatId()));
+        } else {
+            ticket.setSeat(null);
         }
-
-        ticket.setOrder(
-            orderRepository.getReferenceById(ticketDto.getOrderId())
-        );
 
         Ticket saved = ticketRepository.save(ticket);
         return ticketMapper.ticketToTicketDto(saved);
     }
 
-
     @Override
     public TicketDto findById(Long id) {
         Ticket ticket = ticketRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Ticket with id " + id + " not found"));
+            .orElseThrow(() -> new NotFoundException("Ticket with id " + id + " not found"));
+
         return ticketMapper.ticketToTicketDto(ticket);
     }
 
@@ -76,29 +68,22 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDto update(Long id, TicketDto ticketDto) {
+    public TicketDto update(Long id, TicketDto dto) {
         Ticket ticket = ticketRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Ticket with id " + id + " not found"));
+            .orElseThrow(() -> new NotFoundException("Ticket " + id + " not found"));
 
-        /*
-        if (ticketDto.getPerformanceId() != null) {
-            ticket.setPerformance(
-                performanceRepository.getReferenceById(ticketDto.getPerformanceId()));
-        }
-        */
+        ticket.setPerformance(performanceRepository.getReferenceById(dto.getPerformanceId()));
 
-        if (ticketDto.getSeatId() != null) {
-            ticket.setSeat(seatRepository.getReferenceById(ticketDto.getSeatId()));
+        if (dto.getSeatId() != null) {
+            ticket.setSeat(seatRepository.getReferenceById(dto.getSeatId()));
         } else {
             ticket.setSeat(null);
         }
 
-        if (ticketDto.getOrderId() != null) {
-            ticket.setOrder(orderRepository.getReferenceById(ticketDto.getOrderId()));
-        }
+        ticket.setOrder(orderRepository.getReferenceById(dto.getOrderId()));
 
-        ticket.setPriceFinalCents(ticketDto.getPriceFinalCents());
-        ticket.setStatus(ticketDto.getStatus());
+        ticket.setPriceFinalCents(dto.getPriceFinalCents());
+        ticket.setStatus(dto.getStatus());
 
         Ticket saved = ticketRepository.save(ticket);
         return ticketMapper.ticketToTicketDto(saved);
@@ -107,7 +92,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketDto updateStatus(Long id, TicketStatus status) {
         Ticket ticket = ticketRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Ticket with id " + id + " not found"));
+            .orElseThrow(() -> new NotFoundException("Ticket with id " + id + " not found"));
 
         ticket.setStatus(status);
         Ticket saved = ticketRepository.save(ticket);
@@ -118,8 +103,9 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public void delete(Long id) {
         if (!ticketRepository.existsById(id)) {
-            throw new EntityNotFoundException("Ticket with id " + id + " not found");
+            throw new NotFoundException("Ticket with id " + id + " not found");
         }
+
         ticketRepository.deleteById(id);
     }
 }

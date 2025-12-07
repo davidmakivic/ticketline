@@ -31,8 +31,8 @@ public class Ticket {
     @JoinColumn(name = "seat_id")
     private Seat seat;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Column(name = "price_final_cents")
