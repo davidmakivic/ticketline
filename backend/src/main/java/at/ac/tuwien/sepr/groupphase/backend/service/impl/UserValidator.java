@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -130,12 +131,6 @@ public class UserValidator {
             }
         }
 
-        if (dto.getPassword() != null && dto.getPassword().isBlank()) {
-            errors.add("Password must not be empty");
-            if (dto.getPassword().length() < 8) {
-                errors.add("Password must be at least 8 characters long");
-            }
-        }
 
         if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
             errors.add("First name must not be empty");
@@ -222,5 +217,14 @@ public class UserValidator {
             throw new NotFoundException("User not found");
         }
 
+    }
+
+    public void validatePassword(String password) throws ValidationException {
+        if (password == null || password.isEmpty()) {
+            throw new ValidationException("Validation for password failed", Collections.singletonList("Password must not be empty"));
+        }
+        if (password.length() < 8) {
+            throw new ValidationException("Validation for password failed", Collections.singletonList("Password must be at least 8 characters"));
+        }
     }
 }

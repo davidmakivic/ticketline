@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserSearchDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
@@ -15,6 +16,8 @@ import jakarta.mail.MessagingException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.List;
 
 public interface UserService extends UserDetailsService {
 
@@ -74,7 +77,7 @@ public interface UserService extends UserDetailsService {
      * @throws GoneException     if the given token in {@link PasswortChangeDto} is expired
      * @throws NotFoundException if the token does not exist in the persistent data store
      */
-    void changePassword(PasswortChangeDto dto) throws GoneException, NotFoundException;
+    void changePassword(PasswortChangeDto dto) throws GoneException, NotFoundException, ValidationException;
 
 
     /**
@@ -93,4 +96,28 @@ public interface UserService extends UserDetailsService {
      * @param id of the user to delete
      */
     void delete(Long id) throws ForbiddenException;
+
+    /**
+     * Returns all user depending on the searched data.
+     * if status = null, all user are returned
+     *
+     * @param dto dto containing the searched for parameters
+     * @return a list of users with parameters defined in {@code dto}
+     */
+    List<UserDetailDto> searchUser(UserSearchDto dto) throws ValidationException;
+
+    /**
+     * Blocks the user with id {@code id}.
+     *
+     * @param id id of the user to block
+     */
+    void blockUser(Long id) throws ForbiddenException;
+
+
+    /**
+     * Unblocks the user with id {@code id}.
+     *
+     * @param id id of the user to unblock
+     */
+    void unblockUser(Long id);
 }

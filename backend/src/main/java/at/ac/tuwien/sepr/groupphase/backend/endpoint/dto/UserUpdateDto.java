@@ -5,7 +5,6 @@ import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 public class UserUpdateDto {
     Long userId;
     String email;
-    String password;
     String firstName;
     String lastName;
     String country;
@@ -18,10 +17,9 @@ public class UserUpdateDto {
     }
 
 
-    public UserUpdateDto(Long userId, String email, String password, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
+    public UserUpdateDto(Long userId, String email, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
         this.userId = userId;
         this.email = email;
-        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.zipCode = zipCode;
@@ -39,9 +37,6 @@ public class UserUpdateDto {
         return email;
     }
 
-    public String getPassword() {
-        return password;
-    }
 
     public String getCountry() {
         return "";
@@ -79,10 +74,6 @@ public class UserUpdateDto {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -113,7 +104,6 @@ public class UserUpdateDto {
         return "UserCreateDto{"
             + "userId=" + userId + '\''
             + "email='" + email + '\''
-            + ", password='" + password + '\''
             + ", firstName='" + firstName + '\''
             + ", lastName='" + lastName + '\''
             + ", zipCode='" + zipCode + '\''

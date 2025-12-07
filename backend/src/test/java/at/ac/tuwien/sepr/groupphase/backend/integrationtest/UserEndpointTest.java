@@ -107,7 +107,6 @@ public class UserEndpointTest {
         UserUpdateDto updateDto = new UserUpdateDto(
             user.getUserId(),
             "updated@email.com",
-            "newPassword1",
             "UpdatedFirst",
             "UpdatedLast",
             "Austria",

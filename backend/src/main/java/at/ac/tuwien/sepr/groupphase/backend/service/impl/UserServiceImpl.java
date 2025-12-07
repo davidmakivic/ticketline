@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserSearchDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.UserMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
@@ -27,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,6 +37,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +55,8 @@ public class UserServiceImpl implements UserService {
 
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordTokenRepository passwordTokenRepository, PasswordEncoder passwordEncoder, JwtTokenizer jwtTokenizer, UserValidator userValidator, EmailServiceImpl emailServiceImpl,
+    public UserServiceImpl(UserRepository userRepository, PasswordTokenRepository passwordTokenRepository, PasswordEncoder passwordEncoder, JwtTokenizer jwtTokenizer, UserValidator userValidator,
+                           EmailServiceImpl emailServiceImpl,
                            UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordTokenRepository = passwordTokenRepository;
@@ -157,7 +161,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(PasswortChangeDto dto) throws GoneException, NotFoundException {
+    public void changePassword(PasswortChangeDto dto) throws ValidationException, GoneException, NotFoundException {
+        //If user is logged in
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        userValidator.validatePassword(dto.password());
+        if (email != null) {
+            //Logged in user can change their own password
+            ApplicationUser user = userRepository.findUserByEmail(email);
+            user.setPasswordHash(passwordEncoder.encode(dto.password()));
+            userRepository.save(user);
+            return;
+        }
         PasswordResetToken token = passwordTokenRepository.findByToken(dto.token());
         if (token == null) {
             throw new NotFoundException("Token not found");
@@ -174,21 +188,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailDto update(UserUpdateDto dto) throws ValidationException, ConflictException {
         userValidator.validateUserForUpdate(dto);
-        ApplicationUser applicationUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
-            .withId(dto.getUserId())
-            .withEmail(dto.getEmail())
-            .withPassword(passwordEncoder.encode(dto.getPassword()))
-            .withFirstName(dto.getFirstName())
-            .withLastName(dto.getLastName())
-            .withCountry(dto.getCountry())
-            .withZipCode(dto.getZipCode())
-            .withCity(dto.getCity())
-            .withAddress(dto.getAddress())
-            .withRole(dto.getRole())
-            .withRewardPoints(0)
-            .withUserStatus(UserStatus.UNVERIFIED)
-            .withFailedLoginAttempts(0)
-            .build();
+        ApplicationUser applicationUser = userRepository.findUserByUserId(dto.getUserId());
+        applicationUser.setFirstName(dto.getFirstName());
+        applicationUser.setLastName(dto.getLastName());
+        applicationUser.setEmail(dto.getEmail());
+        applicationUser.setCountry(dto.getCountry());
+        applicationUser.setZipCode(dto.getZipCode());
+        applicationUser.setCity(dto.getCity());
+        applicationUser.setAddress(dto.getAddress());
+        applicationUser.setRole(dto.getRole());
+
         return userMapper.applicationUserToUserDetailDto(userRepository.save(applicationUser));
     }
 
@@ -199,5 +208,53 @@ public class UserServiceImpl implements UserService {
             return;
         }
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<UserDetailDto> searchUser(UserSearchDto dto) throws ValidationException {
+        List<ApplicationUser> users;
+        if (dto == null) {
+            users = userRepository.findAll();
+            return userMapper.applicationUserListToUserDetailDtoList(users);
+        }
+
+        switch (dto.userStatus()) {
+
+            case LOCKED: {
+                users = userRepository.findAllByUserStatus(UserStatus.LOCKED);
+                break;
+            }
+
+            case UNLOCKED: {
+                users = userRepository.findAllByUserStatus(UserStatus.UNLOCKED);
+                break;
+            }
+
+            case UNVERIFIED: {
+                users = userRepository.findAllByUserStatus(UserStatus.UNVERIFIED);
+                break;
+            }
+
+            default:
+                throw new ValidationException("Validation for search failed", Collections.singletonList("Unknonw User Status"));
+        }
+        return userMapper.applicationUserListToUserDetailDtoList(users);
+    }
+
+    @Override
+    public void blockUser(Long id) throws ForbiddenException {
+        ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+        if (user.getRole() == Roles.ADMIN) {
+            throw new ForbiddenException("Can not block an admin");
+        }
+        user.setUserStatus(UserStatus.LOCKED);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void unblockUser(Long id) {
+        ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+        user.setUserStatus(UserStatus.UNLOCKED);
+        userRepository.save(user);
     }
 }

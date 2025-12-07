@@ -3,10 +3,12 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserSearchDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.service.UserService;
 import jakarta.annotation.security.PermitAll;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/users")
@@ -92,5 +96,26 @@ public class UserEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping
+    public List<UserDetailDto> searchUsers(@RequestBody UserSearchDto dto) throws ValidationException {
+        return userService.searchUser(dto);
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PutMapping("/{id}/block")
+    public ResponseEntity<Void> blockUser(@PathVariable Long id) throws NotFoundException, ForbiddenException {
+        userService.blockUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PutMapping("/{id}/unblock")
+    public ResponseEntity<Void> unblockUser(@PathVariable Long id) throws NotFoundException {
+        userService.unblockUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
