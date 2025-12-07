@@ -3,13 +3,13 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 public class PriceCategoryDto {
 
     private Long id;
+    private String name;
     private double price;
-    private String priceCategory;
 
-
-    public PriceCategoryDto(String priceCategory, double price) {
-        this.priceCategory = priceCategory;
+    public PriceCategoryDto(String name, double price) {
+        this.name = name;
         this.price = price;
+
     }
 
     public Long getId() {
@@ -28,12 +28,12 @@ public class PriceCategoryDto {
         this.price = price;
     }
 
-    public String getPriceCategory() {
-        return priceCategory;
+    public String getName() {
+        return name;
     }
 
-    public void setPriceCategory(String priceCategory) {
-        this.priceCategory = priceCategory;
+    public void setName(String name) {
+        this.name = name;
     }
 
 }
