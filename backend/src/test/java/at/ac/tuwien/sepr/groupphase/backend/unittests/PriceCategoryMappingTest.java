@@ -21,41 +21,31 @@ public class PriceCategoryMappingTest {
 
     @Test
     void testEntityToDtoAndBack() {
-        PriceCategory priceCategoryEntity = new PriceCategory();
-        priceCategoryEntity.setName("B");
-        priceCategoryEntity.setPrice(10.90);
+        PriceCategory entity = new PriceCategory("A", 10.90);
 
-        PriceCategoryDto dto = mapper.priceCategoryToPriceCategoryDto(priceCategoryEntity);
+        PriceCategoryDto dto = mapper.priceCategoryToPriceCategoryDto(entity);
 
         assertNull(dto.getId()); // entity has no id before saving
-        assertEquals(priceCategoryEntity.getPrice(), dto.getPrice());
-        assertEquals(priceCategoryEntity.getName(), dto.getName());
+        assertEquals(entity.getPrice(), dto.getPrice());
+        assertEquals(entity.getPriceCategory(), dto.getPriceCategory());
 
         PriceCategory mappedBack = mapper.priceCategoryDtoToPriceCategory(dto);
 
-        assertEquals(priceCategoryEntity.getPrice(), mappedBack.getPrice());
-        assertEquals(priceCategoryEntity.getName(), mappedBack.getName());
+        assertEquals(entity.getPrice(), mappedBack.getPrice());
+        assertEquals(entity.getPriceCategory(), mappedBack.getPriceCategory());
     }
 
     @Test
     void testListMapping() {
-
-        PriceCategory priceCategoryEntityA = new PriceCategory();
-        priceCategoryEntityA.setName("A");
-        priceCategoryEntityA.setPrice(10.90);
-
-        PriceCategory priceCategoryEntityB = new PriceCategory();
-        priceCategoryEntityB.setName("B");
-        priceCategoryEntityB.setPrice(15.50);
-
         List<PriceCategory> entities = List.of(
-            priceCategoryEntityA, priceCategoryEntityB
+            new PriceCategory("A", 10.90),
+            new PriceCategory("B", 15.50)
         );
 
         List<PriceCategoryDto> dtos = mapper.priceCategoryListToPriceCategoryDtoList(entities);
 
         assertEquals(2, dtos.size());
-        assertEquals("A", dtos.get(0).getName());
-        assertEquals("B", dtos.get(1).getName());
+        assertEquals("A", dtos.get(0).getPriceCategory());
+        assertEquals("B", dtos.get(1).getPriceCategory());
     }
 }

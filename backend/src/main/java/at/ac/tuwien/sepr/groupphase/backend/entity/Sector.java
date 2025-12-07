@@ -33,14 +33,13 @@ public class Sector {
     @Column(name = "type", nullable = false)
     private SectorType type;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "price_category_id", nullable = false)
-    private PriceCategory priceCategory;
+    @Column(name = "price_category")
+    private String priceCategory;
 
     public Sector() {
     }
 
-    public Sector(Hall hall, String name, SectorType type, PriceCategory priceCategory) {
+    public Sector(Hall hall, String name, SectorType type, String priceCategory) {
         this.hall = hall;
         this.name = name;
         this.type = type;
@@ -79,11 +78,11 @@ public class Sector {
         this.type = type;
     }
 
-    public PriceCategory getPriceCategory() {
+    public String getPriceCategory() {
         return priceCategory;
     }
 
-    public void setPriceCategory(PriceCategory priceCategory) {
+    public void setPriceCategory(String priceCategory) {
         this.priceCategory = priceCategory;
     }
 }

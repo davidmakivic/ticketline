@@ -1,15 +1,11 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.PriceCategoryMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
-import at.ac.tuwien.sepr.groupphase.backend.entity.PriceCategory;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
@@ -31,7 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 
 @SpringBootTest
@@ -63,16 +58,8 @@ public class SectorEndpointTest implements TestData {
 
     private Venue venue;
 
-    private PriceCategory priceCategory;
-    private PriceCategoryDto priceCategoryDto;
-
-    @Autowired
-    private PriceCategoryRepository priceCategoryRepository;
-
     @Autowired
     private VenueRepository venueRepository;
-    @Autowired
-    private PriceCategoryMapper priceCategoryMapper;
 
     @BeforeEach
     void setup() {
@@ -89,14 +76,7 @@ public class SectorEndpointTest implements TestData {
         hall.setVenue(venue);
         hallRepository.save(hall);
 
-        priceCategory = new PriceCategory();
-        priceCategory.setPrice(20);
-        priceCategory.setName("A");
-        priceCategoryDto = priceCategoryMapper.priceCategoryToPriceCategoryDto(
-            priceCategoryRepository.save(priceCategory));
-
-
-        sectorDto = new SectorDto( "A", SectorType.SEATED,  hall.getId(), priceCategory.getId());
+        sectorDto = new SectorDto( "A", SectorType.SEATED, "B", hall.getId());
     }
 
     @Test
@@ -133,26 +113,12 @@ public class SectorEndpointTest implements TestData {
         hall3.setVenue(venue);
         hallRepository.save(hall3);
 
-
-        PriceCategory priceCategory1 = new PriceCategory();
-        priceCategory1.setName("Price Category 1");
-        priceCategory1.setPrice(10);
-        priceCategoryRepository.save(priceCategory1);
-
-        PriceCategory priceCategory2 = new PriceCategory();
-        priceCategory2.setName("Price Category 2");
-        priceCategory2.setPrice(20);
-        priceCategoryRepository.save(priceCategory2);
-
-        PriceCategory priceCategory3 = new PriceCategory();
-        priceCategory3.setName("Price Category 3");
-        priceCategory3.setPrice(30);
-        priceCategoryRepository.save(priceCategory3);
-
-
-        sectorRepository.save(new Sector(hall1, "A", SectorType.SEATED, priceCategory1));
-        sectorRepository.save(new Sector(hall2, "B", SectorType.VIP, priceCategory2));
-        sectorRepository.save(new Sector(hall3, "C", SectorType.STANDING, priceCategory3));
+        hallRepository.save(hall1);
+        hallRepository.save(hall2);
+        hallRepository.save(hall3);
+        sectorRepository.save(new Sector(hall1, "A", SectorType.SEATED, "B"));
+        sectorRepository.save(new Sector(hall2, "B", SectorType.VIP, "C"));
+        sectorRepository.save(new Sector(hall3, "C", SectorType.STANDING, "A"));
 
         mockMvc.perform(get("/api/sectors"))
             .andExpect(status().isOk())

@@ -3,10 +3,9 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
-import at.ac.tuwien.sepr.groupphase.backend.entity.PriceCategory;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,13 +19,11 @@ public class SectorServiceImpl implements SectorService {
     private final SectorRepository sectorRepository;
     private final HallRepository hallRepository;
     private final SectorMapper sectorMapper;
-    private final PriceCategoryRepository priceCategoryRepository;
 
-    public SectorServiceImpl(SectorRepository sectorRepository, HallRepository hallRepository, SectorMapper sectorMapper, PriceCategoryRepository priceCategoryRepository) {
+    public SectorServiceImpl(SectorRepository sectorRepository, HallRepository hallRepository, SectorMapper sectorMapper) {
         this.sectorRepository = sectorRepository;
         this.hallRepository = hallRepository;
         this.sectorMapper = sectorMapper;
-        this.priceCategoryRepository = priceCategoryRepository;
     }
 
     @Override
@@ -54,16 +51,10 @@ public class SectorServiceImpl implements SectorService {
         }
 
         Hall hall = hallRepository.findById(sector.getHallId())
-            .orElseThrow(() ->
-                new EntityNotFoundException("Hall with id " + sector.getHallId() + " not found"));
-
-        PriceCategory priceCategory = priceCategoryRepository.findById(sector.getPriceCategoryId())
-            .orElseThrow(() ->
-                new EntityNotFoundException("PriceCategory with id " + sector.getPriceCategoryId() + " not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Hall with id " + sector.getHallId() + " not found"));
 
         Sector entity = sectorMapper.sectorDtoToSector(sector);
         entity.setHall(hall);
-        entity.setPriceCategory(priceCategory);
 
         Sector savedSector = sectorRepository.save(entity);
         return sectorMapper.sectorToSectorDto(savedSector);
@@ -82,11 +73,8 @@ public class SectorServiceImpl implements SectorService {
             existing.setType(sector.getType());
         }
 
-        if (sector.getPriceCategoryId() != null) {
-            PriceCategory priceCategory =  priceCategoryRepository.findById(sector.getPriceCategoryId())
-                .orElseThrow(() -> new EntityNotFoundException("PriceCategory with id: " + id + " not found"));
-
-            existing.setPriceCategory(priceCategory);
+        if (sector.getPriceCategory() != null) {
+            existing.setPriceCategory(sector.getPriceCategory());
         }
 
         if (sector.getHallId() != null) {
