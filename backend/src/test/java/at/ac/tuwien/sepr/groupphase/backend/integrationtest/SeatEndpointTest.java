@@ -4,14 +4,8 @@ import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.HallDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
-import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
+import at.ac.tuwien.sepr.groupphase.backend.entity.*;
+import at.ac.tuwien.sepr.groupphase.backend.repository.*;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 
@@ -55,6 +49,9 @@ public class SeatEndpointTest implements TestData {
     private VenueRepository venueRepository;
 
     @Autowired
+    private PriceCategoryRepository priceCategoryRepository;
+
+    @Autowired
     private JwtTokenizer jwtTokenizer;
 
     @Autowired
@@ -84,10 +81,17 @@ public class SeatEndpointTest implements TestData {
         hall.setVenue(venue);
         hallRepository.save(hall);
 
+        PriceCategory priceCategory = new PriceCategory();
+        priceCategory.setName("Standard");
+        priceCategory.setPrice(10);
+        priceCategory = priceCategoryRepository.save(priceCategory);
+
         sector = new Sector();
         sector.setType(SectorType.VIP);
         sector.setHall(hall);
-        sectorRepository.save(sector);
+        sector.setName("VIP-Sektor");
+        sector.setPriceCategory(priceCategory);
+        sector = sectorRepository.save(sector);
 
         seatRepository.deleteAll();
         seatDto = new SeatDto(1, 1, sector.getId());
