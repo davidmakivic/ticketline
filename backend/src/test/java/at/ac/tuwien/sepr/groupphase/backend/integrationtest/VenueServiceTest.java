@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.VenueService;
@@ -33,7 +35,7 @@ public class VenueServiceTest {
     @Transactional
     @Test
     void testCreateVenue() {
-        VenueDto v = new VenueDto();
+        VenueCreateDto v = new VenueCreateDto();
         v.setName("Test Venue");
         v.setStreet("Test Street");
         v.setCity("Test City");
@@ -48,7 +50,7 @@ public class VenueServiceTest {
     @Transactional
     @Test
     void testUpdateVenue() {
-        VenueDto v = new VenueDto();
+        VenueCreateDto v = new VenueCreateDto();
         v.setName("Test Venue");
         v.setStreet("Test Street");
         v.setCity("Test City");
@@ -58,7 +60,7 @@ public class VenueServiceTest {
         VenueDto saved = venueService.create(v);
         Long id = saved.getId();
 
-        VenueDto updated = new  VenueDto();
+        VenueUpdateDto updated = new VenueUpdateDto();
         updated.setName("Updated Venue");
         updated.setStreet("Updated Street");
         updated.setCity("Updated City");
@@ -74,7 +76,7 @@ public class VenueServiceTest {
     @Transactional
     @Test
     void testUpdateVenueNotFound() {
-        VenueDto v = new VenueDto();
+        VenueUpdateDto v = new VenueUpdateDto();
         v.setName("Whatever");
 
         assertThatThrownBy(() -> venueService.update(999L, v))
@@ -84,14 +86,14 @@ public class VenueServiceTest {
     @Transactional
     @Test
     void testFindAll() {
-        VenueDto v1 = new VenueDto();
+        VenueCreateDto v1 = new VenueCreateDto();
         v1.setName("Test Venue1");
         v1.setStreet("Test Street1");
         v1.setCity("Test City1");
         v1.setCountry("Test Country1");
         v1.setPostalCode("Test Postal Code1");
 
-        VenueDto v2 = new VenueDto();
+        VenueCreateDto v2 = new VenueCreateDto();
         v2.setName("Test Venue2");
         v2.setStreet("Test Street2");
         v2.setCity("Test City2");
@@ -109,7 +111,7 @@ public class VenueServiceTest {
     @Transactional
     @Test
     void testDeleteVenue() {
-        VenueDto v = new VenueDto();
+        VenueCreateDto v = new VenueCreateDto();
         v.setName("Test Venue");
         v.setStreet("Test Street");
         v.setCity("Test City");

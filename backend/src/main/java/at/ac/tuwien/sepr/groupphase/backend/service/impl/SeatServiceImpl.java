@@ -4,8 +4,11 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,10 +19,12 @@ public class SeatServiceImpl implements SeatService {
 
     private final SeatRepository seatRepository;
     private final SeatMapper seatMapper;
+    private final SectorRepository sectorRepository;
 
-    public SeatServiceImpl(SeatRepository seatRepository, SeatMapper seatMapper) {
+    public SeatServiceImpl(SeatRepository seatRepository, SeatMapper seatMapper, SectorRepository sectorRepository) {
         this.seatRepository = seatRepository;
         this.seatMapper = seatMapper;
+        this.sectorRepository = sectorRepository;
     }
 
     @Override
@@ -41,9 +46,17 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public SeatDto create(Seat seat) {
-        // ID wird von DB generiert
-        Seat savedSeat = seatRepository.save(seat);
+    public SeatDto create(SeatDto seat) {
+        if (seat.getSectorId() == null) {
+            throw new EntityNotFoundException("Sector with id " + seat.getSectorId() + " not found");
+        }
+        Sector sector = sectorRepository.findById(seat.getSectorId())
+            .orElseThrow(() -> new EntityNotFoundException("Sector with id " + seat.getSectorId() + " not found"));
+
+        Seat entity = seatMapper.seatDtoToSeat(seat);
+        entity.setSector(sector);
+
+        Seat savedSeat = seatRepository.save(entity);
         return seatMapper.seatToSeatDto(savedSeat);
     }
 
@@ -52,10 +65,13 @@ public class SeatServiceImpl implements SeatService {
         Seat existingSeat = seatRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Seat not found with id: " + id));
 
+        Sector sector = sectorRepository.findById(seat.getSectorId())
+            .orElseThrow(() -> new RuntimeException("Sector not found with id: " + seat.getSectorId()));
+
         // Felder updaten
         existingSeat.setRowNumber(seat.getRowNumber());
         existingSeat.setSeatNumber(seat.getSeatNumber());
-        existingSeat.setSectorId(seat.getSectorId());
+        existingSeat.setSector(sector);
 
         Seat savedSeat = seatRepository.save(existingSeat);
         return seatMapper.seatToSeatDto(savedSeat);

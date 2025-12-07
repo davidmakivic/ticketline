@@ -11,6 +11,7 @@ import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
@@ -84,7 +85,13 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public List<ArtistDto> findByName(String name) {
-        return artistMapper.artistToArtistDto(artistRepository.findByAnyName(name));
+        var artists = artistRepository.findByAnyName(name);
+        return getArtistListDtoStream(artists).toList();
+    }
+
+    private Stream<ArtistDto> getArtistListDtoStream(List<Artist> artists) {
+        return artists.stream()
+            .map(artistMapper::artistToArtistDto);
     }
 
     @Override

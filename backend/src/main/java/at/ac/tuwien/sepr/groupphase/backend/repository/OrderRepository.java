@@ -2,6 +2,8 @@ package at.ac.tuwien.sepr.groupphase.backend.repository;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -12,8 +14,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      *
      * @return a list of orders, newest first
      */
+    @Query("""
+        select distinct o
+        from Order o
+        left join fetch o.tickets
+        order by o.createdAt desc
+        """)
     List<Order> findAllByOrderByCreatedAtDesc();
-
 
     /**
      * Retrieves all orders belonging to a specific user, sorted by creation date in descending order.
@@ -21,7 +28,23 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @param userId the ID of the user whose orders should be retrieved
      * @return a list of orders for that user, newest first
      */
-    List<Order> findAllByUser_UserIdOrderByCreatedAtDesc(Long userId);
+    @Query("""
+        select distinct o
+        from Order o
+        left join fetch o.tickets
+        where o.user.userId = :userId
+        order by o.createdAt desc
+        """)
+    List<Order> findAllByUser_UserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
-
+    /**
+     * Needed for getOrder(id) to avoid LazyInitializationException when mapping tickets.
+     */
+    @Query("""
+        select o
+        from Order o
+        left join fetch o.tickets
+        where o.id = :id
+        """)
+    java.util.Optional<Order> findByIdWithTickets(@Param("id") Long id);
 }
