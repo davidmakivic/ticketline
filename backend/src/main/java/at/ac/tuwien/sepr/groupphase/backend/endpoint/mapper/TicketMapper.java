@@ -16,6 +16,7 @@ public interface TicketMapper {
     @Mapping(target = "orderId", source = "order.id")
     TicketDto ticketToTicketDto(Ticket ticket);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "performance", ignore = true)
     @Mapping(target = "seat", ignore = true)
     @Mapping(target = "order", ignore = true)

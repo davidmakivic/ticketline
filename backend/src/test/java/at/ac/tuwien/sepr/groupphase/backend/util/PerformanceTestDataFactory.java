@@ -10,7 +10,7 @@ public class PerformanceTestDataFactory {
         PerformanceDto dto = new PerformanceDto();
         dto.setEventId(eventId);
         dto.setHallId(hallId);
-        dto.setBasePriceCents(2500);
+        dto.setBasePriceCents(2500L);
         dto.setStartTime(new Date(System.currentTimeMillis()));
         dto.setEndTime(new Date(System.currentTimeMillis() + 90 * 60 * 1000)); // +90min
         return dto;

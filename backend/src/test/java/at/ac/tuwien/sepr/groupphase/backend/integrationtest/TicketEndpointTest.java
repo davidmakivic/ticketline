@@ -1,18 +1,13 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PerformanceDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
-import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
+import at.ac.tuwien.sepr.groupphase.backend.entity.*;
+import at.ac.tuwien.sepr.groupphase.backend.repository.*;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
-import at.ac.tuwien.sepr.groupphase.backend.util.PerformanceTestDataFactory;
+import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
+import at.ac.tuwien.sepr.groupphase.backend.util.TicketTestDataFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,10 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Transactional
 @AutoConfigureMockMvc
-public class PerformanceEndpointTest {
+public class TicketEndpointTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private TicketRepository ticketRepository;
 
     @Autowired
     private PerformanceRepository performanceRepository;
@@ -53,6 +51,14 @@ public class PerformanceEndpointTest {
     private VenueRepository venueRepository;
 
     @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private Order order;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -61,8 +67,7 @@ public class PerformanceEndpointTest {
     @Autowired
     private SecurityProperties securityProperties;
 
-    private Event event;
-    private Hall hall;
+    private Performance performance;
 
     private String toJson(Object o) throws JsonProcessingException {
         return objectMapper.writeValueAsString(o);
@@ -70,6 +75,7 @@ public class PerformanceEndpointTest {
 
     @BeforeEach
     public void beforeEach() {
+        ticketRepository.deleteAll();
         performanceRepository.deleteAll();
         eventRepository.deleteAll();
         hallRepository.deleteAll();
@@ -79,60 +85,78 @@ public class PerformanceEndpointTest {
         venue.setName("Test Venue");
         venue = venueRepository.save(venue);
 
-        hall = new Hall();
+        Hall hall = new Hall();
         hall.setName("Main Hall");
         hall.setVenue(venue);
         hall = hallRepository.save(hall);
 
-        event = new Event();
+        Event event = new Event();
         event.setTitle("Test Event");
         event.setDescription("Test description");
         event.setCategory(EventType.CONCERT);
         event.setDurationMinutes(90);
         event = eventRepository.save(event);
+
+        performance = new Performance();
+        performance.setEvent(event);
+        performance.setHall(hall);
+        performance.setBasePriceCents(2000L);
+        performance = performanceRepository.save(performance);
+
+        ApplicationUser user = userRepository.findAll().stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("No user found for TicketEndpointTest"));
+
+        order = new Order();
+        order.setUser(user);
+        order.setTotalPriceCents(0L);
+        order = orderRepository.save(order);
     }
 
     @Test
-    void testCreatePerformance() throws Exception {
-        PerformanceDto dto = PerformanceTestDataFactory.create(event.getId(), hall.getId());
+    void testCreateTicket() throws Exception {
+        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
 
-        mockMvc.perform(post("/api/v1/performances")
+
+        mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").exists())
-            .andExpect(jsonPath("$.eventId").value(event.getId()))
-            .andExpect(jsonPath("$.hallId").value(hall.getId()))
-            .andExpect(jsonPath("$.basePriceCents").value(dto.getBasePriceCents()));
+            .andExpect(jsonPath("$.performanceId").value(performance.getId()))
+            .andExpect(jsonPath("$.priceFinalCents").value(dto.getPriceFinalCents().intValue()));
     }
 
     @Test
-    void testGetAllPerformances() throws Exception {
-        Performance p1 = new Performance();
-        p1.setEvent(event);
-        p1.setHall(hall);
-        p1.setBasePriceCents(2000L);
-        performanceRepository.save(p1);
+    void testGetAllTickets() throws Exception {
+        Ticket t1 = new Ticket();
+        t1.setPerformance(performance);
+        t1.setOrder(order);
+        t1.setPriceFinalCents(2000L);
+        t1.setStatus(TicketStatus.AVAILABLE);
+        ticketRepository.save(t1);
 
-        Performance p2 = new Performance();
-        p2.setEvent(event);
-        p2.setHall(hall);
-        p2.setBasePriceCents(3000L);
-        performanceRepository.save(p2);
+        Ticket t2 = new Ticket();
+        t2.setPerformance(performance);
+        t2.setOrder(order);
+        t2.setPriceFinalCents(3000L);
+        t2.setStatus(TicketStatus.AVAILABLE);
+        ticketRepository.save(t2);
 
-        mockMvc.perform(get("/api/v1/performances"))
+        mockMvc.perform(get("/api/v1/tickets"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.length()").value(2));
     }
 
-    @Test
-    void testGetPerformanceById() throws Exception {
-        PerformanceDto dto = PerformanceTestDataFactory.create(event.getId(), hall.getId());
 
-        String response = mockMvc.perform(post("/api/v1/performances")
+    @Test
+    void testGetTicketById() throws Exception {
+        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
+
+        String response = mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -140,26 +164,26 @@ public class PerformanceEndpointTest {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        PerformanceDto created = objectMapper.readValue(response, PerformanceDto.class);
+        TicketDto created = objectMapper.readValue(response, TicketDto.class);
 
-        mockMvc.perform(get("/api/v1/performances/" + created.getId()))
+        mockMvc.perform(get("/api/v1/tickets/" + created.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(created.getId()))
-            .andExpect(jsonPath("$.eventId").value(event.getId()))
-            .andExpect(jsonPath("$.hallId").value(hall.getId()));
+            .andExpect(jsonPath("$.performanceId").value(performance.getId()))
+            .andExpect(jsonPath("$.priceFinalCents").value(dto.getPriceFinalCents().intValue()));
     }
 
     @Test
-    void testGetPerformanceById_notFound() throws Exception {
-        mockMvc.perform(get("/api/v1/performances/999999"))
+    void testGetTicketById_notFound() throws Exception {
+        mockMvc.perform(get("/api/v1/tickets/999999"))
             .andExpect(status().isNotFound());
     }
 
     @Test
-    void testUpdatePerformance() throws Exception {
-        PerformanceDto dto = PerformanceTestDataFactory.create(event.getId(), hall.getId());
+    void testUpdateTicket() throws Exception {
+        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
 
-        String response = mockMvc.perform(post("/api/v1/performances")
+        String response = mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -167,26 +191,26 @@ public class PerformanceEndpointTest {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        PerformanceDto created = objectMapper.readValue(response, PerformanceDto.class);
+        TicketDto created = objectMapper.readValue(response, TicketDto.class);
 
-        created.setBasePriceCents(9999L);
+        created.setPriceFinalCents(9999L);
 
-        mockMvc.perform(put("/api/v1/performances/" + created.getId())
+        mockMvc.perform(put("/api/v1/tickets/" + created.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(created))
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(created.getId()))
-            .andExpect(jsonPath("$.basePriceCents").value(9999));
+            .andExpect(jsonPath("$.priceFinalCents").value(9999));
     }
 
     @Test
-    void testUpdatePerformance_notFound() throws Exception {
-        PerformanceDto dto = PerformanceTestDataFactory.create(event.getId(), hall.getId());
-        dto.setBasePriceCents(1234L);
+    void testUpdateTicket_notFound() throws Exception {
+        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
 
-        mockMvc.perform(put("/api/v1/performances/999999")
+
+        mockMvc.perform(put("/api/v1/tickets/999999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -195,10 +219,10 @@ public class PerformanceEndpointTest {
     }
 
     @Test
-    void testDeletePerformance() throws Exception {
-        PerformanceDto dto = PerformanceTestDataFactory.create(event.getId(), hall.getId());
+    void testDeleteTicket() throws Exception {
+        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
 
-        String response = mockMvc.perform(post("/api/v1/performances")
+        String response = mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -206,20 +230,20 @@ public class PerformanceEndpointTest {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        PerformanceDto created = objectMapper.readValue(response, PerformanceDto.class);
+        TicketDto created = objectMapper.readValue(response, TicketDto.class);
 
-        mockMvc.perform(delete("/api/v1/performances/" + created.getId())
+        mockMvc.perform(delete("/api/v1/tickets/" + created.getId())
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/performances/" + created.getId()))
+        mockMvc.perform(get("/api/v1/tickets/" + created.getId()))
             .andExpect(status().isNotFound());
     }
 
     @Test
-    void testDeletePerformance_notFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/performances/999999")
+    void testDeleteTicket_notFound() throws Exception {
+        mockMvc.perform(delete("/api/v1/tickets/999999")
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNotFound());

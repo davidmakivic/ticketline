@@ -72,7 +72,7 @@ public class PerformanceServiceTest {
         event = eventRepository.save(event);
     }
 
-    private PerformanceDto buildDto(Long eventId, Long hallId, int basePriceCents) {
+    private PerformanceDto buildDto(Long eventId, Long hallId, Long basePriceCents) {
         PerformanceDto dto = new PerformanceDto();
         dto.setEventId(eventId);
         dto.setHallId(hallId);
@@ -85,7 +85,7 @@ public class PerformanceServiceTest {
     @Transactional
     @Test
     void testCreatePerformance() {
-        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2000);
+        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2000L);
 
         PerformanceDto saved = performanceService.create(dto);
 
@@ -100,7 +100,7 @@ public class PerformanceServiceTest {
     @Transactional
     @Test
     void testUpdatePerformance() {
-        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2500);
+        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2500L);
         PerformanceDto created = performanceService.create(dto);
         Long id = created.getId();
 
@@ -121,7 +121,7 @@ public class PerformanceServiceTest {
         updateDto.setHallId(newHall.getId());
         updateDto.setStartTime(new Date());
         updateDto.setEndTime(new Date(System.currentTimeMillis() + 2 * 60 * 60 * 1000));
-        updateDto.setBasePriceCents(3000);
+        updateDto.setBasePriceCents(3000L);
 
         PerformanceDto updated = performanceService.update(id, updateDto);
 
@@ -134,7 +134,7 @@ public class PerformanceServiceTest {
     @Transactional
     @Test
     void testUpdatePerformanceNotFound() {
-        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2000);
+        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2000L);
 
         assertThatThrownBy(() -> performanceService.update(999999L, dto))
             .isInstanceOf(NotFoundException.class);
@@ -143,8 +143,8 @@ public class PerformanceServiceTest {
     @Transactional
     @Test
     void testFindAllPerformances() {
-        PerformanceDto dto1 = buildDto(event.getId(), hall.getId(), 1500);
-        PerformanceDto dto2 = buildDto(event.getId(), hall.getId(), 2500);
+        PerformanceDto dto1 = buildDto(event.getId(), hall.getId(), 1500L);
+        PerformanceDto dto2 = buildDto(event.getId(), hall.getId(), 2500L);
 
         performanceService.create(dto1);
         performanceService.create(dto2);
@@ -164,7 +164,7 @@ public class PerformanceServiceTest {
     @Transactional
     @Test
     void testDeletePerformance() {
-        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2200);
+        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2200L);
         PerformanceDto saved = performanceService.create(dto);
         Long id = saved.getId();
 
