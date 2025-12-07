@@ -2,10 +2,14 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserUpdateDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.UserMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.entity.PasswordResetToken;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
@@ -44,16 +48,19 @@ public class UserServiceImpl implements UserService {
     private final JwtTokenizer jwtTokenizer;
     private final UserValidator userValidator;
     private final EmailServiceImpl emailServiceImpl;
+    private final UserMapper userMapper;
 
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordTokenRepository passwordTokenRepository, PasswordEncoder passwordEncoder, JwtTokenizer jwtTokenizer, UserValidator userValidator, EmailServiceImpl emailServiceImpl) {
+    public UserServiceImpl(UserRepository userRepository, PasswordTokenRepository passwordTokenRepository, PasswordEncoder passwordEncoder, JwtTokenizer jwtTokenizer, UserValidator userValidator, EmailServiceImpl emailServiceImpl,
+                           UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordTokenRepository = passwordTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenizer = jwtTokenizer;
         this.userValidator = userValidator;
         this.emailServiceImpl = emailServiceImpl;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -86,7 +93,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApplicationUser createApplicationUser(UserCreateDto dto) throws ValidationException, ConflictException {
+    public UserDetailDto createApplicationUser(UserCreateDto dto) throws ValidationException, ConflictException {
 
         userValidator.validateUserForCreate(dto);
         ApplicationUser newUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
@@ -104,7 +111,7 @@ public class UserServiceImpl implements UserService {
             .withFailedLoginAttempts(0)
             .build();
 
-        return userRepository.save(newUser);
+        return userMapper.applicationUserToUserDetailDto(userRepository.save(newUser));
     }
 
     @Override
@@ -162,5 +169,35 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHash(passwordEncoder.encode(dto.password()));
         userRepository.save(user);
         passwordTokenRepository.removeByUser(user);
+    }
+
+    @Override
+    public UserDetailDto update(UserUpdateDto dto) throws ValidationException, ConflictException {
+        userValidator.validateUserForUpdate(dto);
+        ApplicationUser applicationUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+            .withId(dto.getUserId())
+            .withEmail(dto.getEmail())
+            .withPassword(passwordEncoder.encode(dto.getPassword()))
+            .withFirstName(dto.getFirstName())
+            .withLastName(dto.getLastName())
+            .withCountry(dto.getCountry())
+            .withZipCode(dto.getZipCode())
+            .withCity(dto.getCity())
+            .withAddress(dto.getAddress())
+            .withRole(dto.getRole())
+            .withRewardPoints(0)
+            .withUserStatus(UserStatus.UNVERIFIED)
+            .withFailedLoginAttempts(0)
+            .build();
+        return userMapper.applicationUserToUserDetailDto(userRepository.save(applicationUser));
+    }
+
+    @Override
+    public void delete(Long id) throws ForbiddenException {
+        userValidator.validateForDelete(id);
+        if (id == null) {
+            return;
+        }
+        userRepository.deleteById(id);
     }
 }

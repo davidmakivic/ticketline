@@ -2,7 +2,8 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 
-public class UserCreateDto {
+public class UserUpdateDto {
+    Long userId;
     String email;
     String password;
     String firstName;
@@ -13,10 +14,12 @@ public class UserCreateDto {
     String address;
     Roles role;
 
-    public UserCreateDto() {
+    public UserUpdateDto() {
     }
 
-    public UserCreateDto(String email, String password, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
+
+    public UserUpdateDto(Long userId, String email, String password, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
+        this.userId = userId;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
@@ -28,6 +31,10 @@ public class UserCreateDto {
         this.role = role;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -37,7 +44,7 @@ public class UserCreateDto {
     }
 
     public String getCountry() {
-        return country;
+        return "";
     }
 
     public String getFirstName() {
@@ -62,6 +69,10 @@ public class UserCreateDto {
 
     public Roles getRole() {
         return role;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public void setEmail(String email) {
@@ -96,9 +107,11 @@ public class UserCreateDto {
         this.role = role;
     }
 
+
     @Override
     public String toString() {
         return "UserCreateDto{"
+            + "userId=" + userId + '\''
             + "email='" + email + '\''
             + ", password='" + password + '\''
             + ", firstName='" + firstName + '\''
