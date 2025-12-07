@@ -47,13 +47,29 @@ public class UserDataGenerator {
                 .build();
             userRepository.save(admin);
 
+            admin = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+                .withEmail("ticketlineee@gmail.com")
+                .withPassword(passwordEncoder.encode("password"))
+                .withFirstName("Ticketlineee")
+                .withLastName("Admin")
+                .withZipCode("1040")
+                .withCity("Wien")
+                .withAddress("Wiedner Hauptstraße 78")
+                .withRole(Roles.ADMIN)
+                .withRewardPoints(0)
+                .withCountry("Austria")
+                .withUserStatus(UserStatus.UNLOCKED)
+                .withFailedLoginAttempts(0)
+                .build();
+            userRepository.save(admin);
+
             for (int i = 1; i <= NUMBER_OF_USERS_TO_GENERATE; i++) {
                 ApplicationUser user = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
                     .withEmail("user" + i + "@email.com")
                     .withPassword(passwordEncoder.encode("password"))
                     .withFirstName("User" + i)
                     .withLastName("UserLastname" + i)
-                    .withCountry("Austriaaaaaaaaaaa")
+                    .withCountry("Austria")
                     .withZipCode("10" + i + "0")
                     .withCity("City" + i)
                     .withAddress("Street " + i)

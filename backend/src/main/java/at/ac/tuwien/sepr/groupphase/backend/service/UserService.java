@@ -1,10 +1,14 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
+import jakarta.mail.MessagingException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -49,4 +53,20 @@ public interface UserService extends UserDetailsService {
      * @throws org.springframework.security.authentication.BadCredentialsException if credentials are bad
      */
     String login(UserLoginDto userLoginDto);
+
+    /**
+     * Sends an email to reset the password to {@code email}.
+     * If there exists no user with {@code email}, no email is sent.
+     *
+     * @param email email of the account to reset the password
+     */
+    void resetPassword(String email) throws MessagingException;
+
+
+    /**
+     * Changes the password of a user.
+     *
+     * @param dto holds the data needed to change the password
+     */
+    void changePassword(PasswortChangeDto dto) throws GoneException, NotFoundException;
 }
