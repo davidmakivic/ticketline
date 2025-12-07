@@ -7,7 +7,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
-import jakarta.persistence.EntityNotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,7 +41,7 @@ public class PerformanceServiceImpl implements PerformanceService {
     @Override
     public PerformanceDto update(Long id, PerformanceDto dto) {
         Performance performance = performanceRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Performance " + id + " not found"));
+            .orElseThrow(() -> new NotFoundException("Performance " + id + " not found"));
 
         performance.setStartTime(dto.getStartTime());
         performance.setEndTime(dto.getEndTime());
@@ -58,7 +58,7 @@ public class PerformanceServiceImpl implements PerformanceService {
     @Override
     public PerformanceDto findById(Long id) {
         Performance performance = performanceRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Performance with id " + id + " not found"));
+            .orElseThrow(() -> new NotFoundException("Performance with id " + id + " not found"));
 
         return performanceMapper.performanceToPerformanceDto(performance);
     }
@@ -73,7 +73,7 @@ public class PerformanceServiceImpl implements PerformanceService {
     @Override
     public void delete(Long id) {
         if (!performanceRepository.existsById(id)) {
-            throw new EntityNotFoundException("Performance with id " + id + " not found");
+            throw new NotFoundException("Performance with id " + id + " not found");
         }
 
         performanceRepository.deleteById(id);
