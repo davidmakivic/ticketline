@@ -2,9 +2,9 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 
-public class UserCreateDto {
+public class UserUpdateDto {
+    Long userId;
     String email;
-    String password;
     String firstName;
     String lastName;
     String country;
@@ -13,12 +13,13 @@ public class UserCreateDto {
     String address;
     Roles role;
 
-    public UserCreateDto() {
+    public UserUpdateDto() {
     }
 
-    public UserCreateDto(String email, String password, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
+
+    public UserUpdateDto(Long userId, String email, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
+        this.userId = userId;
         this.email = email;
-        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.zipCode = zipCode;
@@ -28,16 +29,17 @@ public class UserCreateDto {
         this.role = role;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
     public String getEmail() {
         return email;
     }
 
-    public String getPassword() {
-        return password;
-    }
 
     public String getCountry() {
-        return country;
+        return "";
     }
 
     public String getFirstName() {
@@ -64,12 +66,12 @@ public class UserCreateDto {
         return role;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setFirstName(String firstName) {
@@ -96,11 +98,12 @@ public class UserCreateDto {
         this.role = role;
     }
 
+
     @Override
     public String toString() {
         return "UserCreateDto{"
+            + "userId=" + userId + '\''
             + "email='" + email + '\''
-            + ", password='" + password + '\''
             + ", firstName='" + firstName + '\''
             + ", lastName='" + lastName + '\''
             + ", zipCode='" + zipCode + '\''

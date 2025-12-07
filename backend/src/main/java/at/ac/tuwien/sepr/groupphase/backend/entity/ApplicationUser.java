@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,10 +10,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "users")
@@ -24,24 +29,35 @@ public class ApplicationUser {
     private Long userId;
 
     @Column(nullable = false, unique = true)
+    @Email(regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @Size(max = 255)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Column(name = "first_name", nullable = false)
+    @Size(max = 255)
     private String firstName;
 
     @Column(name = "last_name", nullable = false)
+    @Size(max = 255)
     private String lastName;
 
     @Column(name = "zip_code", nullable = false)
+    @Size(max = 255)
     private String zipCode;
 
     @Column(nullable = false)
+    @Size(max = 255)
+    private String country;
+
+    @Column(nullable = false)
+    @Size(max = 255)
     private String city;
 
     @Column(nullable = false)
+    @Size(max = 255)
     private String address;
 
     @Column(nullable = false)
@@ -51,8 +67,9 @@ public class ApplicationUser {
     @Column(name = "reward_points", nullable = false)
     private Integer rewardPoints;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Timestamp createdAt;
 
     @Column(name = "user_status")
     @Enumerated(EnumType.STRING)
@@ -61,18 +78,23 @@ public class ApplicationUser {
     @Column(name = "failed_login_attempts", nullable = false)
     private Integer failedLoginAttempts;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private PasswordResetToken passwordResetToken;
+
     public ApplicationUser() {
     }
 
     public ApplicationUser(Long userId, String email, String passwordHash, String firstName, String lastName,
                            String zipCode, String city, String address, Roles role, Integer rewardPoints,
-                           LocalDateTime createdAt, UserStatus status, Integer failedLoginAttempts
+                           Timestamp createdAt, UserStatus status, Integer failedLoginAttempts
     ) {
         this.userId = userId;
         this.email = email;
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.country = country;
         this.zipCode = zipCode;
         this.city = city;
         this.address = address;
@@ -103,6 +125,10 @@ public class ApplicationUser {
         return lastName;
     }
 
+    public String getCountry() {
+        return country;
+    }
+
     public String getZipCode() {
         return zipCode;
     }
@@ -123,7 +149,7 @@ public class ApplicationUser {
         return rewardPoints;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
@@ -155,6 +181,10 @@ public class ApplicationUser {
         this.lastName = lastName;
     }
 
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
@@ -175,10 +205,6 @@ public class ApplicationUser {
         this.rewardPoints = rewardPoints;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public void setUserStatus(UserStatus userStatus) {
         this.userStatus = userStatus;
     }
@@ -193,12 +219,12 @@ public class ApplicationUser {
         private String passwordHash;
         private String firstName;
         private String lastName;
+        private String country;
         private String zipCode;
         private String city;
         private String address;
         private Roles role;
         private Integer rewardPoints;
-        private LocalDateTime createdAt;
         private UserStatus userStatus;
         private Integer failedLoginAttempts;
 
@@ -234,6 +260,11 @@ public class ApplicationUser {
             return this;
         }
 
+        public ApplicationUser.ApplicationUserBuilder withCountry(String country) {
+            this.country = country;
+            return this;
+        }
+
         public ApplicationUser.ApplicationUserBuilder withZipCode(String zipCode) {
             this.zipCode = zipCode;
             return this;
@@ -259,10 +290,6 @@ public class ApplicationUser {
             return this;
         }
 
-        public ApplicationUser.ApplicationUserBuilder withCreatedAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
 
         public ApplicationUser.ApplicationUserBuilder withUserStatus(UserStatus userStatus) {
             this.userStatus = userStatus;
@@ -281,12 +308,12 @@ public class ApplicationUser {
             applicationUser.setPasswordHash(passwordHash);
             applicationUser.setFirstName(firstName);
             applicationUser.setLastName(lastName);
+            applicationUser.setCountry(country);
             applicationUser.setZipCode(zipCode);
             applicationUser.setCity(city);
             applicationUser.setAddress(address);
             applicationUser.setRole(role);
             applicationUser.setRewardPoints(rewardPoints);
-            applicationUser.setCreatedAt(createdAt);
             applicationUser.setUserStatus(userStatus);
             applicationUser.setFailedLoginAttempts(failedLoginAttempts);
             return applicationUser;

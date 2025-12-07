@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
-import java.time.LocalDateTime;
 
 @Component
 public class UserDataGenerator {
@@ -42,24 +41,42 @@ public class UserDataGenerator {
                 .withAddress("Wiedner Hauptstraße 78")
                 .withRole(Roles.ADMIN)
                 .withRewardPoints(0)
-                .withCreatedAt(LocalDateTime.of(2022, 6, 7, 21, 33))
+                .withCountry("Austria")
+                .withUserStatus(UserStatus.UNLOCKED)
+                .withFailedLoginAttempts(0)
+                .build();
+            userRepository.save(admin);
+
+            admin = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+                .withEmail("ticketlineee@gmail.com")
+                .withPassword(passwordEncoder.encode("password"))
+                .withFirstName("Ticketlineee")
+                .withLastName("Admin")
+                .withZipCode("1040")
+                .withCity("Wien")
+                .withAddress("Wiedner Hauptstraße 78")
+                .withRole(Roles.ADMIN)
+                .withRewardPoints(0)
+                .withCountry("Austria")
                 .withUserStatus(UserStatus.UNLOCKED)
                 .withFailedLoginAttempts(0)
                 .build();
             userRepository.save(admin);
 
             for (int i = 1; i <= NUMBER_OF_USERS_TO_GENERATE; i++) {
-                ApplicationUser user = new ApplicationUser();
-                user.setEmail("user" + i + "@email.com");
-                user.setPasswordHash(passwordEncoder.encode("password"));
-                user.setFirstName("User" + i);
-                user.setLastName("UserLastname" + i);
-                user.setZipCode("10" + i + "0");
-                user.setCity("City" + i);
-                user.setAddress("Street " + i);
-                user.setRole(Roles.USER);
-                user.setRewardPoints(i);
-                user.setCreatedAt(LocalDateTime.of(2025, 11, 2, 3, 4));
+                ApplicationUser user = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+                    .withEmail("user" + i + "@email.com")
+                    .withPassword(passwordEncoder.encode("password"))
+                    .withFirstName("User" + i)
+                    .withLastName("UserLastname" + i)
+                    .withCountry("Austria")
+                    .withZipCode("10" + i + "0")
+                    .withCity("City" + i)
+                    .withAddress("Street " + i)
+                    .withRole(Roles.USER)
+                    .withRewardPoints(i)
+                    .build();
+
                 if (i == 1) {
                     user.setEmail("user@email.com");
                 }
