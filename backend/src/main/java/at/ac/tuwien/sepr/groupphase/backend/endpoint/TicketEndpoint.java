@@ -67,6 +67,13 @@ public class TicketEndpoint {
         return ticketService.updateStatus(id, dto.getStatus());
     }
 
+    @PermitAll
+    @GetMapping("/performance/{performanceId}")
+    @Operation(summary = "Get tickets by performance id", security = @SecurityRequirement(name = "apiKey"))
+    public List<TicketDto> getByPerformanceId(@PathVariable Long performanceId) {
+        return ticketService.findByPerformanceId(performanceId);
+    }
+
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -51,14 +51,6 @@ public class TicketEndpointTest {
     private VenueRepository venueRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    private Order order;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -102,20 +94,11 @@ public class TicketEndpointTest {
         performance.setHall(hall);
         performance.setBasePriceCents(2000L);
         performance = performanceRepository.save(performance);
-
-        ApplicationUser user = userRepository.findAll().stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No user found for TicketEndpointTest"));
-
-        order = new Order();
-        order.setUser(user);
-        order.setTotalPriceCents(0L);
-        order = orderRepository.save(order);
     }
 
     @Test
     void testCreateTicket() throws Exception {
-        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
+        TicketDto dto = TicketTestDataFactory.create(performance.getId());
 
 
         mockMvc.perform(post("/api/v1/tickets")
@@ -133,14 +116,12 @@ public class TicketEndpointTest {
     void testGetAllTickets() throws Exception {
         Ticket t1 = new Ticket();
         t1.setPerformance(performance);
-        t1.setOrder(order);
         t1.setPriceFinalCents(2000L);
         t1.setStatus(TicketStatus.AVAILABLE);
         ticketRepository.save(t1);
 
         Ticket t2 = new Ticket();
         t2.setPerformance(performance);
-        t2.setOrder(order);
         t2.setPriceFinalCents(3000L);
         t2.setStatus(TicketStatus.AVAILABLE);
         ticketRepository.save(t2);
@@ -154,7 +135,7 @@ public class TicketEndpointTest {
 
     @Test
     void testGetTicketById() throws Exception {
-        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
+        TicketDto dto = TicketTestDataFactory.create(performance.getId());
 
         String response = mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -181,7 +162,7 @@ public class TicketEndpointTest {
 
     @Test
     void testUpdateTicket() throws Exception {
-        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
+        TicketDto dto = TicketTestDataFactory.create(performance.getId());
 
         String response = mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -207,7 +188,7 @@ public class TicketEndpointTest {
 
     @Test
     void testUpdateTicket_notFound() throws Exception {
-        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
+        TicketDto dto = TicketTestDataFactory.create(performance.getId());
 
 
         mockMvc.perform(put("/api/v1/tickets/999999")
@@ -220,7 +201,7 @@ public class TicketEndpointTest {
 
     @Test
     void testDeleteTicket() throws Exception {
-        TicketDto dto = TicketTestDataFactory.create(performance.getId(), order.getId());
+        TicketDto dto = TicketTestDataFactory.create(performance.getId());
 
         String response = mockMvc.perform(post("/api/v1/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
