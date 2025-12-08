@@ -25,6 +25,7 @@ public class SectorMapperTest {
         Hall hall = new Hall();
         PriceCategory priceCategory = new PriceCategory();
         Sector sector = new Sector(hall, "A", SectorType.SEATED, priceCategory);
+        sector.setId(1L);
         SectorDto dto = sectorMapper.sectorToSectorDto(sector);
         assertEquals(sector.getId(), dto.getId());
         assertEquals(sector.getHall().getId(), dto.getHallId());

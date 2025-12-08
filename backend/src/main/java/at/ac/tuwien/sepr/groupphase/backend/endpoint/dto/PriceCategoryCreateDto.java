@@ -1,23 +1,13 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
-public class PriceCategoryDto {
+public class PriceCategoryCreateDto {
 
-    private Long id;
     private String name;
     private double price;
 
-    public PriceCategoryDto(Long id, String name, double price) {
-        this.id = id;
+    public PriceCategoryCreateDto(String name, double price) {
         this.name = name;
         this.price = price;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public double getPrice() {

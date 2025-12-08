@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.PriceCategoryService;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.access.annotation.Secured;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/price-categories")
+@RequestMapping("/api/v1/price-categories")
 public class PriceCategoryEndpoint {
 
     private final PriceCategoryService service;
@@ -39,15 +41,15 @@ public class PriceCategoryEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PostMapping
-    public PriceCategoryDto create(@RequestBody PriceCategoryDto dto) {
-        return service.save(dto);
+    public PriceCategoryDto create(@RequestBody PriceCategoryCreateDto dto) {
+        return service.create(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
-    public PriceCategoryDto update(@PathVariable Long id, @RequestBody PriceCategoryDto dto) {
-        dto.setId(id);
-        return service.save(dto);
+    public PriceCategoryDto update(@PathVariable Long id, @RequestBody PriceCategoryUpdateDto dto) {
+        //dto.setId(id);
+        return service.update(id, dto);
     }
 
     @Secured("ROLE_ADMIN")

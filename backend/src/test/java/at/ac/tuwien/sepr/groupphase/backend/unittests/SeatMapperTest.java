@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.unittests;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ public class SeatMapperTest {
     void testSeatToSeatDtoAndBack() {
         Sector sector = new Sector();
         Seat seat = new Seat(1, 2, sector); // row, number, sectorId
+        seat.setId(1L);
         SeatDto dto = seatMapper.seatToSeatDto(seat);
         assertEquals(seat.getId(), dto.getId());
         assertEquals(seat.getRowNumber(), dto.getRowNumber());

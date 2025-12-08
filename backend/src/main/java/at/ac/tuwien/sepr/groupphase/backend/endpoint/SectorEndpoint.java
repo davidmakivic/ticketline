@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
 import jakarta.annotation.security.PermitAll;
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sectors")
+@RequestMapping("/api/v1/sectors")
 public class SectorEndpoint {
 
     private final SectorService sectorService;
@@ -48,13 +50,13 @@ public class SectorEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PostMapping
-    public SectorDto create(@RequestBody SectorDto dto) {
+    public SectorDto create(@RequestBody SectorCreateDto dto) {
         return sectorService.create(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
-    public SectorDto update(@PathVariable Long id, @RequestBody SectorDto dto) {
+    public SectorDto update(@PathVariable Long id, @RequestBody SectorUpdateDto dto) {
         return sectorService.update(id, dto);
     }
 

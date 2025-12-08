@@ -1,10 +1,13 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.PriceCategory;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
@@ -32,7 +35,7 @@ public class SectorServiceImpl implements SectorService {
     @Override
     public SectorDto findById(Long id) {
         Sector sector =  sectorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Sector not found with id: " + id));
+            .orElseThrow(() -> new NotFoundException("Sector not found with id: " + id));
         return sectorMapper.sectorToSectorDto(sector);
     }
 
@@ -48,20 +51,20 @@ public class SectorServiceImpl implements SectorService {
     }
 
     @Override
-    public SectorDto create(SectorDto sector) {
+    public SectorDto create(SectorCreateDto sector) {
         if (sector.getHallId() == null) {
-            throw new EntityNotFoundException("Hall with id " + sector.getHallId() + " not found");
+            throw new NotFoundException("Hall with id " + sector.getHallId() + " not found");
         }
 
         Hall hall = hallRepository.findById(sector.getHallId())
             .orElseThrow(() ->
-                new EntityNotFoundException("Hall with id " + sector.getHallId() + " not found"));
+                new NotFoundException("Hall with id " + sector.getHallId() + " not found"));
 
         PriceCategory priceCategory = priceCategoryRepository.findById(sector.getPriceCategoryId())
             .orElseThrow(() ->
-                new EntityNotFoundException("PriceCategory with id " + sector.getPriceCategoryId() + " not found"));
+                new NotFoundException("PriceCategory with id " + sector.getPriceCategoryId() + " not found"));
 
-        Sector entity = sectorMapper.sectorDtoToSector(sector);
+        Sector entity = sectorMapper.sectorCreateDtoToSector(sector);
         entity.setHall(hall);
         entity.setPriceCategory(priceCategory);
 
@@ -70,9 +73,9 @@ public class SectorServiceImpl implements SectorService {
     }
 
     @Override
-    public SectorDto update(Long id, SectorDto sector) {
+    public SectorDto update(Long id, SectorUpdateDto sector) {
         Sector existing = sectorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Sector not found with id: " + id));
+            .orElseThrow(() -> new NotFoundException("Sector not found with id: " + id));
 
         if (sector.getName() != null) {
             existing.setName(sector.getName());
@@ -84,14 +87,14 @@ public class SectorServiceImpl implements SectorService {
 
         if (sector.getPriceCategoryId() != null) {
             PriceCategory priceCategory =  priceCategoryRepository.findById(sector.getPriceCategoryId())
-                .orElseThrow(() -> new EntityNotFoundException("PriceCategory with id: " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("PriceCategory with id: " + id + " not found"));
 
             existing.setPriceCategory(priceCategory);
         }
 
         if (sector.getHallId() != null) {
             Hall hall =  hallRepository.findById(sector.getHallId())
-                .orElseThrow(() -> new EntityNotFoundException("Venue with id: " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Venue with id: " + id + " not found"));
 
             existing.setHall(hall);
         }
@@ -103,7 +106,7 @@ public class SectorServiceImpl implements SectorService {
     @Override
     public void delete(Long id) {
         Sector sector = sectorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Sector not found with id: " + id));
+            .orElseThrow(() -> new NotFoundException("Sector not found with id: " + id));
         sectorRepository.delete(sector);
     }
 

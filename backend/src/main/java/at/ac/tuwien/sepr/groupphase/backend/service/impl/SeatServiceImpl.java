@@ -1,10 +1,13 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
@@ -30,7 +33,7 @@ public class SeatServiceImpl implements SeatService {
     @Override
     public SeatDto findById(Long id) {
         Seat seat = seatRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Seat not found with id: " + id));
+            .orElseThrow(() -> new NotFoundException("Seat not found with id: " + id));
         return seatMapper.seatToSeatDto(seat);
     }
 
@@ -46,14 +49,14 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public SeatDto create(SeatDto seat) {
+    public SeatDto create(SeatCreateDto seat) {
         if (seat.getSectorId() == null) {
-            throw new EntityNotFoundException("Sector with id " + seat.getSectorId() + " not found");
+            throw new NotFoundException("Sector with id " + seat.getSectorId() + " not found");
         }
         Sector sector = sectorRepository.findById(seat.getSectorId())
-            .orElseThrow(() -> new EntityNotFoundException("Sector with id " + seat.getSectorId() + " not found"));
+            .orElseThrow(() -> new NotFoundException("Sector with id " + seat.getSectorId() + " not found"));
 
-        Seat entity = seatMapper.seatDtoToSeat(seat);
+        Seat entity = seatMapper.seatCreateDtoToSeat(seat);
         entity.setSector(sector);
 
         Seat savedSeat = seatRepository.save(entity);
@@ -61,12 +64,12 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public SeatDto update(Long id, SeatDto seat) {
+    public SeatDto update(Long id, SeatUpdateDto seat) {
         Seat existingSeat = seatRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Seat not found with id: " + id));
+            .orElseThrow(() -> new NotFoundException("Seat not found with id: " + id));
 
         Sector sector = sectorRepository.findById(seat.getSectorId())
-            .orElseThrow(() -> new RuntimeException("Sector not found with id: " + seat.getSectorId()));
+            .orElseThrow(() -> new NotFoundException("Sector not found with id: " + seat.getSectorId()));
 
         // Felder updaten
         existingSeat.setRowNumber(seat.getRowNumber());
@@ -80,7 +83,7 @@ public class SeatServiceImpl implements SeatService {
     @Override
     public void delete(Long id) {
         Seat seat = seatRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Seat not found with id: " + id));
+            .orElseThrow(() -> new NotFoundException("Seat not found with id: " + id));
         seatRepository.delete(seat);
     }
 }

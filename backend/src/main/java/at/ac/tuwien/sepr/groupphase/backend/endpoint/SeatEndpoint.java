@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
 
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/seats")
+@RequestMapping("/api/v1/seats")
 public class SeatEndpoint {
     private final SeatService seatService;
 
@@ -51,14 +53,14 @@ public class SeatEndpoint {
     // ADMIN: create seat
     @Secured("ROLE_ADMIN")
     @PostMapping
-    public SeatDto create(@RequestBody SeatDto dto) {
+    public SeatDto create(@RequestBody SeatCreateDto dto) {
         return seatService.create(dto);
     }
 
     // ADMIN: update seat
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
-    public SeatDto update(@PathVariable Long id, @RequestBody SeatDto dto) {
+    public SeatDto update(@PathVariable Long id, @RequestBody SeatUpdateDto dto) {
         return seatService.update(id, dto);
     }
 
