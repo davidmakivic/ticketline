@@ -1,11 +1,15 @@
 package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
+import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
+import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -27,15 +31,21 @@ public class TicketDataGenerator {
     private final TicketRepository ticketRepository;
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
     public TicketDataGenerator(
         TicketRepository ticketRepository,
         PerformanceRepository performanceRepository,
-        SeatRepository seatRepository
+        SeatRepository seatRepository,
+        OrderRepository orderRepository,
+        UserRepository userRepository
     ) {
         this.ticketRepository = ticketRepository;
         this.performanceRepository = performanceRepository;
         this.seatRepository = seatRepository;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
     }
 
     @PostConstruct
@@ -52,6 +62,12 @@ public class TicketDataGenerator {
         }
 
         List<Seat> seats = seatRepository.findAll();
+        List<ApplicationUser> users = userRepository.findAll();
+        if (users.isEmpty()) {
+            LOGGER.warn("No users available – cannot generate orders for tickets");
+            return;
+        }
+
         Random random = new Random();
 
         LOGGER.debug("Generating {} tickets for each of {} performances",
@@ -59,8 +75,15 @@ public class TicketDataGenerator {
 
         for (Performance performance : performances) {
             for (int i = 0; i < TICKETS_PER_PERFORMANCE; i++) {
-                Ticket ticket = new Ticket();
+                ApplicationUser user = users.get(random.nextInt(users.size()));
 
+                long finalPrice = performance.getBasePriceCents()
+                    + random.nextInt(300);
+
+                Order order = new Order(user, finalPrice);
+                order = orderRepository.save(order);
+
+                Ticket ticket = new Ticket();
                 ticket.setPerformance(performance);
 
                 if (!seats.isEmpty() && random.nextBoolean()) {
@@ -70,13 +93,8 @@ public class TicketDataGenerator {
                     ticket.setSeat(null);
                 }
 
-                ticket.setOrder(null);
-
-                long finalPrice = performance.getBasePriceCents()
-                    + random.nextInt(300);
-
+                ticket.setOrder(order);
                 ticket.setPriceFinalCents(finalPrice);
-
                 ticket.setStatus(TicketStatus.AVAILABLE);
 
                 LOGGER.debug("Saving ticket {}", ticket);
