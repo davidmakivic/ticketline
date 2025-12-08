@@ -53,19 +53,12 @@ public class TicketServiceTest {
     @Autowired
     private VenueRepository venueRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     private Performance performance;
-    private Order order;
 
     @BeforeEach
     public void beforeEach() {
         ticketRepository.deleteAll();
-        orderRepository.deleteAll();
         performanceRepository.deleteAll();
         eventRepository.deleteAll();
         hallRepository.deleteAll();
@@ -92,21 +85,11 @@ public class TicketServiceTest {
         performance.setHall(hall);
         performance.setBasePriceCents(2000L);
         performance = performanceRepository.save(performance);
-
-        ApplicationUser user = userRepository.findAll().stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No user found for TicketServiceTest"));
-
-        order = new Order();
-        order.setUser(user);
-        order.setTotalPriceCents(0L);
-        order = orderRepository.save(order);
     }
 
-    private TicketDto buildDto(Long performanceId, Long orderId, Long priceCents, TicketStatus status) {
+    private TicketDto buildDto(Long performanceId, Long priceCents, TicketStatus status) {
         TicketDto dto = new TicketDto();
         dto.setPerformanceId(performanceId);
-        dto.setOrderId(orderId);
         dto.setSeatId(null);
         dto.setPriceFinalCents(priceCents);
         dto.setStatus(status);
@@ -116,13 +99,12 @@ public class TicketServiceTest {
     @Transactional
     @Test
     void testCreateTicket() {
-        TicketDto dto = buildDto(performance.getId(), order.getId(), 2500L, TicketStatus.AVAILABLE);
+        TicketDto dto = buildDto(performance.getId(), 2500L, TicketStatus.AVAILABLE);
 
         TicketDto saved = ticketService.create(dto);
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getPerformanceId()).isEqualTo(performance.getId());
-        assertThat(saved.getOrderId()).isEqualTo(order.getId());
         assertThat(saved.getPriceFinalCents()).isEqualTo(2500L);
         assertThat(saved.getStatus()).isEqualTo(TicketStatus.AVAILABLE);
 
@@ -132,22 +114,12 @@ public class TicketServiceTest {
     @Transactional
     @Test
     void testUpdateTicket() {
-        TicketDto dto = buildDto(performance.getId(), order.getId(), 2500L, TicketStatus.AVAILABLE);
+        TicketDto dto = buildDto(performance.getId(), 2500L, TicketStatus.AVAILABLE);
         TicketDto created = ticketService.create(dto);
         Long id = created.getId();
 
-        ApplicationUser user = userRepository.findAll().stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No user found for TicketServiceTest"));
-
-        Order newOrder = new Order();
-        newOrder.setUser(user);
-        newOrder.setTotalPriceCents(0L);
-        newOrder = orderRepository.save(newOrder);
-
         TicketDto updateDto = new TicketDto();
         updateDto.setPerformanceId(performance.getId());
-        updateDto.setOrderId(newOrder.getId());
         updateDto.setSeatId(null);
         updateDto.setPriceFinalCents(3000L);
         updateDto.setStatus(TicketStatus.PURCHASED);
@@ -156,7 +128,6 @@ public class TicketServiceTest {
 
         assertThat(updated.getId()).isEqualTo(id);
         assertThat(updated.getPerformanceId()).isEqualTo(performance.getId());
-        assertThat(updated.getOrderId()).isEqualTo(newOrder.getId());
         assertThat(updated.getPriceFinalCents()).isEqualTo(3000L);
         assertThat(updated.getStatus()).isEqualTo(TicketStatus.PURCHASED);
     }
@@ -164,7 +135,7 @@ public class TicketServiceTest {
     @Transactional
     @Test
     void testUpdateTicketNotFound() {
-        TicketDto dto = buildDto(performance.getId(), order.getId(), 2000L, TicketStatus.AVAILABLE);
+        TicketDto dto = buildDto(performance.getId(), 2000L, TicketStatus.AVAILABLE);
 
         assertThatThrownBy(() -> ticketService.update(999999L, dto))
             .isInstanceOf(NotFoundException.class);
@@ -173,8 +144,8 @@ public class TicketServiceTest {
     @Transactional
     @Test
     void testFindAllTickets() {
-        TicketDto dto1 = buildDto(performance.getId(), order.getId(), 1500L, TicketStatus.AVAILABLE);
-        TicketDto dto2 = buildDto(performance.getId(), order.getId(), 2500L, TicketStatus.AVAILABLE);
+        TicketDto dto1 = buildDto(performance.getId(), 1500L, TicketStatus.AVAILABLE);
+        TicketDto dto2 = buildDto(performance.getId(), 2500L, TicketStatus.AVAILABLE);
 
         ticketService.create(dto1);
         ticketService.create(dto2);
@@ -194,7 +165,7 @@ public class TicketServiceTest {
     @Transactional
     @Test
     void testDeleteTicket() {
-        TicketDto dto = buildDto(performance.getId(), order.getId(), 2200L, TicketStatus.AVAILABLE);
+        TicketDto dto = buildDto(performance.getId(), 2200L, TicketStatus.AVAILABLE);
         TicketDto saved = ticketService.create(dto);
         Long id = saved.getId();
 
@@ -216,7 +187,7 @@ public class TicketServiceTest {
     @Transactional
     @Test
     void testUpdateTicketStatus() {
-        TicketDto dto = buildDto(performance.getId(), order.getId(), 1800L, TicketStatus.AVAILABLE);
+        TicketDto dto = buildDto(performance.getId(), 1800L, TicketStatus.AVAILABLE);
         TicketDto saved = ticketService.create(dto);
         Long id = saved.getId();
 

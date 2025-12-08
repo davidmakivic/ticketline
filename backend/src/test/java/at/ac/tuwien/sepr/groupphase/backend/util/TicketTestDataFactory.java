@@ -5,10 +5,9 @@ import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 
 public class TicketTestDataFactory {
 
-    public static TicketDto create(Long performanceId, Long orderId) {
+    public static TicketDto create(Long performanceId) {
         TicketDto dto = new TicketDto();
         dto.setPerformanceId(performanceId);
-        dto.setOrderId(orderId);
         dto.setSeatId(null);
         dto.setPriceFinalCents(2500L);
         dto.setStatus(TicketStatus.AVAILABLE);

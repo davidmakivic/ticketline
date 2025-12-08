@@ -31,21 +31,15 @@ public class TicketDataGenerator {
     private final TicketRepository ticketRepository;
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
-    private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
 
     public TicketDataGenerator(
         TicketRepository ticketRepository,
         PerformanceRepository performanceRepository,
-        SeatRepository seatRepository,
-        OrderRepository orderRepository,
-        UserRepository userRepository
+        SeatRepository seatRepository
     ) {
         this.ticketRepository = ticketRepository;
         this.performanceRepository = performanceRepository;
         this.seatRepository = seatRepository;
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
     }
 
     @PostConstruct
@@ -62,11 +56,6 @@ public class TicketDataGenerator {
         }
 
         List<Seat> seats = seatRepository.findAll();
-        List<ApplicationUser> users = userRepository.findAll();
-        if (users.isEmpty()) {
-            LOGGER.warn("No users available – cannot generate orders for tickets");
-            return;
-        }
 
         Random random = new Random();
 
@@ -75,13 +64,10 @@ public class TicketDataGenerator {
 
         for (Performance performance : performances) {
             for (int i = 0; i < TICKETS_PER_PERFORMANCE; i++) {
-                ApplicationUser user = users.get(random.nextInt(users.size()));
 
                 long finalPrice = performance.getBasePriceCents()
                     + random.nextInt(300);
 
-                Order order = new Order(user, finalPrice);
-                order = orderRepository.save(order);
 
                 Ticket ticket = new Ticket();
                 ticket.setPerformance(performance);
@@ -93,7 +79,6 @@ public class TicketDataGenerator {
                     ticket.setSeat(null);
                 }
 
-                ticket.setOrder(order);
                 ticket.setPriceFinalCents(finalPrice);
                 ticket.setStatus(TicketStatus.AVAILABLE);
 

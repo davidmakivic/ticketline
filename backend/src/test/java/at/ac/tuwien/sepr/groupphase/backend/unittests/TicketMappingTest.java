@@ -40,7 +40,6 @@ public class TicketMappingTest {
         ticket.setId(1L);
         ticket.setPerformance(performance);
         ticket.setSeat(seat);
-        ticket.setOrder(order);
         ticket.setPriceFinalCents(3500L);
         ticket.setStatus(TicketStatus.AVAILABLE);
 
@@ -57,7 +56,6 @@ public class TicketMappingTest {
             () -> assertEquals(ticket.getId(), dto.getId()),
             () -> assertEquals(ticket.getPerformance().getId(), dto.getPerformanceId()),
             () -> assertEquals(ticket.getSeat().getId(), dto.getSeatId()),
-            () -> assertEquals(ticket.getOrder().getId(), dto.getOrderId()),
             () -> assertEquals(ticket.getPriceFinalCents(), dto.getPriceFinalCents()),
             () -> assertEquals(ticket.getStatus(), dto.getStatus())
         );
@@ -69,7 +67,6 @@ public class TicketMappingTest {
         dto.setId(5L);
         dto.setPerformanceId(10L);
         dto.setSeatId(20L);
-        dto.setOrderId(30L);
         dto.setPriceFinalCents(4000L);
         dto.setStatus(TicketStatus.AVAILABLE);
 
@@ -79,7 +76,6 @@ public class TicketMappingTest {
             () -> assertNull(entity.getId(), "id should be null because it is ignored"),
             () -> assertNull(entity.getPerformance(), "performance should be null because it is ignored"),
             () -> assertNull(entity.getSeat(), "seat should be null because it is ignored"),
-            () -> assertNull(entity.getOrder(), "order should be null because it is ignored"),
             () -> assertEquals(dto.getPriceFinalCents(), entity.getPriceFinalCents()),
             () -> assertEquals(dto.getStatus(), entity.getStatus())
         );
@@ -98,8 +94,7 @@ public class TicketMappingTest {
         assertAll(
             () -> assertEquals(t1.getId(), first.getId()),
             () -> assertEquals(t1.getPerformance().getId(), first.getPerformanceId()),
-            () -> assertEquals(t1.getSeat().getId(), first.getSeatId()),
-            () -> assertEquals(t1.getOrder().getId(), first.getOrderId())
+            () -> assertEquals(t1.getSeat().getId(), first.getSeatId())
         );
     }
 }

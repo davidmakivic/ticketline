@@ -4,7 +4,6 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.TicketMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
-import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
@@ -21,20 +20,17 @@ public class TicketServiceImpl implements TicketService {
     private final TicketMapper ticketMapper;
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
-    private final OrderRepository orderRepository;
 
     public TicketServiceImpl(
         TicketRepository ticketRepository,
         TicketMapper ticketMapper,
         PerformanceRepository performanceRepository,
-        SeatRepository seatRepository,
-        OrderRepository orderRepository
+        SeatRepository seatRepository
     ) {
         this.ticketRepository = ticketRepository;
         this.ticketMapper = ticketMapper;
         this.performanceRepository = performanceRepository;
         this.seatRepository = seatRepository;
-        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -42,7 +38,6 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketMapper.ticketDtoToTicket(dto);
 
         ticket.setPerformance(performanceRepository.getReferenceById(dto.getPerformanceId()));
-        ticket.setOrder(orderRepository.getReferenceById(dto.getOrderId()));
 
         if (dto.getSeatId() != null) {
             ticket.setSeat(seatRepository.getReferenceById(dto.getSeatId()));
@@ -80,8 +75,6 @@ public class TicketServiceImpl implements TicketService {
             ticket.setSeat(null);
         }
 
-        ticket.setOrder(orderRepository.getReferenceById(dto.getOrderId()));
-
         ticket.setPriceFinalCents(dto.getPriceFinalCents());
         ticket.setStatus(dto.getStatus());
 
@@ -98,6 +91,13 @@ public class TicketServiceImpl implements TicketService {
         Ticket saved = ticketRepository.save(ticket);
 
         return ticketMapper.ticketToTicketDto(saved);
+    }
+
+    @Override
+    public List<TicketDto> findByPerformanceId(Long performanceId) {
+        return ticketMapper.ticketListToTicketDtoList(
+            ticketRepository.findByPerformance_Id(performanceId)
+        );
     }
 
     @Override
