@@ -103,7 +103,7 @@ public class SectorEndpointTest implements TestData {
     void testCreateSector() throws Exception {
         String body = objectMapper.writeValueAsString(sectorDto);
 
-        mockMvc.perform(post("/api/sectors")
+        mockMvc.perform(post("/api/v1/sectors")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -154,7 +154,7 @@ public class SectorEndpointTest implements TestData {
         sectorRepository.save(new Sector(hall2, "B", SectorType.VIP, priceCategory2));
         sectorRepository.save(new Sector(hall3, "C", SectorType.STANDING, priceCategory3));
 
-        mockMvc.perform(get("/api/sectors"))
+        mockMvc.perform(get("/api/v1/sectors"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3));
     }

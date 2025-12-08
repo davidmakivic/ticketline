@@ -27,7 +27,7 @@ public class PriceCategoryEndpointTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String BASE_URL = "/api/price-categories";
+    private static final String BASE_URL = "/api/v1/price-categories";
 
     @BeforeEach
     void setup() {

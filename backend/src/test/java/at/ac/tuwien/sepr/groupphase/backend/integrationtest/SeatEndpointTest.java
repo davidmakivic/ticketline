@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.HallDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.*;
@@ -57,7 +58,7 @@ public class SeatEndpointTest implements TestData {
     @Autowired
     private SecurityProperties securityProperties;
 
-    private SeatDto seatDto;
+    private SeatCreateDto seatCreateDto;
 
     private Hall hall;
 
@@ -94,14 +95,14 @@ public class SeatEndpointTest implements TestData {
         sector = sectorRepository.save(sector);
 
         seatRepository.deleteAll();
-        seatDto = new SeatDto(1, 1, sector.getId());
+        seatCreateDto = new SeatCreateDto(1, 1, sector.getId());
     }
 
     @Test
     void testCreateSeat() throws Exception {
-        String body = objectMapper.writeValueAsString(seatDto);
+        String body = objectMapper.writeValueAsString(seatCreateDto);
 
-        mockMvc.perform(post("/api/seats")
+        mockMvc.perform(post("/api/v1/seats")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -115,7 +116,7 @@ public class SeatEndpointTest implements TestData {
         seatRepository.save(new Seat(1, 1, sector));
         seatRepository.save(new Seat(2, 2, sector));
 
-        mockMvc.perform(get("/api/seats"))
+        mockMvc.perform(get("/api/v1/seats"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2));
     }

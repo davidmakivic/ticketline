@@ -1,0 +1,52 @@
+package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
+
+import at.ac.tuwien.sepr.groupphase.backend.type.SectorType;
+
+public class SectorUpdateDto {
+
+    private String name;
+    private Long hallId;
+    private SectorType type;
+    private Long priceCategoryId;
+
+    public SectorUpdateDto(String name, SectorType type, Long hallId, Long priceCategoryId) {
+        this.name = name;
+        this.hallId = hallId;
+        this.type = type;
+        this.priceCategoryId = priceCategoryId;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getHallId() {
+        return hallId;
+    }
+
+    public void setHallId(Long hallId) {
+        this.hallId = hallId;
+    }
+
+    public SectorType getType() {
+        return type;
+    }
+
+    public void setType(SectorType type) {
+        this.type = type;
+    }
+
+    public Long getPriceCategoryId() {
+        return priceCategoryId;
+    }
+
+    public void setPriceCategoryId(Long priceCategoryId) {
+        this.priceCategoryId = priceCategoryId;
+    }
+
+}
