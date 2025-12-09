@@ -1,6 +1,9 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderUpdateDto;
+
 import java.util.List;
 
 public interface OrderService {
@@ -27,4 +30,23 @@ public interface OrderService {
      * @return a list of orders belonging to the given user
      */
     List<OrderDto> getOrdersByUser(Long userId);
+
+    /**
+     * Creates a new order for the currently authenticated user.
+     * The order is built using the given list of ticket IDs.
+     *
+     * @param createDto the DTO containing the ticket IDs required to build the order
+     * @return the newly created order as OrderDto
+     */
+    OrderDto createOrder(OrderCreateDto createDto);
+
+
+    /**
+     * Updates an existing order by replacing its associated ticket list.
+     *
+     * @param id the ID of the order to update
+     * @param updateDto the DTO containing the new list of ticket IDs
+     * @return the updated order as OrderDto
+     */
+    OrderDto updateOrder(long id, OrderUpdateDto updateDto);
 }

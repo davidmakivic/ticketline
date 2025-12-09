@@ -30,9 +30,9 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private ApplicationUser user;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     private List<Ticket> tickets = new ArrayList<>();
+
 
     @Column(name = "total_price_cents", nullable = false)
     private long totalPriceCents;
