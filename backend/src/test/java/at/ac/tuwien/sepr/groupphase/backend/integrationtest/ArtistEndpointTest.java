@@ -60,7 +60,7 @@ public class ArtistEndpointTest {
     void testCreateArtist() throws Exception {
         ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "Test");
 
-        mockMvc.perform(post("/api/artists")
+        mockMvc.perform(post("/api/v1/artists")
                 .contentType(MediaType.APPLICATION_JSON).content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
@@ -76,7 +76,7 @@ public class ArtistEndpointTest {
     void testGetArtistById() throws Exception {
         ArtistDto dto = ArtistTestDataFactory.create(ArtistType.BAND, "The Band");
 
-        String response = mockMvc.perform(post("/api/artists")
+        String response = mockMvc.perform(post("/api/v1/artists")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -86,7 +86,7 @@ public class ArtistEndpointTest {
 
         ArtistDto created = objectMapper.readValue(response, ArtistDto.class);
 
-        mockMvc.perform(get("/api/artists/" + created.getId()))
+        mockMvc.perform(get("/api/v1/artists/" + created.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.stageName").value("The Band"))
             .andExpect(jsonPath("$.artistType").value("BAND"));
@@ -98,7 +98,7 @@ public class ArtistEndpointTest {
     void testUpdateArtist() throws Exception {
         ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "Old Name");
 
-        String response = mockMvc.perform(post("/api/artists")
+        String response = mockMvc.perform(post("/api/v1/artists")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -111,7 +111,7 @@ public class ArtistEndpointTest {
         created.setStageName("Updated Name");
         created.setArtistType(ArtistType.BAND);
 
-        mockMvc.perform(put("/api/artists/" + created.getId())
+        mockMvc.perform(put("/api/v1/artists/" + created.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(created))
                 .header(securityProperties.getAuthHeader(),
@@ -126,7 +126,7 @@ public class ArtistEndpointTest {
     void testUpdateArtistNotFound() throws Exception {
         ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "Does Not Exist");
 
-        mockMvc.perform(put("/api/artists/999")
+        mockMvc.perform(put("/api/v1/artists/999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -140,21 +140,21 @@ public class ArtistEndpointTest {
         ArtistDto a1 = ArtistTestDataFactory.create(ArtistType.SOLO, "One");
         ArtistDto a2 = ArtistTestDataFactory.create(ArtistType.BAND, "Two");
 
-        mockMvc.perform(post("/api/artists")
+        mockMvc.perform(post("/api/v1/artists")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(a1))
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk());
 
-        mockMvc.perform(post("/api/artists")
+        mockMvc.perform(post("/api/v1/artists")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(a2))
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/artists"))
+        mockMvc.perform(get("/api/v1/artists"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].artistType").exists())
@@ -164,7 +164,7 @@ public class ArtistEndpointTest {
     @Transactional
     @Test
     void testGetArtistNotFound() throws Exception {
-        mockMvc.perform(get("/api/artists/999"))
+        mockMvc.perform(get("/api/v1/artists/999"))
             .andExpect(status().isNotFound());
     }
 
@@ -174,7 +174,7 @@ public class ArtistEndpointTest {
     void testDeleteArtist() throws Exception {
         ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "DeleteMe");
 
-        String response = mockMvc.perform(post("/api/artists")
+        String response = mockMvc.perform(post("/api/v1/artists")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(),
@@ -184,12 +184,12 @@ public class ArtistEndpointTest {
 
         ArtistDto created = objectMapper.readValue(response, ArtistDto.class);
 
-        mockMvc.perform(delete("/api/artists/" + created.getId())
+        mockMvc.perform(delete("/api/v1/artists/" + created.getId())
                 .header(securityProperties.getAuthHeader(),
                     jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/artists/" + created.getId()))
+        mockMvc.perform(get("/api/v1/artists/" + created.getId()))
             .andExpect(status().isNotFound());
     }
 
