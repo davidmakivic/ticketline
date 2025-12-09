@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
+import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
@@ -77,7 +78,7 @@ public class OrderServiceTest {
     @Test
     void getOrder_whenOrderDoesNotExist_throwsNotFound() {
         assertThatThrownBy(() -> orderService.getOrder(999L))
-            .isInstanceOf(ResponseStatusException.class)
+            .isInstanceOf(NotFoundException.class)
             .hasMessageContaining("Order not found");
     }
 

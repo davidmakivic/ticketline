@@ -34,7 +34,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/users")
+@RequestMapping(value = "/api/v1/users")
 public class UserEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

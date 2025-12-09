@@ -10,6 +10,7 @@ public class UserDetailDto {
     private String email;
     private String firstName;
     private String lastName;
+    private String country;
     private String zipCode;
     private String city;
     private String address;
@@ -33,6 +34,10 @@ public class UserDetailDto {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getCountry() {
+        return country;
     }
 
     public String getZipCode() {
@@ -81,6 +86,10 @@ public class UserDetailDto {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public void setZipCode(String zipCode) {
