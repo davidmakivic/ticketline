@@ -7,6 +7,7 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -69,6 +70,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         LOGGER.warn(ex.getMessage());
         return new ErrorListRestDto("Forbidden Request", Collections.singletonList(ex.getMessage()));
     }
+
+    @ExceptionHandler(value = {ObjectOptimisticLockingFailureException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    protected ErrorListRestDto handleOptimisticLocking(ObjectOptimisticLockingFailureException ex, WebRequest request) {
+        LOGGER.warn("Optimistic locking failure: {}", ex.getMessage());
+        return new ErrorListRestDto(
+            "Ticket was modified by another transaction. Please reload and try again.",
+            Collections.singletonList(ex.getMessage())
+        );
+    }
+
+
 
 
     /**

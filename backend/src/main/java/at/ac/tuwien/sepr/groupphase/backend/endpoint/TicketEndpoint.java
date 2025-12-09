@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketStatusUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,12 +33,6 @@ public class TicketEndpoint {
         this.ticketService = ticketService;
     }
 
-    @PermitAll
-    @GetMapping
-    @Operation(summary = "Get all tickets", security = @SecurityRequirement(name = "apiKey"))
-    public List<TicketDto> getAll() {
-        return ticketService.findAll();
-    }
 
     @PermitAll
     @GetMapping("/{id}")
@@ -63,7 +58,7 @@ public class TicketEndpoint {
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}/status")
     @Operation(summary = "Update ticket status", security = @SecurityRequirement(name = "apiKey"))
-    public TicketDto updateStatus(@PathVariable Long id, @RequestBody TicketDto dto) {
+    public TicketDto updateStatus(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
         return ticketService.updateStatus(id, dto.getStatus());
     }
 
@@ -74,11 +69,4 @@ public class TicketEndpoint {
         return ticketService.findByPerformanceId(performanceId);
     }
 
-    @Secured("ROLE_ADMIN")
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Delete ticket", security = @SecurityRequirement(name = "apiKey"))
-    public void delete(@PathVariable Long id) {
-        ticketService.delete(id);
-    }
 }
