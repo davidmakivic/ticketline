@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -132,7 +133,7 @@ public class ArtistServiceTest {
 
     @Transactional
     @Test
-    void testAddEventToArtist() {
+    void testAddEventToArtist() throws IOException {
         ArtistDto artist = new ArtistDto();
         artist.setFirstName("A");
         artist.setLastName("B");
@@ -140,13 +141,7 @@ public class ArtistServiceTest {
         artist.setArtistType(ArtistType.SOLO);
         ArtistDto savedArtist = artistService.create(artist);
 
-        EventDto event = new EventDto();
-        event.setTitle("My Event");
-        event.setDescription("desc");
-        event.setCategory(EventType.CONCERT);
-        event.setDurationMinutes(90);
-
-        EventDto savedEvent = eventService.create(event);
+        EventDto savedEvent = eventService.create("My Event", "desc", EventType.CONCERT, 90, null);
 
         artistService.addEvent(savedArtist.getId(), savedEvent.getId());
 
@@ -156,7 +151,7 @@ public class ArtistServiceTest {
 
     @Transactional
     @Test
-    void testRemoveEventFromArtist() {
+    void testRemoveEventFromArtist() throws IOException {
         ArtistDto artist = new ArtistDto();
         artist.setFirstName("A");
         artist.setLastName("B");
@@ -164,13 +159,7 @@ public class ArtistServiceTest {
         artist.setArtistType(ArtistType.SOLO);
         ArtistDto savedArtist = artistService.create(artist);
 
-        EventDto event = new EventDto();
-        event.setTitle("My Event");
-        event.setDescription("desc");
-        event.setCategory(EventType.MUSICAL);
-        event.setDurationMinutes(90);
-
-        EventDto savedEvent = eventService.create(event);
+        EventDto savedEvent = eventService.create("My Event", "desc", EventType.MUSICAL, 90, null);
 
         artistService.addEvent(savedArtist.getId(), savedEvent.getId());
 
