@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketStatusUpdateDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -55,11 +56,11 @@ public class TicketEndpoint {
         return ticketService.update(id, dto);
     }
 
-    @Secured("ROLE_ADMIN")
+    @Secured("ROLE_USER")
     @PutMapping("/{id}/status")
     @Operation(summary = "Update ticket status", security = @SecurityRequirement(name = "apiKey"))
     public TicketDto updateStatus(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
-        return ticketService.updateStatus(id, dto.getStatus());
+        return ticketService.updateStatus(id, dto.getStatus(), dto.getVersion());
     }
 
     @PermitAll

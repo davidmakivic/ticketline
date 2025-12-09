@@ -5,12 +5,14 @@ import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 public class TicketStatusUpdateDto {
 
     private TicketStatus status;
+    private Long version;
 
     public TicketStatusUpdateDto() {
     }
 
-    public TicketStatusUpdateDto(TicketStatus status) {
+    public TicketStatusUpdateDto(TicketStatus status, Long version) {
         this.status = status;
+        this.version = version;
     }
 
     public TicketStatus getStatus() {
@@ -19,5 +21,13 @@ public class TicketStatusUpdateDto {
 
     public void setStatus(TicketStatus status) {
         this.status = status;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }
