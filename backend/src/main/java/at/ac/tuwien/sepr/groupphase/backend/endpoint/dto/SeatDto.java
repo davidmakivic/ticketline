@@ -1,8 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 
-import ch.qos.logback.core.joran.spi.DefaultClass;
-
 public class SeatDto {
 
     private Long id;

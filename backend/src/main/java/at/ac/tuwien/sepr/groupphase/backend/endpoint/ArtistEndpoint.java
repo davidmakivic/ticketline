@@ -1,7 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.ArtistMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;

@@ -3,7 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.service;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatUpdateDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 
 import java.util.List;
 

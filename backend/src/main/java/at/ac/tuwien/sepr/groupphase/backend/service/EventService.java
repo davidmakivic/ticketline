@@ -1,7 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 
 import java.util.List;
 

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "HALL NAME 1 layout",
+  "canvas": { "width": 900, "height": 600, "unit": "px" },
+  "elements": [
+    { "type": "stage", "id": "stage", "label": "Bühne", "rect": { "x": 320, "y": 30, "w": 260, "h": 80 } },
+
+    { "type": "seatBlock", "id": "A1", "label": "A1", "sectorKey": "1",
+      "origin": { "x": 140, "y": 160 }, "rows": 5, "seatsPerRow": 10, "spacing": { "dx": 20, "dy": 24 } },
+
+    { "type": "seatBlock", "id": "A2", "label": "A2", "sectorKey": "2",
+      "origin": { "x": 520, "y": 160 }, "rows": 5, "seatsPerRow": 10, "spacing": { "dx": 20, "dy": 24 } },
+
+    { "type": "seatBlock", "id": "B1", "label": "B1 (VIP)", "sectorKey": "3",
+      "origin": { "x": 220, "y": 300 }, "rows": 5, "seatsPerRow": 10, "spacing": { "dx": 20, "dy": 24 } },
+
+    { "type": "seatBlock", "id": "B2", "label": "B2 (VIP)", "sectorKey": "4",
+      "origin": { "x": 520, "y": 300 }, "rows": 5, "seatsPerRow": 10, "spacing": { "dx": 20, "dy": 24 } },
+
+    { "type": "standingArea", "id": "C1", "label": "C1 (Steh)", "sectorKey": "5",
+      "rect": { "x": 120, "y": 470, "w": 300, "h": 90 }, "capacity": 100 },
+
+    { "type": "standingArea", "id": "C2", "label": "C2 (Steh)", "sectorKey": "6",
+      "rect": { "x": 480, "y": 470, "w": 300, "h": 90 }, "capacity": 100 }
+  ]
+}

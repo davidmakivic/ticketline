@@ -63,28 +63,28 @@ public class SectorDataGenerator {
 
         PriceCategory catA = categories.get(0);
 
-        Sector s1 = new Sector(hall, "A1", SectorType.SEATED, catA);
+        Sector s1 = new Sector(hall, "A1", SectorType.SEATED, catA, "1");
         s1.setPriceCategory(catA);
 
-        Sector s2 = new Sector(hall, "A2", SectorType.SEATED, catA);
+        Sector s2 = new Sector(hall, "A2", SectorType.SEATED, catA, "2");
         s2.setPriceCategory(catA);
 
 
         PriceCategory catB = categories.get(1 % categories.size());
 
-        Sector s3 = new Sector(hall, "B1", SectorType.VIP, catB);
+        Sector s3 = new Sector(hall, "B1", SectorType.VIP, catB, "3");
         s3.setPriceCategory(catB);
 
-        Sector s4 = new Sector(hall, "B2", SectorType.VIP, catB);
+        Sector s4 = new Sector(hall, "B2", SectorType.VIP, catB, "4");
         s4.setPriceCategory(catB);
 
 
         PriceCategory catC = categories.get(2 % categories.size());
 
-        Sector s5 = new Sector(hall, "C1", SectorType.STANDING, catC);
+        Sector s5 = new Sector(hall, "C1", SectorType.STANDING, catC, "5");
         s5.setPriceCategory(catC);
 
-        Sector s6 = new Sector(hall, "C2", SectorType.STANDING, catC);
+        Sector s6 = new Sector(hall, "C2", SectorType.STANDING, catC, "6");
         s6.setPriceCategory(catC);
 
         sectorRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6));
