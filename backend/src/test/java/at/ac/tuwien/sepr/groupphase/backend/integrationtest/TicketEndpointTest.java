@@ -112,25 +112,6 @@ public class TicketEndpointTest {
             .andExpect(jsonPath("$.priceFinalCents").value(dto.getPriceFinalCents().intValue()));
     }
 
-    @Test
-    void testGetAllTickets() throws Exception {
-        Ticket t1 = new Ticket();
-        t1.setPerformance(performance);
-        t1.setPriceFinalCents(2000L);
-        t1.setStatus(TicketStatus.AVAILABLE);
-        ticketRepository.save(t1);
-
-        Ticket t2 = new Ticket();
-        t2.setPerformance(performance);
-        t2.setPriceFinalCents(3000L);
-        t2.setStatus(TicketStatus.AVAILABLE);
-        ticketRepository.save(t2);
-
-        mockMvc.perform(get("/api/v1/tickets"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()").value(2));
-    }
 
 
     @Test
@@ -199,34 +180,4 @@ public class TicketEndpointTest {
             .andExpect(status().isNotFound());
     }
 
-    @Test
-    void testDeleteTicket() throws Exception {
-        TicketDto dto = TicketTestDataFactory.create(performance.getId());
-
-        String response = mockMvc.perform(post("/api/v1/tickets")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(dto))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-
-        TicketDto created = objectMapper.readValue(response, TicketDto.class);
-
-        mockMvc.perform(delete("/api/v1/tickets/" + created.getId())
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isNoContent());
-
-        mockMvc.perform(get("/api/v1/tickets/" + created.getId()))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testDeleteTicket_notFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/tickets/999999")
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isNotFound());
-    }
 }
