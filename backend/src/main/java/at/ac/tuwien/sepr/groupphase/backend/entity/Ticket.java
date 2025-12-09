@@ -31,6 +31,10 @@ public class Ticket {
     @JoinColumn(name = "seat_id")
     private Seat seat;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "order_id", nullable = true)
+    private Order order;
+
     @Column(name = "price_final_cents")
     private Long priceFinalCents;
 
@@ -87,6 +91,12 @@ public class Ticket {
         this.status = status;
     }
 
+    public Order getOrder() {
+        return order;
+    }
 
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 
 }
