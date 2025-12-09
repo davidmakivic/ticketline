@@ -10,10 +10,12 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
@@ -50,16 +52,12 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TicketDto findById(Long id) {
         Ticket ticket = ticketRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Ticket with id " + id + " not found"));
 
         return ticketMapper.ticketToTicketDto(ticket);
-    }
-
-    @Override
-    public List<TicketDto> findAll() {
-        return ticketMapper.ticketListToTicketDtoList(ticketRepository.findAll());
     }
 
     @Override
@@ -94,18 +92,11 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TicketDto> findByPerformanceId(Long performanceId) {
         return ticketMapper.ticketListToTicketDtoList(
             ticketRepository.findByPerformance_Id(performanceId)
         );
     }
 
-    @Override
-    public void delete(Long id) {
-        if (!ticketRepository.existsById(id)) {
-            throw new NotFoundException("Ticket with id " + id + " not found");
-        }
-
-        ticketRepository.deleteById(id);
-    }
 }

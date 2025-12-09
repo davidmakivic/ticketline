@@ -29,12 +29,6 @@ public interface TicketService {
      */
     TicketDto findById(Long id);
 
-    /**
-     * Retrieves all tickets.
-     *
-     * @return list of all TicketDto
-     */
-    List<TicketDto> findAll();
 
     /**
      * Updates an existing ticket.
@@ -62,10 +56,4 @@ public interface TicketService {
      */
     List<TicketDto> findByPerformanceId(Long performanceId);
 
-    /**
-     * Deletes a ticket by its ID.
-     *
-     * @param id the ID of the ticket to delete
-     */
-    void delete(Long id);
 }
