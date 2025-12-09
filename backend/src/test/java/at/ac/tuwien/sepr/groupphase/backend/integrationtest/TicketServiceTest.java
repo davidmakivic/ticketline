@@ -7,6 +7,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
@@ -154,12 +155,12 @@ public class TicketServiceTest {
 
     @Transactional
     @Test
-    void testUpdateTicketStatus() {
+    void testUpdateTicketStatus() throws ConflictException {
         TicketDto dto = buildDto(performance.getId(), 1800L, TicketStatus.AVAILABLE);
         TicketDto saved = ticketService.create(dto);
         Long id = saved.getId();
 
-        TicketDto updated = ticketService.updateStatus(id, TicketStatus.PURCHASED);
+        TicketDto updated = ticketService.updateStatus(id, TicketStatus.PURCHASED, saved.getVersion());
 
         assertThat(updated.getId()).isEqualTo(id);
         assertThat(updated.getStatus()).isEqualTo(TicketStatus.PURCHASED);
