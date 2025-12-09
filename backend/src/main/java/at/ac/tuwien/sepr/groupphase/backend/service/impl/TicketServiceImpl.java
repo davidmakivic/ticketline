@@ -3,12 +3,14 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.TicketMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,14 +83,17 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDto updateStatus(Long id, TicketStatus status) {
+    public TicketDto updateStatus(Long id, TicketStatus status, Long version) {
+
         Ticket ticket = ticketRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Ticket with id " + id + " not found"));
 
+        ticket.setVersion(version);
         ticket.setStatus(status);
-        Ticket saved = ticketRepository.save(ticket);
 
+        Ticket saved = ticketRepository.saveAndFlush(ticket);
         return ticketMapper.ticketToTicketDto(saved);
+
     }
 
     @Override

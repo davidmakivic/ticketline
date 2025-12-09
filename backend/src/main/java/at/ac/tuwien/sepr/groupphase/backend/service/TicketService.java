@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public interface TicketService {
      * @param status the new status to set
      * @return the updated TicketDto
      */
-    TicketDto updateStatus(Long id, TicketStatus status);
+    TicketDto updateStatus(Long id, TicketStatus status, Long version);
 
     /**
      * Retrieves all tickets associated with a given performance.

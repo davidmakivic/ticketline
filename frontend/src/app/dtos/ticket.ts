@@ -1,14 +1,14 @@
 export enum TicketStatus {
+  AVAILABLE = 'AVAILABLE',
   RESERVED = 'RESERVED',
-  PURCHASED = 'PURCHASED',
-  CANCELLED = 'CANCELLED'
+  PURCHASED = 'PURCHASED'
 }
 
 export interface Ticket {
   id: number;
   performanceId: number;
-  seatId: number;
-  orderId: number;
+  seatId: number | null;
   priceFinalCents: number;
   status: TicketStatus;
+  version: number;
 }
