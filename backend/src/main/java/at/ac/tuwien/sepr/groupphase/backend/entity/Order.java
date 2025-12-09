@@ -30,7 +30,8 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private ApplicationUser user;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
     private List<Ticket> tickets = new ArrayList<>();
 
 
