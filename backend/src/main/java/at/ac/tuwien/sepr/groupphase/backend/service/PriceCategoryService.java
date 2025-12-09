@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryUpdateDto;
 
 import java.util.List;
 
@@ -22,12 +24,23 @@ public interface PriceCategoryService {
     PriceCategoryDto findById(Long id);
 
     /**
-     * Saves or updates a price category.
+     * Updates a price category.
      *
-     * @param dto the PriceCategoryDto to save
+     * @param id   the id of the priceCategory to be updated
+     * @param priceCategory the dto to update the previous priceCategory with
      * @return the saved PriceCategoryDto
      */
-    PriceCategoryDto save(PriceCategoryDto dto);
+    PriceCategoryDto update(Long id, PriceCategoryUpdateDto priceCategory);
+
+
+    /**
+     * Creates a price category.
+     *
+     * @param dto the PriceCategoryCreateDto to create
+     * @return the saved PriceCategoryDto
+     */
+    PriceCategoryDto create(PriceCategoryCreateDto dto);
+
 
     /**
      * Deletes a price category by ID.

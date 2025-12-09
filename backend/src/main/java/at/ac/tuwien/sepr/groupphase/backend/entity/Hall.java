@@ -57,6 +57,10 @@ public class Hall {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Venue getVenue() {
         return venue;
     }

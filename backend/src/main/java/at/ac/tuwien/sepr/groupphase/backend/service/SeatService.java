@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 
 import java.util.List;
@@ -38,7 +40,7 @@ public interface SeatService {
      * @param seat the seat to be created
      * @return the created seat
      */
-    SeatDto create(SeatDto seat);
+    SeatDto create(SeatCreateDto seat);
 
 
     /**
@@ -48,7 +50,7 @@ public interface SeatService {
      * @param seat the seat to update the previous seat
      * @return the updated seat
      */
-    SeatDto update(Long id, SeatDto seat);
+    SeatDto update(Long id, SeatUpdateDto seat);
 
 
     /**

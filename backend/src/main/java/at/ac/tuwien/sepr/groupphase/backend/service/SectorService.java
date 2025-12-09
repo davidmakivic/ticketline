@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorUpdateDto;
 
 import java.util.List;
 
@@ -37,7 +39,7 @@ public interface SectorService {
      * @param sector the sector to be created
      * @return the created sector
      */
-    SectorDto create(SectorDto sector);
+    SectorDto create(SectorCreateDto sector);
 
 
     /**
@@ -47,7 +49,7 @@ public interface SectorService {
      * @param sector the sector to update the previous sector
      * @return the updated sector
      */
-    SectorDto update(Long id, SectorDto sector);
+    SectorDto update(Long id, SectorUpdateDto sector);
 
 
 

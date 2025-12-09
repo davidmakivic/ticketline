@@ -36,7 +36,7 @@ public class Performance {
     private Date endTime;
 
     @Column(name = "base_price_cents")
-    private Integer basePriceCents;
+    private Long basePriceCents;
 
     public Performance() {
     }
@@ -81,11 +81,11 @@ public class Performance {
         this.endTime = endTime;
     }
 
-    public Integer getBasePriceCents() {
+    public Long getBasePriceCents() {
         return basePriceCents;
     }
 
-    public void setBasePriceCents(Integer basePriceCents) {
+    public void setBasePriceCents(Long basePriceCents) {
         this.basePriceCents = basePriceCents;
     }
 }

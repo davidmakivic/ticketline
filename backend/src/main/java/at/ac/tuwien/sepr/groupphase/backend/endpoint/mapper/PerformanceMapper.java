@@ -10,7 +10,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PerformanceMapper {
 
-    @Mapping(source = "id",        target = "performanceId")
     @Mapping(source = "event.id",  target = "eventId")
     @Mapping(source = "hall.id",   target = "hallId")
     PerformanceDto performanceToPerformanceDto(Performance performance);

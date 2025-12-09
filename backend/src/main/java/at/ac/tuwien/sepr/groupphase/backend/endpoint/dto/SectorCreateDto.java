@@ -2,40 +2,21 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.SectorType;
 
-public class SectorDto {
+public class SectorCreateDto {
 
-    private Long id;
     private String name;
     private Long hallId;
     private SectorType type;
     private Long priceCategoryId;
 
-    public SectorDto(Long id, String name, SectorType type, Long hallId, Long priceCategoryId) {
-        this.id = id;
+    public SectorCreateDto(String name, SectorType type, Long hallId, Long priceCategoryId) {
         this.name = name;
         this.hallId = hallId;
         this.type = type;
         this.priceCategoryId = priceCategoryId;
     }
 
-    public SectorDto(String name, SectorType type, Long hallId,  Long priceCategoryId) {
-        this.name = name;
-        this.hallId = hallId;
-        this.type = type;
-        this.priceCategoryId = priceCategoryId;
-    }
 
-    public SectorDto() {
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
