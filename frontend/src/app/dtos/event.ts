@@ -6,7 +6,12 @@ export interface Event {
   durationMinutes: number;
 }
 
-enum EventType {
+export interface TopEvent {
+  title: string,
+  soldTickets: number;
+}
+
+export enum EventType {
   CONCERT,
   FESTIVAL
 }
