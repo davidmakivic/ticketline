@@ -15,6 +15,8 @@ public interface EventService {
 
     EventDto findById(Long id);
 
+    List<EventDto> findByAnyTitle(String title);
+
     List<EventDto> findAll();
 
     void addArtist(Long eventId, Long artistId);

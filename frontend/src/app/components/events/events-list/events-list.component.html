@@ -1,0 +1,59 @@
+<div class="events-container">
+  <div class="search-section">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Nach Titel suchen</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchTitle"
+        (keyup)="search()"
+        placeholder="Event-Titel eingeben">
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="search()"
+        [attr.aria-label]="'Suchen'">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  @if (loading) {
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!loading && events.length > 0) {
+    <div class="events-list">
+      @for (event of events; track event.id) {
+        <mat-card
+          class="event-card"
+          [routerLink]="['/events', event.id]"
+          [attr.aria-label]="'Event: ' + event.title">
+          <div class="card-content">
+            @if (event.imageData) {
+              <img
+                [src]="'data:' + event.imageContentType + ';base64,' + event.imageData"
+                alt="Event-Bild: {{ event.title }}"
+                class="event-image"
+                loading="lazy">
+            }
+            <div class="event-info">
+              <mat-card-header>
+                <mat-card-title>{{ event.title }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <p>{{ event.description }}</p>
+                <span class="event-category">{{ event.category }}</span>
+              </mat-card-content>
+            </div>
+          </div>
+        </mat-card>
+      }
+    </div>
+  }
+
+  @if (!loading && events.length === 0) {
+    <p class="no-events">Keine Events gefunden</p>
+  }
+</div>

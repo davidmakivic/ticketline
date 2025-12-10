@@ -4,6 +4,8 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { MessageComponent } from './components/message/message.component';
+import {EventsListComponent} from "./components/events/events-list/events-list.component";
+import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -19,6 +21,16 @@ const routes: Routes = [
     loadComponent: () =>
       import('./components/orders/orders.component')
         .then(m => m.OrdersComponent)
+  },
+  {
+    path: 'events',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: EventsListComponent,
+  },
+  {
+    path: 'events/:id',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: EventDetailComponent
   },
   {
     path: 'tickets',

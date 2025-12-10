@@ -1,0 +1,121 @@
+.event-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+  }
+  .back-button {
+    margin-bottom: 1.5rem;
+    color: var(--mat-sys-primary);
+  }
+
+
+  .event-detail {
+    .event-title {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      color: var(--mat-sys-on-surface);
+      text-align: center;
+    }
+
+    .image-container {
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+
+      .event-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: contain;
+        max-width: 600px;
+      }
+    }
+
+    .event-info-section {
+      margin-bottom: 2rem;
+
+      .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .event-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        color: var(--mat-sys-on-surface-variant);
+      }
+
+      .event-metadata {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        span {
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          background-color: var(--mat-sys-surface-dim);
+          color: var(--mat-sys-on-surface);
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .performances-section {
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .performances-list {
+        display: grid;
+        gap: 1rem;
+
+        .performance-card {
+          padding: 1.5rem;
+
+          .performance-time,
+          .performance-price,
+          .performance-hall {
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            strong {
+              color: var(--mat-sys-primary);
+              margin-right: 0.5rem;
+            }
+          }
+        }
+      }
+    }
+
+    .no-performances {
+      text-align: center;
+      padding: 2rem;
+      color: var(--mat-sys-on-surface-variant);
+      font-style: italic;
+    }
+
+    .error-message {
+      text-align: center;
+      padding: 2rem;
+      color: var(--mat-sys-error);
+      font-size: 1.1rem;
+    }
+  }
+}

@@ -1,12 +1,19 @@
-export interface Event {
+import { Artist } from './artist';
+import { Performance } from './performance';
+
+export interface EventDto {
   id: number;
   title: string;
   description: string;
   category: EventType;
   durationMinutes: number;
+  imageData: string; // Base64 encoded
+  imageContentType: string;
+  artists: Artist[];
+  performances: Performance[];
 }
 
-enum EventType {
-  CONCERT,
-  FESTIVAL
+export enum EventType {
+  CONCERT = 'CONCERT',
+  FESTIVAL = 'FESTIVAL'
 }

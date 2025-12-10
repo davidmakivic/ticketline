@@ -70,6 +70,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<EventDto> findByAnyTitle(String title) {
+        return eventMapper.eventToEventDto(eventRepository.findByAnyTitle(title));
+    }
+
+    @Override
     public List<EventDto> findAll() {
         return eventMapper.eventToEventDto(eventRepository.findAll());
     }

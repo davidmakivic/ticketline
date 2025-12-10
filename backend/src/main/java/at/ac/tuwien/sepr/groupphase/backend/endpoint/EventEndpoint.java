@@ -64,6 +64,12 @@ public class EventEndpoint {
     }
 
     @PermitAll
+    @GetMapping("/query")
+    public List<EventDto> searchByTitle(@RequestParam String title) {
+        return eventService.findByAnyTitle(title);
+    }
+
+    @PermitAll
     @GetMapping
     public List<EventDto> getAll() {
         return eventService.findAll()
