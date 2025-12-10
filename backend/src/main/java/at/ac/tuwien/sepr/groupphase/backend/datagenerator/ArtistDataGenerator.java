@@ -1,17 +1,25 @@
 package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.EventMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
+import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashSet;
+import java.util.List;
 
 @Profile("generateData")
+@DependsOn("eventDataGenerator")
 @Component
 public class ArtistDataGenerator {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -22,9 +30,11 @@ public class ArtistDataGenerator {
 
 
     private final ArtistRepository artistRepository;
+    private final EventRepository eventRepository;
 
-    public ArtistDataGenerator(ArtistRepository artistRepository) {
+    public ArtistDataGenerator(ArtistRepository artistRepository, EventRepository eventRepository) {
         this.artistRepository = artistRepository;
+        this.eventRepository = eventRepository;
     }
 
     @PostConstruct
@@ -43,13 +53,25 @@ public class ArtistDataGenerator {
                 artistRepository.save(artist);
             }
 
+
             Artist custom1 = new Artist();
             custom1.setFirstName("Freddie");
             custom1.setLastName("Mercury");
             custom1.setStageName("Queen");
             custom1.setArtistType(ArtistType.BAND);
-            LOGGER.debug("saving artist {}", custom1);
             artistRepository.save(custom1);
+
+            // Events laden und bidirektionale Beziehung korrekt setzen
+            List<Event> allEvents = eventRepository.findAll();
+            for (Event event : allEvents) {
+                custom1.getEvents().add(event);
+                event.getArtists().add(custom1);
+            }
+
+            artistRepository.save(custom1);
+            eventRepository.saveAll(allEvents);
+
+            LOGGER.debug("saved artist custom1 with id: {}", custom1.getId());
 
             Artist custom2 = new Artist();
             custom2.setFirstName("Elvis");

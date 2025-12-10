@@ -1,0 +1,140 @@
+.artist-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+  }
+
+  .artist-detail {
+    .artist-title {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--mat-sys-on-surface);
+      text-align: center;
+    }
+
+    .artist-names {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      color: var(--mat-sys-on-surface-variant);
+
+      p {
+        margin: 0.5rem 0;
+      }
+    }
+
+    .image-container {
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+
+      .artist-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: contain;
+        max-width: 600px;
+      }
+    }
+
+    .artist-info-section {
+      margin-bottom: 2rem;
+
+      .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .artist-metadata {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        span {
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          background-color: var(--mat-sys-surface-dim);
+          color: var(--mat-sys-on-surface);
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .events-section {
+      margin-top: 3rem;
+
+      .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .events-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+
+        .event-card {
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+
+          &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+          }
+
+          mat-card-header {
+            margin-bottom: 0.5rem;
+          }
+
+          mat-card-content {
+            p {
+              margin-bottom: 1rem;
+              color: var(--mat-sys-on-surface-variant);
+            }
+
+            span {
+              display: inline-block;
+              padding: 0.4rem 0.8rem;
+              border-radius: 4px;
+              background-color: var(--mat-sys-surface-dim);
+              color: var(--mat-sys-on-surface);
+              font-size: 0.85rem;
+              margin-right: 0.5rem;
+              margin-bottom: 0.5rem;
+            }
+          }
+        }
+      }
+    }
+
+    .no-events {
+      margin-top: 2rem;
+      text-align: center;
+      color: var(--mat-sys-on-surface-variant);
+      font-style: italic;
+    }
+
+    .error-message {
+      text-align: center;
+      padding: 2rem;
+      color: var(--mat-sys-error);
+      font-size: 1.1rem;
+    }
+  }
+
+  .back-button {
+    margin-bottom: 1.5rem;
+    color: var(--mat-sys-primary);
+  }
+}

@@ -9,6 +9,8 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,6 +69,25 @@ public class EventServiceImpl implements EventService {
             .orElseThrow(() -> new NotFoundException("Event not found with id " + id));
 
         return eventMapper.eventToEventDto(event);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getEventImage(Long id) {
+        Event event = eventRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Event not found: " + id));
+
+        if (event.getImageData() == null || event.getImageData().length == 0) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(event.getImageContentType()))
+            .body(event.getImageData());
+    }
+
+    @Override
+    public List<EventDto> findByAnyTitle(String title) {
+        return eventMapper.eventToEventDto(eventRepository.findByAnyTitle(title));
     }
 
     @Override

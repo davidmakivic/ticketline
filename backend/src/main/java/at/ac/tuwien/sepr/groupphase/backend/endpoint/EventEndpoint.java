@@ -6,6 +6,7 @@ import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +62,18 @@ public class EventEndpoint {
     @GetMapping("/{id}")
     public EventDto getById(@PathVariable Long id) {
         return eventService.findById(id);
+    }
+
+    @PermitAll
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
+        return eventService.getEventImage(id);
+    }
+
+    @PermitAll
+    @GetMapping("/query")
+    public List<EventDto> searchByTitle(@RequestParam String title) {
+        return eventService.findByAnyTitle(title);
     }
 
     @PermitAll

@@ -1,0 +1,41 @@
+<div class="artists-container">
+  @if (loading) {
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!loading && artists.length > 0) {
+    <div class="artists-list">
+      @for (artist of artists; track artist.id) {
+        <mat-card
+          class="artist-card"
+          [routerLink]="['/artists', artist.id]"
+          [attr.aria-label]="'Artist: ' + artist.stageName">
+          <div class="card-content">
+            @if (artist.imageUrl) {
+              <img
+                [src]="artist.imageUrl"
+                alt="Artist-Bild: {{ artist.stageName }}"
+                class="artist-image"
+                loading="lazy">
+            }
+            <div class="artist-info">
+              <mat-card-header>
+                <mat-card-title>{{ artist.stageName }}</mat-card-title>
+                <mat-card-subtitle>{{ artist.firstName }} {{ artist.lastName }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <span class="artist-type">{{ artist.artistType }}</span>
+              </mat-card-content>
+            </div>
+          </div>
+        </mat-card>
+      }
+    </div>
+  }
+
+  @if (!loading && artists.length === 0) {
+    <p class="no-artists">Keine Artists gefunden</p>
+  }
+</div>

@@ -42,36 +42,19 @@ public class ArtistServiceTest {
 
     @Transactional
     @Test
-    void testCreateArtist() {
-        ArtistDto a = new ArtistDto();
-        a.setFirstName("Test");
-        a.setLastName("TestLastName");
-        a.setStageName("TestStage");
-        a.setArtistType(ArtistType.SOLO);
-
-        ArtistDto saved = artistService.create(a);
+    void testCreateArtist() throws IOException {
+        ArtistDto saved = artistService.create("Test", "TestLastName", "TestStage", ArtistType.SOLO, null);
 
         assertThat(saved.getStageName()).isEqualTo("TestStage");
     }
 
     @Transactional
     @Test
-    void testUpdateArtist() {
-        ArtistDto a = new ArtistDto();
-        a.setFirstName("Test");
-        a.setLastName("TestLastName");
-        a.setStageName("TestStage");
-        a.setArtistType(ArtistType.SOLO);
-
-        ArtistDto saved = artistService.create(a);
+    void testUpdateArtist() throws IOException {
+        ArtistDto saved = artistService.create("Test", "TestLastName", "TestStage", ArtistType.SOLO, null);
         Long id = saved.getId();
 
-        a.setFirstName("Updated");
-        a.setLastName("UpdatedLastName");
-        a.setStageName("UpdatedStage");
-        a.setArtistType(ArtistType.SOLO);
-
-        ArtistDto result = artistService.update(id, a);
+        ArtistDto result = artistService.update(id, "Updated", "UpdatedLastName", "UpdatedStage", ArtistType.SOLO, null);
 
         assertThat(result.getStageName()).isEqualTo("UpdatedStage");
         assertThat(result.getFirstName()).isEqualTo("Updated");
@@ -81,30 +64,15 @@ public class ArtistServiceTest {
     @Transactional
     @Test
     void testUpdateArtistNotFound() {
-        ArtistDto a = new ArtistDto();
-        a.setFirstName("Test");
-
-        assertThatThrownBy(() -> artistService.update(999L, a))
+        assertThatThrownBy(() -> artistService.update(999L, "Test", "Last", "Stage", ArtistType.SOLO, null))
             .isInstanceOf(NotFoundException.class);
     }
 
     @Transactional
     @Test
-    void testFindAllArtists() {
-        ArtistDto a = new ArtistDto();
-        a.setFirstName("Test");
-        a.setLastName("TestLastName");
-        a.setStageName("TestStage");
-        a.setArtistType(ArtistType.SOLO);
-
-        ArtistDto a2 = new ArtistDto();
-        a2.setFirstName("Test2");
-        a2.setLastName("TestLastName2");
-        a2.setStageName("TestStage2");
-        a2.setArtistType(ArtistType.BAND);
-
-        artistService.create(a);
-        artistService.create(a2);
+    void testFindAllArtists() throws IOException {
+        artistService.create("Test", "TestLastName", "TestStage", ArtistType.SOLO, null);
+        artistService.create("Test2", "TestLastName2", "TestStage2", ArtistType.BAND, null);
 
         List<ArtistDto> result = artistService.findAll();
 
@@ -113,14 +81,8 @@ public class ArtistServiceTest {
 
     @Transactional
     @Test
-    void testDeleteArtist() {
-        ArtistDto a = new ArtistDto();
-        a.setFirstName("Test");
-        a.setLastName("TestLastName");
-        a.setStageName("TestStage");
-        a.setArtistType(ArtistType.SOLO);
-
-        ArtistDto saved = artistService.create(a);
+    void testDeleteArtist() throws IOException {
+        ArtistDto saved = artistService.create("Test", "TestLastName", "TestStage", ArtistType.SOLO, null);
         Long id = saved.getId();
 
         assertThat(artistService.findById(id)).isNotNull();
@@ -134,13 +96,7 @@ public class ArtistServiceTest {
     @Transactional
     @Test
     void testAddEventToArtist() throws IOException {
-        ArtistDto artist = new ArtistDto();
-        artist.setFirstName("A");
-        artist.setLastName("B");
-        artist.setStageName("TestStage");
-        artist.setArtistType(ArtistType.SOLO);
-        ArtistDto savedArtist = artistService.create(artist);
-
+        ArtistDto savedArtist = artistService.create("A", "B", "TestStage", ArtistType.SOLO, null);
         EventDto savedEvent = eventService.create("My Event", "desc", EventType.CONCERT, 90, null);
 
         artistService.addEvent(savedArtist.getId(), savedEvent.getId());
@@ -152,17 +108,10 @@ public class ArtistServiceTest {
     @Transactional
     @Test
     void testRemoveEventFromArtist() throws IOException {
-        ArtistDto artist = new ArtistDto();
-        artist.setFirstName("A");
-        artist.setLastName("B");
-        artist.setStageName("TestStage");
-        artist.setArtistType(ArtistType.SOLO);
-        ArtistDto savedArtist = artistService.create(artist);
-
+        ArtistDto savedArtist = artistService.create("A", "B", "TestStage", ArtistType.SOLO, null);
         EventDto savedEvent = eventService.create("My Event", "desc", EventType.MUSICAL, 90, null);
 
         artistService.addEvent(savedArtist.getId(), savedEvent.getId());
-
         artistService.deleteEvent(savedArtist.getId(), savedEvent.getId());
 
         ArtistDto updated = artistService.findById(savedArtist.getId());
@@ -171,20 +120,9 @@ public class ArtistServiceTest {
 
     @Transactional
     @Test
-    void testFindByNamePositive() {
-        ArtistDto artist1 = new ArtistDto();
-        artist1.setFirstName("David");
-        artist1.setLastName("Bowie");
-        artist1.setStageName("Ziggy");
-        artist1.setArtistType(ArtistType.SOLO);
-        artistService.create(artist1);
-
-        ArtistDto artist2 = new ArtistDto();
-        artist2.setFirstName("John");
-        artist2.setLastName("Lennon");
-        artist2.setStageName("Beatles");
-        artist2.setArtistType(ArtistType.BAND);
-        artistService.create(artist2);
+    void testFindByNamePositive() throws IOException {
+        artistService.create("David", "Bowie", "Ziggy", ArtistType.SOLO, null);
+        artistService.create("John", "Lennon", "Beatles", ArtistType.BAND, null);
 
         List<ArtistDto> result = artistService.findByName("ziggy");
 
@@ -194,18 +132,11 @@ public class ArtistServiceTest {
 
     @Transactional
     @Test
-    void testFindByNameNegative() {
-        ArtistDto artist = new ArtistDto();
-        artist.setFirstName("Test");
-        artist.setLastName("Artist");
-        artist.setStageName("TestStage");
-        artist.setArtistType(ArtistType.SOLO);
-        artistService.create(artist);
+    void testFindByNameNegative() throws IOException {
+        artistService.create("Test", "Artist", "TestStage", ArtistType.SOLO, null);
 
         List<ArtistDto> result = artistService.findByName("nonexistent");
 
         assertThat(result).isEmpty();
     }
-
-
 }

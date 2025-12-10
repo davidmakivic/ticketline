@@ -13,9 +13,7 @@ public class EventDto {
     private String description;
     private EventType category;
     private Integer durationMinutes;
-    private byte[] imageData;
     private String imageContentType;
-    private Set<Artist> artists = new HashSet<>();
     private Set<PerformanceDto> performances = new HashSet<>();
 
     public EventDto() {
@@ -61,28 +59,12 @@ public class EventDto {
         this.durationMinutes = durationMinutes;
     }
 
-    public byte[] getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
-    }
-
     public String getImageContentType() {
         return imageContentType;
     }
 
     public void setImageContentType(String imageContentType) {
         this.imageContentType = imageContentType;
-    }
-
-    public Set<Artist> getArtists() {
-        return artists;
-    }
-
-    public void setArtists(Set<Artist> artists) {
-        this.artists = artists;
     }
 
     public Set<PerformanceDto> getPerformances() {
