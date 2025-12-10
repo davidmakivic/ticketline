@@ -1,0 +1,36 @@
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--mat-sys-primary-container);
+  color: whitesmoke;
+}
+.header button {
+  font-size: 2px;
+  color: var(--mat-sys-on-primary-container);
+}
+
+.search-field {
+  width: 20em ;
+}
+
+.group-header {
+  padding: 8px 16px;
+  font-weight: 600;
+  color: var(--mat-sys-on-primary-container);
+  cursor: pointer;
+}
+
+.group-header:hover {
+  background: rgba(25, 118, 210, 0.08);
+}
+
+header mat-optgroup .mat-mdc-optgroup-label {
+  color: green;
+}
+
+.mat-mdc-autocomplete-panel {
+  height: 1000px;
+}
+
+
