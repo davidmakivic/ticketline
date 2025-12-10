@@ -17,6 +17,7 @@ public interface EventMapper {
     EventDto eventToEventDto(Event event);
 
     @Mapping(source = "imageContentType", target = "imageContentType")
+    @Mapping(target = "artists", ignore = true)
     List<EventDto> eventToEventDto(List<Event> events);
 
     @Mapping(target = "id", ignore = true)

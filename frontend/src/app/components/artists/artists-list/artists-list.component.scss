@@ -1,0 +1,77 @@
+.artists-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+  }
+
+  .artists-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+
+    .artist-card {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        .artist-image {
+          width: 100%;
+          height: 250px;
+          object-fit: cover;
+          border-radius: 4px;
+          margin-bottom: 1rem;
+        }
+
+        .artist-info {
+          flex: 1;
+
+          mat-card-header {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+
+          mat-card-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+          }
+
+          mat-card-subtitle {
+            font-size: 0.9rem;
+            color: var(--mat-sys-on-surface-variant);
+          }
+
+          .artist-type {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            background-color: var(--mat-sys-surface-dim);
+            color: var(--mat-sys-on-surface);
+            font-size: 0.85rem;
+          }
+        }
+      }
+    }
+  }
+
+  .no-artists {
+    text-align: center;
+    padding: 2rem;
+    color: var(--mat-sys-on-surface-variant);
+    font-style: italic;
+  }
+}

@@ -14,7 +14,6 @@ public class EventDto {
     private EventType category;
     private Integer durationMinutes;
     private String imageContentType;
-    private Set<Artist> artists = new HashSet<>();
     private Set<PerformanceDto> performances = new HashSet<>();
 
     public EventDto() {
@@ -66,14 +65,6 @@ public class EventDto {
 
     public void setImageContentType(String imageContentType) {
         this.imageContentType = imageContentType;
-    }
-
-    public Set<Artist> getArtists() {
-        return artists;
-    }
-
-    public void setArtists(Set<Artist> artists) {
-        this.artists = artists;
     }
 
     public Set<PerformanceDto> getPerformances() {

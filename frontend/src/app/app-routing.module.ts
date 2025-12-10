@@ -6,6 +6,8 @@ import { AuthGuard } from './guards/auth.guard';
 import { MessageComponent } from './components/message/message.component';
 import {EventsListComponent} from "./components/events/events-list/events-list.component";
 import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
+import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-detail.component";
+import {ArtistsListComponent} from "./components/artists/artists-list/artists-list.component";
 
 
 const routes: Routes = [
@@ -32,6 +34,16 @@ const routes: Routes = [
     path: 'events/:id',
     canActivate: mapToCanActivate([AuthGuard]),
     component: EventDetailComponent
+  },
+  {
+    path: 'artists',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: ArtistsListComponent,
+  },
+  {
+    path: 'artists/:id',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: ArtistDetailComponent
   },
   {
     path: 'tickets',
