@@ -13,7 +13,7 @@ export interface EventDto {
 
 export enum EventType {
   CONCERT = 'CONCERT',
-  FESTIVAL = 'FESTIVAL'
+  FESTIVAL = 'FESTIVAL',
   }
 export interface TopEvent {
   title: string,
