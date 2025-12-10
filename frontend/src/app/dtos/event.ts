@@ -7,8 +7,6 @@ export interface EventDto {
   description: string;
   category: EventType;
   durationMinutes: number;
-  imageData: string; // Base64 encoded
-  imageContentType: string;
   artists: Artist[];
   performances: Performance[];
 }

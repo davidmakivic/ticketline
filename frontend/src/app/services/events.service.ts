@@ -24,6 +24,10 @@ export class EventsService {
     return this.httpClient.get<EventDto>(`${this.eventsBaseUri}/${id}`);
   }
 
+  getEventImage(id: number): Observable<Blob> {
+    return this.httpClient.get(`${this.eventsBaseUri}/${id}/image`, { responseType: 'blob' });
+  }
+
   createEvent(event: EventDto): Observable<EventDto> {
     if (this.authService.getUserRole() !== 'ADMIN') {
       throw new Error('Nur Administratoren können Events erstellen');

@@ -17,10 +17,10 @@
     <div class="event-detail">
       <h1 class="event-title">{{ event.title }}</h1>
 
-      @if (event.imageData) {
+      @if (event.imageUrl) {
         <div class="image-container">
           <img
-            [src]="'data:' + event.imageContentType + ';base64,' + event.imageData"
+            [src]="event.imageUrl"
             alt="Event-Bild: {{ event.title }}"
             class="event-image"
             loading="lazy">

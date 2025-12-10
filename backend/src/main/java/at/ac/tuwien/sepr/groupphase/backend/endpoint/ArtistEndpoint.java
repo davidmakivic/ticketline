@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.ArtistMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +46,11 @@ public class ArtistEndpoint {
         return artistService.findById(id);
     }
 
+    @PermitAll
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> getArtistImage(@PathVariable Long id) {
+        return artistService.getArtistImage(id);
+    }
 
     @PermitAll
     @GetMapping

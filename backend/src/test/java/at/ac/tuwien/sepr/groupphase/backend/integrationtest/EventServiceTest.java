@@ -59,7 +59,6 @@ public class EventServiceTest {
         EventDto saved = eventService.create("Test Event", "Desc", EventType.CONCERT, 30, image);
 
         assertThat(saved.getTitle()).isEqualTo("Test Event");
-        assertThat(saved.getImageData()).isEqualTo(imageContent);
         assertThat(saved.getImageContentType()).isEqualTo("image/jpeg");
     }
 

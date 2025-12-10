@@ -8,6 +8,8 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,6 +54,21 @@ public class ArtistServiceImpl implements ArtistService {
 
         return artistMapper.artistToArtistDto(artist);
     }
+
+    @Override
+    public ResponseEntity<byte[]> getArtistImage(Long id) {
+        Artist artist = artistRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Artist not found: " + id));
+
+        if (artist.getImageData() == null || artist.getImageData().length == 0) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(artist.getImageContentType()))
+            .body(artist.getImageData());
+    }
+
 
 
     @Override

@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -11,6 +12,8 @@ public interface ArtistService {
     ArtistDto update(Long id, ArtistDto artist);
 
     ArtistDto findById(Long id);
+
+    ResponseEntity<byte[]> getArtistImage(Long id);
 
     List<ArtistDto> findAll();
 

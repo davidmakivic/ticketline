@@ -12,6 +12,7 @@ public class ArtistDto {
     private String lastName;
     private String stageName;
     private ArtistType artistType;
+    private String imageContentType;
     private Set<Event> events = new HashSet<>();
 
     public ArtistDto() {}
@@ -54,6 +55,14 @@ public class ArtistDto {
 
     public void setArtistType(ArtistType artistType) {
         this.artistType = artistType;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 
     public Set<Event> getEvents() {

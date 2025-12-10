@@ -35,6 +35,12 @@ public class Artist {
     @Column(name = "artist_type")
     private ArtistType artistType;
 
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+    private byte[] imageData;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
+
     @ManyToMany(mappedBy = "artists")
     private Set<Event> events = new HashSet<>();
 
@@ -93,5 +99,21 @@ public class Artist {
 
     public void setEvents(Set<Event> events) {
         this.events = events;
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 }

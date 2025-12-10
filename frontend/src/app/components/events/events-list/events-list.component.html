@@ -31,9 +31,9 @@
           [routerLink]="['/events', event.id]"
           [attr.aria-label]="'Event: ' + event.title">
           <div class="card-content">
-            @if (event.imageData) {
+            @if (event.imageUrl) {
               <img
-                [src]="'data:' + event.imageContentType + ';base64,' + event.imageData"
+                [src]="event.imageUrl"
                 alt="Event-Bild: {{ event.title }}"
                 class="event-image"
                 loading="lazy">
