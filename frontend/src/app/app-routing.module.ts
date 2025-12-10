@@ -10,6 +10,7 @@ import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-d
 import {ArtistsListComponent} from "./components/artists/artists-list/artists-list.component";
 
 
+
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
