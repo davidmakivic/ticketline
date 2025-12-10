@@ -18,6 +18,7 @@ public interface TicketMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "performance", ignore = true)
     @Mapping(target = "seat", ignore = true)
+    @Mapping(target = "version", ignore = true)
     Ticket ticketDtoToTicket(TicketDto ticketDto);
 
     List<TicketDto> ticketListToTicketDtoList(List<Ticket> tickets);

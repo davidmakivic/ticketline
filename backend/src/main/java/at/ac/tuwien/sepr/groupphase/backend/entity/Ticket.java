@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 
 @Entity
@@ -31,16 +32,16 @@ public class Ticket {
     @JoinColumn(name = "seat_id")
     private Seat seat;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "order_id", nullable = true)
-    private Order order;
-
     @Column(name = "price_final_cents")
     private Long priceFinalCents;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private TicketStatus status;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     public Ticket() {}
 
@@ -91,12 +92,14 @@ public class Ticket {
         this.status = status;
     }
 
-    public Order getOrder() {
-        return order;
+    public Long getVersion() {
+        return version;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setVersion(Long version) {
+        this.version = version;
     }
+
+
 
 }

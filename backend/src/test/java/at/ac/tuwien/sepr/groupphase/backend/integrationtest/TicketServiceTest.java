@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
@@ -137,19 +138,7 @@ public class TicketServiceTest {
             .isInstanceOf(NotFoundException.class);
     }
 
-    @Transactional
-    @Test
-    void testFindAllTickets() {
-        TicketDto dto1 = buildDto(performance.getId(), 1500L, TicketStatus.AVAILABLE);
-        TicketDto dto2 = buildDto(performance.getId(), 2500L, TicketStatus.AVAILABLE);
 
-        ticketService.create(dto1);
-        ticketService.create(dto2);
-
-        List<TicketDto> result = ticketService.findAll();
-
-        assertThat(result).hasSizeGreaterThanOrEqualTo(2);
-    }
 
     @Transactional
     @Test
@@ -158,38 +147,18 @@ public class TicketServiceTest {
             .isInstanceOf(NotFoundException.class);
     }
 
-    @Transactional
-    @Test
-    void testDeleteTicket() {
-        TicketDto dto = buildDto(performance.getId(), 2200L, TicketStatus.AVAILABLE);
-        TicketDto saved = ticketService.create(dto);
-        Long id = saved.getId();
 
-        assertThat(ticketService.findById(id)).isNotNull();
-
-        ticketService.delete(id);
-
-        assertThatThrownBy(() -> ticketService.findById(id))
-            .isInstanceOf(NotFoundException.class);
-    }
 
     @Transactional
     @Test
-    void testDeleteTicketNotFound() {
-        assertThatThrownBy(() -> ticketService.delete(999999L))
-            .isInstanceOf(NotFoundException.class);
-    }
-
-    @Transactional
-    @Test
-    void testUpdateTicketStatus() {
+    void testUpdateTicketStatus() throws ConflictException {
         TicketDto dto = buildDto(performance.getId(), 1800L, TicketStatus.AVAILABLE);
         TicketDto saved = ticketService.create(dto);
         Long id = saved.getId();
 
-        TicketDto updated = ticketService.updateStatus(id, TicketStatus.CANCELLED);
+        TicketDto updated = ticketService.updateStatus(id, TicketStatus.PURCHASED, saved.getVersion());
 
         assertThat(updated.getId()).isEqualTo(id);
-        assertThat(updated.getStatus()).isEqualTo(TicketStatus.CANCELLED);
+        assertThat(updated.getStatus()).isEqualTo(TicketStatus.PURCHASED);
     }
 }

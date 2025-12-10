@@ -116,7 +116,6 @@ public class OrderServiceImpl implements OrderService {
             tickets.stream().mapToLong(Ticket::getPriceFinalCents).sum());
 
         order.setTickets(tickets);
-        tickets.forEach(t -> t.setOrder(order));
 
         Order saved = orderRepository.save(order);
         return orderMapper.orderToOrderDto(saved);
@@ -131,9 +130,7 @@ public class OrderServiceImpl implements OrderService {
         List<Ticket> tickets = ticketRepository.findAllById(updateDto.getTicketIds());
 
         // Set new tickets
-        order.getTickets().forEach(t -> t.setOrder(null));
         order.setTickets(tickets);
-        tickets.forEach(t -> t.setOrder(order));
 
         order.setTotalPriceCents(
             tickets.stream().mapToLong(Ticket::getPriceFinalCents).sum()
