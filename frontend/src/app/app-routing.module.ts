@@ -7,6 +7,7 @@ import { MessageComponent } from './components/message/message.component';
 import {EventsListComponent} from "./components/events/events-list/events-list.component";
 import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
 
+
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
