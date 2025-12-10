@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 
 @Entity
@@ -37,6 +38,10 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private TicketStatus status;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     public Ticket() {}
 
@@ -85,6 +90,14 @@ public class Ticket {
 
     public void setStatus(TicketStatus status) {
         this.status = status;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
 

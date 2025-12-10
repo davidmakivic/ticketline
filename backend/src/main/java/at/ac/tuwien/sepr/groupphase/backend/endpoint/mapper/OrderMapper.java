@@ -18,7 +18,7 @@ public interface OrderMapper {
      */
     @Mapping(target = "userId", source = "user.userId")
     @Mapping(target = "ticketIds",
-        expression = "java(order.getTickets().stream().map(t -> t.getId()).toList())")
+        expression = "java(order.getTickets() == null ? java.util.Collections.emptyList() : order.getTickets().stream().map(t -> t.getId()).toList())")
     OrderDto orderToOrderDto(Order order);
 
     /**

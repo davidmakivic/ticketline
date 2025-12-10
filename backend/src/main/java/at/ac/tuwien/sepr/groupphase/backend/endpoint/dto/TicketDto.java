@@ -9,16 +9,18 @@ public class TicketDto {
     private Long seatId;
     private Long priceFinalCents;
     private TicketStatus status;
+    private Long version;
 
     public TicketDto() {
     }
 
-    public TicketDto(Long id, Long performanceId, Long seatId, Long priceFinalCents, TicketStatus status) {
+    public TicketDto(Long id, Long performanceId, Long seatId, Long priceFinalCents, TicketStatus status, Long version) {
         this.id = id;
         this.performanceId = performanceId;
         this.seatId = seatId;
         this.priceFinalCents = priceFinalCents;
         this.status = status;
+        this.version = version;
     }
 
     public Long getId() {
@@ -59,5 +61,13 @@ public class TicketDto {
 
     public void setStatus(TicketStatus status) {
         this.status = status;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

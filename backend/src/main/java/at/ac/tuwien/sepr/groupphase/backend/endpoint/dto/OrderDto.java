@@ -7,13 +7,13 @@ public class OrderDto {
 
     private final Long id;
     private final Long userId;
-    private final long totalPriceCents;
+    private final Long totalPriceCents;
     private final Instant createdAt;
     private final List<Long> ticketIds;
 
     public OrderDto(Long id,
                     Long userId,
-                    long totalPriceCents,
+                    Long totalPriceCents,
                     Instant createdAt,
                     List<Long> ticketIds) {
         this.id = id;
@@ -31,7 +31,7 @@ public class OrderDto {
         return userId;
     }
 
-    public long getTotalPriceCents() {
+    public Long getTotalPriceCents() {
         return totalPriceCents;
     }
 

@@ -67,7 +67,7 @@ public class UserEndpointTest {
     @Test
     void givenUserCreateDto_whenCreateUser_thenReturnCreatedUser() throws Exception {
         UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street 12", Roles.USER);
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto)))
             .andExpect(status().isCreated())
@@ -123,7 +123,7 @@ public class UserEndpointTest {
 
 
         mockMvc.perform(
-                put("/api/users/" + user.getUserId())
+                put("/api/v1/users/" + user.getUserId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(securityProperties.getAuthHeader(), token)
                     .content(toJson(updateDto))
@@ -160,7 +160,7 @@ public class UserEndpointTest {
     void givenUserCreateDto_whenCreateUser_thenStoreUser() throws Exception {
         UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street 12", Roles.USER);
 
-        MvcResult result = mockMvc.perform(post("/api/users")
+        MvcResult result = mockMvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto)))
             .andReturn();

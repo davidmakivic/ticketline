@@ -14,8 +14,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,68 +44,53 @@ public class EventServiceTest {
 
     @Transactional
     @Test
-    void testCreateEvent() {
-        EventDto e = new EventDto();
-        e.setTitle("Test Event");
-        e.setDescription("Desc");
-        e.setCategory(EventType.CONCERT);
-        e.setDurationMinutes(30);
-
-        EventDto saved = eventService.create(e);
+    void testCreateEvent() throws Exception {
+        EventDto saved = eventService.create("Test Event", "Desc", EventType.CONCERT, 30, null);
 
         assertThat(saved.getTitle()).isEqualTo("Test Event");
     }
 
     @Transactional
     @Test
-    void testUpdateEvent() {
-        EventDto e = new EventDto();
-        e.setTitle("Original");
-        e.setDescription("Original Desc");
-        e.setCategory(EventType.CONCERT);
-        e.setDurationMinutes(30);
+    void testCreateEventWithImage() throws Exception {
+        byte[] imageContent = "fake image content".getBytes();
+        MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", imageContent);
 
-        EventDto saved = eventService.create(e);
+        EventDto saved = eventService.create("Test Event", "Desc", EventType.CONCERT, 30, image);
+
+        assertThat(saved.getTitle()).isEqualTo("Test Event");
+        assertThat(saved.getImageData()).isEqualTo(imageContent);
+        assertThat(saved.getImageContentType()).isEqualTo("image/jpeg");
+    }
+
+    @Transactional
+    @Test
+    void testUpdateEvent() throws IOException {
+        EventDto saved = eventService.create("Original", "Original Desc", EventType.CONCERT, 30, null);
         Long id = saved.getId();
 
-        EventDto updated = new EventDto();
-        updated.setTitle("Updated Title");
-        updated.setDescription("Updated Desc");
-        updated.setCategory(EventType.MUSICAL);
-        updated.setDurationMinutes(60);
+        byte[] imageContent = "updated image".getBytes();
+        MockMultipartFile image = new MockMultipartFile("image", "updated.jpg", "image/jpeg", imageContent);
 
-        EventDto result = eventService.update(id, updated);
+        EventDto result = eventService.update(id, "Updated Title", "Updated Desc", EventType.MUSICAL, 60, image);
 
         assertThat(result.getTitle()).isEqualTo("Updated Title");
         assertThat(result.getCategory()).isEqualTo(EventType.MUSICAL);
+        assertThat(result.getDurationMinutes()).isEqualTo(60);
     }
 
     @Transactional
     @Test
     void testUpdateEventNotFound() {
-        EventDto updated = new EventDto();
-        updated.setTitle("Doesn't matter");
-
-        assertThatThrownBy(() -> eventService.update(999L, updated))
+        assertThatThrownBy(() -> eventService.update(999L, "Title", "Desc", EventType.CONCERT, 30, null))
             .isInstanceOf(NotFoundException.class);
     }
 
     @Transactional
     @Test
-    void testFindAll() {
-        EventDto e1 = new EventDto();
-        e1.setTitle("A");
-        e1.setDescription("Desc");
-        e1.setCategory(EventType.FESTIVAL);
-        e1.setDurationMinutes(10);
-
-        EventDto e2 = new EventDto();
-        e2.setTitle("B");
-        e2.setCategory(EventType.MUSICAL);
-        e2.setDurationMinutes(20);
-
-        eventService.create(e1);
-        eventService.create(e2);
+    void testFindAll() throws Exception {
+        eventService.create("A", "Desc", EventType.FESTIVAL, 10, null);
+        eventService.create("B", "Desc", EventType.MUSICAL, 20, null);
 
         List<EventDto> result = eventService.findAll();
 
@@ -112,14 +99,8 @@ public class EventServiceTest {
 
     @Transactional
     @Test
-    void testDeleteEvent() {
-        EventDto e = new EventDto();
-        e.setTitle("To be deleted");
-        e.setDescription("Desc");
-        e.setCategory(EventType.CONCERT);
-        e.setDurationMinutes(45);
-
-        EventDto saved = eventService.create(e);
+    void testDeleteEvent() throws Exception {
+        EventDto saved = eventService.create("To be deleted", "Desc", EventType.CONCERT, 45, null);
         Long id = saved.getId();
 
         assertThat(eventService.findById(id)).isNotNull();
@@ -132,14 +113,8 @@ public class EventServiceTest {
 
     @Transactional
     @Test
-    void testAddArtistToEvent() {
-        EventDto event = new EventDto();
-        event.setTitle("My Event");
-        event.setDescription("Desc");
-        event.setCategory(EventType.CONCERT);
-        event.setDurationMinutes(60);
-
-        EventDto savedEvent = eventService.create(event);
+    void testAddArtistToEvent() throws Exception {
+        EventDto savedEvent = eventService.create("My Event", "Desc", EventType.CONCERT, 60, null);
 
         ArtistDto artist = new ArtistDto();
         artist.setFirstName("John");
@@ -158,14 +133,8 @@ public class EventServiceTest {
 
     @Transactional
     @Test
-    void testRemoveArtistFromEvent() {
-        EventDto event = new EventDto();
-        event.setTitle("My Event");
-        event.setDescription("Desc");
-        event.setCategory(EventType.CONCERT);
-        event.setDurationMinutes(60);
-
-        EventDto savedEvent = eventService.create(event);
+    void testRemoveArtistFromEvent() throws Exception {
+        EventDto savedEvent = eventService.create("My Event", "Desc", EventType.CONCERT, 60, null);
 
         ArtistDto artist = new ArtistDto();
         artist.setFirstName("Anna");

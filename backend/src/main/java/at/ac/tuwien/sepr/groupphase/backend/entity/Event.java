@@ -1,16 +1,19 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.util.HashSet;
@@ -37,13 +40,22 @@ public class Event {
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
-    @ManyToMany
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+    private byte[] imageData;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "event_artists",
         joinColumns = @JoinColumn(name = "event_id"),
         inverseJoinColumns = @JoinColumn(name = "artist_id")
     )
     private Set<Artist> artists = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Performance> performances = new HashSet<>();
 
     public Event(String title, String description, EventType category, Integer durationMinutes) {
         this.title = title;
@@ -94,11 +106,35 @@ public class Event {
         this.durationMinutes = durationMinutes;
     }
 
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
+    }
+
     public Set<Artist> getArtists() {
         return artists;
     }
 
     public void setArtists(Set<Artist> artists) {
         this.artists = artists;
+    }
+
+    public Set<Performance> getPerformances() {
+        return performances;
+    }
+
+    public void setPerformances(Set<Performance> performances) {
+        this.performances = performances;
     }
 }

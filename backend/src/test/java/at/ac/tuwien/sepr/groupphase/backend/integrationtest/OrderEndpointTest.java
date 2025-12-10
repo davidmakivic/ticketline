@@ -27,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class OrderEndpointTest {
 
-    private static final String BASE_PATH = "/api/orders";
-    private static final String USER_PATH = "/api/orders/user/";
+    private static final String BASE_PATH = "/api/v1/orders";
+    private static final String USER_PATH = "/api/v1/orders/user/";
 
     @Autowired
     private MockMvc mockMvc;

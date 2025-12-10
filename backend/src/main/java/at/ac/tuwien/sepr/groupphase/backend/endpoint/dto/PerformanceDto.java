@@ -1,8 +1,14 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 
 public class PerformanceDto {
+
+    @JsonIgnore
+    private EventDto eventDto;
+
     private Long id;
     private Long eventId;
     private Long hallId;

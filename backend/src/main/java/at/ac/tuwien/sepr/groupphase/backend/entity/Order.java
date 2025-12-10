@@ -34,6 +34,7 @@ public class Order {
     @JoinColumn(name = "order_id")
     private List<Ticket> tickets = new ArrayList<>();
 
+
     @Column(name = "total_price_cents", nullable = false)
     private long totalPriceCents;
 
