@@ -192,12 +192,24 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     return { targetW, targetH, offsetX, offsetY };
   }
 
-  x(n: number) { const b = this.box; return b.offsetX + n * b.targetW; }
-  y(n: number) { const b = this.box; return b.offsetY + n * b.targetH; }
-  w(n: number) { return n * this.box.targetW; }
-  h(n: number) { return n * this.box.targetH; }
-  dx(n: number) { return n * this.box.targetW; }
-  dy(n: number) { return n * this.box.targetH; }
+  x(n: number) {
+    const b = this.box; return b.offsetX + n * b.targetW;
+  }
+  y(n: number) {
+    const b = this.box; return b.offsetY + n * b.targetH;
+  }
+  w(n: number) {
+    return n * this.box.targetW;
+  }
+  h(n: number) {
+    return n * this.box.targetH;
+  }
+  dx(n: number) {
+    return n * this.box.targetW;
+  }
+  dy(n: number) {
+    return n * this.box.targetH;
+  }
 
   get seatR(): number {
     const b = this.box;
@@ -209,9 +221,15 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     return this.layout?.elements ?? [];
   }
 
-  isStage(el: LayoutElement): el is StageEl { return el.type === 'stage'; }
-  isStanding(el: LayoutElement): el is StandingEl { return el.type === 'standingArea'; }
-  isSeatBlock(el: LayoutElement): el is SeatBlockEl { return el.type === 'seatBlock'; }
+  isStage(el: LayoutElement): el is StageEl {
+    return el.type === 'stage';
+  }
+  isStanding(el: LayoutElement): el is StandingEl {
+    return el.type === 'standingArea';
+  }
+  isSeatBlock(el: LayoutElement): el is SeatBlockEl {
+    return el.type === 'seatBlock';
+  }
 
   // ---- seat state mapping ----
   seatKey(sectorKey: string, row: number, seat: number): string {
@@ -252,8 +270,12 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     return new Intl.DateTimeFormat('de-AT', { hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
   }
 
-  get dateLabel(): string { return this.formatDate(this.performance?.startTime); }
-  get city(): string { return this.venue?.city ?? ''; }
+  get dateLabel(): string {
+    return this.formatDate(this.performance?.startTime);
+  }
+  get city(): string {
+    return this.venue?.city ?? '';
+  }
 
   get doorsOpenLabel(): string {
     const d = new Date(this.performance.startTime);
@@ -261,9 +283,15 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     return `Einlass ${this.formatTime(d.toISOString())} Uhr`;
   }
 
-  get beginLabel(): string { return `Beginn ${this.formatTime(this.performance?.startTime)} Uhr`; }
-  get endLabel(): string { return `Ende ${this.formatTime(this.performance?.endTime)} Uhr`; }
-  get venueLine(): string { return `${this.venue?.name ?? ''} – ${this.hall?.name ?? ''}`; }
+  get beginLabel(): string {
+    return `Beginn ${this.formatTime(this.performance?.startTime)} Uhr`;
+  }
+  get endLabel(): string {
+    return `Ende ${this.formatTime(this.performance?.endTime)} Uhr`;
+  }
+  get venueLine(): string {
+    return `${this.venue?.name ?? ''} – ${this.hall?.name ?? ''}`;
+  }
 
   get addressLine(): string {
     const v = this.venue;
