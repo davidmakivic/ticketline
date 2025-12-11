@@ -1,5 +1,7 @@
+
 .events-container {
   padding: 20px;
+
 }
 
 .search-section {
@@ -28,10 +30,12 @@
 
 .event-card {
   cursor: pointer;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  background-color: var(--mat-sys-surface-container);
 
   &:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    background-color: var(--mat-sys-surface-container-high);
   }
 
   .card-content {
@@ -62,6 +66,8 @@
       mat-card-title {
         font-size: 18px;
         margin: 0;
+        color: var(--mat-sys-on-surface);
+        font-weight: 500;
       }
 
       mat-card-content {
@@ -69,15 +75,17 @@
 
         p {
           margin: 0 0 12px 0;
-          color: #666;
+          color: var(--mat-sys-on-surface-variant);
           font-size: 14px;
+          line-height: 1.5;
         }
       }
 
       .event-category {
         display: inline-block;
         padding: 4px 12px;
-        background-color: #e0e0e0;
+        background-color: var(--mat-sys-primary-container);
+        color: var(--mat-sys-on-primary-container);
         border-radius: 16px;
         font-size: 12px;
         font-weight: 500;
@@ -89,7 +97,7 @@
 
 .no-events {
   text-align: center;
-  color: #999;
+  color: var(--mat-sys-on-surface-variant);
   padding: 40px 20px;
   grid-column: 1 / -1;
 }
