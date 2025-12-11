@@ -10,4 +10,6 @@ export interface CartItem {
   priceCents: number;
   imageUrl: string;
   reserved?: boolean;
+
+   reservedUntil?: number;
 }

@@ -10,6 +10,14 @@ export class CartService {
     return this.items;
   }
 
+  getCartItems(): CartItem[] {
+    return this.items.filter(i => !i.reserved);
+  }
+
+  getReservedItems(): CartItem[] {
+    return this.items.filter(i => i.reserved);
+  }
+
   addItem(item: CartItem) {
     this.items.push(item);
   }
@@ -28,11 +36,29 @@ export class CartService {
       .reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
   }
 
-  getReservedItems(): CartItem[] {
-    return this.items.filter(i => i.reserved);
+  reserveItem(id: number) {
+    const item = this.items.find(i => i.id === id);
+    if (item) {
+      item.reserved = true;
+      item.reservedUntil = Date.now() + 15 * 60 * 1000;
+    }
   }
 
-  getCartItems(): CartItem[] {
-    return this.items.filter(i => !i.reserved);
+  addTicketToCart(ticket: {
+    id: number;
+    title: string;
+    subtitle?: string;
+    date?: string;
+    time?: string;
+    location?: string;
+    priceCents: number;
+    imageUrl: string;
+  }) {
+    this.items.push({
+      ...ticket,
+      type: 'TICKET',
+      quantity: 1,
+      reserved: false
+    });
   }
 }
