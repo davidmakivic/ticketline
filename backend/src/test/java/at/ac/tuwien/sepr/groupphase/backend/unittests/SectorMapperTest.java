@@ -24,7 +24,7 @@ public class SectorMapperTest {
     void testSectorToSectorDtoAndBack() {
         Hall hall = new Hall();
         PriceCategory priceCategory = new PriceCategory();
-        Sector sector = new Sector(hall, "A", SectorType.SEATED, priceCategory);
+        Sector sector = new Sector(hall, "A", SectorType.SEATED, priceCategory, "1");
         sector.setId(1L);
         SectorDto dto = sectorMapper.sectorToSectorDto(sector);
         assertEquals(sector.getId(), dto.getId());
@@ -42,8 +42,8 @@ public class SectorMapperTest {
         PriceCategory priceCategory1 = new PriceCategory();
         PriceCategory priceCategory2 = new PriceCategory();
         List<Sector> sectors = List.of(
-            new Sector(hall1, "A", SectorType.SEATED, priceCategory1),
-            new Sector(hall2, "B", SectorType.SEATED, priceCategory2)
+            new Sector(hall1, "A", SectorType.SEATED, priceCategory1, "2"),
+            new Sector(hall2, "B", SectorType.SEATED, priceCategory2, "3")
         );
         List<SectorDto> dtos = sectorMapper.sectorListToSectorDtoList(sectors);
         assertEquals(2, dtos.size());

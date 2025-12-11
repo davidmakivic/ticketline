@@ -19,6 +19,11 @@ const routes: Routes = [
     canActivate: mapToCanActivate([AuthGuard]),
     component: MessageComponent
   },
+{
+  path: 'cart',
+  loadComponent: () =>
+    import('./components/cart/cart.component').then(m => m.CartComponent)
+},
   {
     path: 'orders',
     canActivate: mapToCanActivate([AuthGuard]),
@@ -45,6 +50,13 @@ const routes: Routes = [
     path: 'artists/:id',
     canActivate: mapToCanActivate([AuthGuard]),
     component: ArtistDetailComponent
+  },
+  {
+    path: 'performances/:performanceId/seats',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/seat-selection/seat-selection.component')
+        .then(m => m.SeatSelectionComponent)
   },
   {
     path: 'tickets',

@@ -3,7 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorUpdateDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
