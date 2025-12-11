@@ -1,10 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.HallDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.*;
 import at.ac.tuwien.sepr.groupphase.backend.repository.*;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
@@ -92,6 +89,7 @@ public class SeatEndpointTest implements TestData {
         sector.setHall(hall);
         sector.setName("VIP-Sektor");
         sector.setPriceCategory(priceCategory);
+        sector.setSectorKey("1");
         sector = sectorRepository.save(sector);
 
         seatRepository.deleteAll();

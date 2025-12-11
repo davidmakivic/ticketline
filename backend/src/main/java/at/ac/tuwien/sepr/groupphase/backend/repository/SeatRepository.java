@@ -1,6 +1,5 @@
 package at.ac.tuwien.sepr.groupphase.backend.repository;
 
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +13,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
      * @return a list of all seats of the given sector
      */
     List<Seat> findBySectorId(long sectorId);
+
+    Seat findBySectorIdAndRowNumberAndSeatNumber(Long sectorId, int rowNumber, int seatNumber);
 }

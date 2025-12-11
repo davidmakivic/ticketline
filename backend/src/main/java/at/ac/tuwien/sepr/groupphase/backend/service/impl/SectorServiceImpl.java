@@ -12,7 +12,6 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

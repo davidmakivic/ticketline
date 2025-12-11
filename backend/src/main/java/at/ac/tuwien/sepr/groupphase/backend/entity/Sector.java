@@ -12,9 +12,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "sectors")
+@Table(
+    name = "sectors",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"hall_id", "sectorKey"})
+)
 public class Sector {
 
     @Id
@@ -37,14 +41,18 @@ public class Sector {
     @JoinColumn(name = "price_category_id", nullable = false)
     private PriceCategory priceCategory;
 
+    @Column(name = "sectorKey", nullable = false, length = 32)
+    private String sectorKey;
+
     public Sector() {
     }
 
-    public Sector(Hall hall, String name, SectorType type, PriceCategory priceCategory) {
+    public Sector(Hall hall, String name, SectorType type, PriceCategory priceCategory, String sectorKey) {
         this.hall = hall;
         this.name = name;
         this.type = type;
         this.priceCategory = priceCategory;
+        this.sectorKey = sectorKey;
     }
 
     public Long getId() {
@@ -85,5 +93,13 @@ public class Sector {
 
     public void setPriceCategory(PriceCategory priceCategory) {
         this.priceCategory = priceCategory;
+    }
+
+    public String getSectorKey() {
+        return sectorKey;
+    }
+
+    public void setSectorKey(String sectorKey) {
+        this.sectorKey = sectorKey;
     }
 }

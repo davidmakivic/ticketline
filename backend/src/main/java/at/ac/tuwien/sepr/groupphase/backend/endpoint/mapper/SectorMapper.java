@@ -1,10 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper;
 
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorUpdateDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

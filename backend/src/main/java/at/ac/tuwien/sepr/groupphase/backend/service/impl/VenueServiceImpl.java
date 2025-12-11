@@ -8,7 +8,6 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.VenueService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +45,7 @@ public class VenueServiceImpl implements VenueService {
     @Override
     public void delete(Long id) {
         if (!venueRepository.existsById(id)) {
-            throw new EntityNotFoundException("Venue with id: " + id + " not found");
+            throw new NotFoundException("Venue with id: " + id + " not found");
         }
         venueRepository.deleteById(id);
     }

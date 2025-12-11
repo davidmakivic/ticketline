@@ -11,6 +11,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Date;
 
 @Profile("generateData")
+@DependsOn("hallDataGenerator")
 @Component
 public class PerformanceDataGenerator {
 

@@ -1,0 +1,127 @@
+.seat-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 0;
+}
+
+.state {
+  padding: 24px;
+  color: #334155;
+  &.error { color: #b91c1c; }
+}
+
+.title {
+  width: 100%;
+  max-width: 760px;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 650;
+    color: #0f172a;
+  }
+
+  .subtitle {
+    margin-top: 12px;
+    color: #334155;
+    .date { font-weight: 600; }
+    .city { margin-top: 2px; }
+  }
+
+  .meta {
+    margin: 14px auto 0;
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 12px;
+    color: #334155;
+
+    .left { text-align: left; }
+    .right { text-align: right; }
+    .line { line-height: 18px; }
+  }
+}
+
+/* important: container drives responsiveness */
+.plan-wrap {
+  width: 100%;
+  max-width: 760px;
+  height: min(560px, 70vh);
+  margin-top: 18px;
+}
+
+.plan-svg { display: block; }
+
+/* layout styles */
+.stage { fill: #374151; }
+.stage-text { fill: #fff; font-weight: 700; font-size: 16px; }
+
+.standing { fill: rgba(148,163,184,0.35); stroke: rgba(100,116,139,0.6); }
+.standing-text { fill: #0f172a; font-size: 12px; font-weight: 700; }
+
+.block-label { fill: #0f172a; font-size: 12px; font-weight: 700; }
+
+/* seats */
+.seat {
+  transition: transform .05s ease;
+  cursor: pointer;
+}
+
+.seat.free { fill: #0f172a; }
+.seat.reserved { fill: #ef4444; cursor: not-allowed; }
+.seat.selected { fill: #10b981; }
+.seat.missing { fill: #94a3b8; opacity: 0.55; cursor: not-allowed; }
+
+.seat:active { transform: scale(0.98); }
+
+.legend {
+  width: 100%;
+  max-width: 760px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #334155;
+
+  .leg-item { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+  .dot.free { background: #0f172a; }
+  .dot.reserved { background: #ef4444; }
+  .dot.selected { background: #10b981; }
+}
+
+.summary {
+  width: 100%;
+  max-width: 760px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #0f172a;
+
+  .sum-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #cbd5e1;
+  }
+
+  .actions {
+    margin-top: 14px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .btn {
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+
+    &.primary { background: #3b5bdb; color: #fff; }
+    &.outline { background: transparent; border-color: #3b5bdb; color: #3b5bdb; }
+  }
+}

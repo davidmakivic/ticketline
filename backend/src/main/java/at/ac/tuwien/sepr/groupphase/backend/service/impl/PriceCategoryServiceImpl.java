@@ -5,7 +5,6 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.PriceCategoryMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.PriceCategory;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.PriceCategoryService;
