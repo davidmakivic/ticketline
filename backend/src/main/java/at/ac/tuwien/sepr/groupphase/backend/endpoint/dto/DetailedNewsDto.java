@@ -3,9 +3,11 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class DetailedMessageDto extends SimpleMessageDto {
+public class DetailedNewsDto extends SimpleNewsDto {
 
     private String text;
+
+    private String imageContentType;
 
     public String getText() {
         return text;
@@ -15,12 +17,20 @@ public class DetailedMessageDto extends SimpleMessageDto {
         this.text = text;
     }
 
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof DetailedMessageDto that)) {
+        if (!(o instanceof DetailedNewsDto that)) {
             return false;
         }
         if (!super.equals(o)) {
@@ -42,47 +52,47 @@ public class DetailedMessageDto extends SimpleMessageDto {
     }
 
 
-    public static final class DetailedMessageDtoBuilder {
+    public static final class DetailedNewsDtoBuilder {
         private Long id;
         private LocalDateTime publishedAt;
         private String text;
         private String title;
         private String summary;
 
-        private DetailedMessageDtoBuilder() {
+        private DetailedNewsDtoBuilder() {
         }
 
-        public static DetailedMessageDtoBuilder aDetailedMessageDto() {
-            return new DetailedMessageDtoBuilder();
+        public static DetailedNewsDtoBuilder aDetailedNewsDto() {
+            return new DetailedNewsDtoBuilder();
         }
 
-        public DetailedMessageDtoBuilder withId(Long id) {
+        public DetailedNewsDtoBuilder withId(Long id) {
             this.id = id;
             return this;
         }
 
-        public DetailedMessageDtoBuilder withPublishedAt(LocalDateTime publishedAt) {
+        public DetailedNewsDtoBuilder withPublishedAt(LocalDateTime publishedAt) {
             this.publishedAt = publishedAt;
             return this;
         }
 
-        public DetailedMessageDtoBuilder withText(String text) {
+        public DetailedNewsDtoBuilder withText(String text) {
             this.text = text;
             return this;
         }
 
-        public DetailedMessageDtoBuilder withTitle(String title) {
+        public DetailedNewsDtoBuilder withTitle(String title) {
             this.title = title;
             return this;
         }
 
-        public DetailedMessageDtoBuilder withSummary(String summary) {
+        public DetailedNewsDtoBuilder withSummary(String summary) {
             this.summary = summary;
             return this;
         }
 
-        public DetailedMessageDto build() {
-            DetailedMessageDto detailedMessageDto = new DetailedMessageDto();
+        public DetailedNewsDto build() {
+            DetailedNewsDto detailedMessageDto = new DetailedNewsDto();
             detailedMessageDto.setId(id);
             detailedMessageDto.setPublishedAt(publishedAt);
             detailedMessageDto.setText(text);

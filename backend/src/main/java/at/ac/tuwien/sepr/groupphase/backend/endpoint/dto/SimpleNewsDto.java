@@ -3,7 +3,7 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class SimpleMessageDto {
+public class SimpleNewsDto {
 
 
     private Long id;
@@ -13,6 +13,8 @@ public class SimpleMessageDto {
     private String title;
 
     private String summary;
+
+    private String imageContentType;
 
     public Long getId() {
         return id;
@@ -46,12 +48,20 @@ public class SimpleMessageDto {
         this.summary = summary;
     }
 
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SimpleMessageDto that)) {
+        if (!(o instanceof SimpleNewsDto that)) {
             return false;
         }
         return Objects.equals(id, that.id)
@@ -76,46 +86,53 @@ public class SimpleMessageDto {
     }
 
 
-    public static final class SimpleMessageDtoBuilder {
+    public static final class SimpleNewsDtoBuilder {
         private Long id;
         private LocalDateTime publishedAt;
         private String title;
         private String summary;
+        private String imageContentType;
 
-        private SimpleMessageDtoBuilder() {
+        private SimpleNewsDtoBuilder() {
         }
 
-        public static SimpleMessageDtoBuilder aSimpleMessageDto() {
-            return new SimpleMessageDtoBuilder();
+        public static SimpleNewsDtoBuilder aSimpleNewsDto() {
+            return new SimpleNewsDtoBuilder();
         }
 
-        public SimpleMessageDtoBuilder withId(Long id) {
+        public SimpleNewsDtoBuilder withId(Long id) {
             this.id = id;
             return this;
         }
 
-        public SimpleMessageDtoBuilder withPublishedAt(LocalDateTime publishedAt) {
+        public SimpleNewsDtoBuilder withPublishedAt(LocalDateTime publishedAt) {
             this.publishedAt = publishedAt;
             return this;
         }
 
-        public SimpleMessageDtoBuilder withTitle(String title) {
+        public SimpleNewsDtoBuilder withTitle(String title) {
             this.title = title;
             return this;
         }
 
-        public SimpleMessageDtoBuilder withSummary(String summary) {
+        public SimpleNewsDtoBuilder withSummary(String summary) {
             this.summary = summary;
             return this;
         }
 
-        public SimpleMessageDto build() {
-            SimpleMessageDto simpleMessageDto = new SimpleMessageDto();
-            simpleMessageDto.setId(id);
-            simpleMessageDto.setPublishedAt(publishedAt);
-            simpleMessageDto.setTitle(title);
-            simpleMessageDto.setSummary(summary);
-            return simpleMessageDto;
+        public SimpleNewsDtoBuilder withImageContentType(String imageContentType) {
+            this.imageContentType = imageContentType;
+            return this;
+        }
+
+        public SimpleNewsDto build() {
+            SimpleNewsDto simpleNewsDto = new SimpleNewsDto();
+            simpleNewsDto.setId(id);
+            simpleNewsDto.setPublishedAt(publishedAt);
+            simpleNewsDto.setTitle(title);
+            simpleNewsDto.setSummary(summary);
+            simpleNewsDto.setImageContentType(imageContentType);
+            return simpleNewsDto;
         }
     }
 }

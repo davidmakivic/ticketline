@@ -1,8 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.unittests;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Message;
-import at.ac.tuwien.sepr.groupphase.backend.repository.MessageRepository;
+import at.ac.tuwien.sepr.groupphase.backend.entity.News;
+import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,25 +17,25 @@ import static org.junit.jupiter.api.Assertions.*;
 // the entire application context
 @DataJpaTest
 @ActiveProfiles("test")
-public class MessageRepositoryTest implements TestData {
+public class NewsRepositoryTest implements TestData {
 
     @Autowired
-    private MessageRepository messageRepository;
+    private NewsRepository newsRepository;
 
     @Test
     public void givenNothing_whenSaveMessage_thenFindListWithOneElementAndFindMessageById() {
-        Message message = Message.MessageBuilder.aMessage()
+        News news = News.NewsBuilder.aMessage()
             .withTitle(TEST_NEWS_TITLE)
             .withSummary(TEST_NEWS_SUMMARY)
             .withText(TEST_NEWS_TEXT)
             .withPublishedAt(TEST_NEWS_PUBLISHED_AT)
             .build();
 
-        messageRepository.save(message);
+        newsRepository.save(news);
 
         assertAll(
-            () -> assertEquals(1, messageRepository.findAll().size()),
-            () -> assertNotNull(messageRepository.findById(message.getId()))
+            () -> assertEquals(1, newsRepository.findAll().size()),
+            () -> assertNotNull(newsRepository.findById(news.getId()))
         );
     }
 

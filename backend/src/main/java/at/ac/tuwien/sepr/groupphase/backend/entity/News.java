@@ -2,14 +2,17 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
-public class Message {
+@Table(name = "news")
+public class News {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +29,12 @@ public class Message {
 
     @Column(nullable = false, length = 10000)
     private String text;
+
+    @Column(name = "imageData", columnDefinition = "LONGBLOB")
+    private byte[] imageData;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
 
     public Long getId() {
         return id;
@@ -67,19 +76,35 @@ public class Message {
         this.text = text;
     }
 
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Message message)) {
+        if (!(o instanceof News news)) {
             return false;
         }
-        return Objects.equals(id, message.id)
-            && Objects.equals(publishedAt, message.publishedAt)
-            && Objects.equals(title, message.title)
-            && Objects.equals(summary, message.summary)
-            && Objects.equals(text, message.text);
+        return Objects.equals(id, news.id)
+            && Objects.equals(publishedAt, news.publishedAt)
+            && Objects.equals(title, news.title)
+            && Objects.equals(summary, news.summary)
+            && Objects.equals(text, news.text);
     }
 
     @Override
@@ -99,53 +124,53 @@ public class Message {
     }
 
 
-    public static final class MessageBuilder {
+    public static final class NewsBuilder {
         private Long id;
         private LocalDateTime publishedAt;
         private String title;
         private String summary;
         private String text;
 
-        private MessageBuilder() {
+        private NewsBuilder() {
         }
 
-        public static MessageBuilder aMessage() {
-            return new MessageBuilder();
+        public static NewsBuilder aMessage() {
+            return new NewsBuilder();
         }
 
-        public MessageBuilder withId(Long id) {
+        public NewsBuilder withId(Long id) {
             this.id = id;
             return this;
         }
 
-        public MessageBuilder withPublishedAt(LocalDateTime publishedAt) {
+        public NewsBuilder withPublishedAt(LocalDateTime publishedAt) {
             this.publishedAt = publishedAt;
             return this;
         }
 
-        public MessageBuilder withTitle(String title) {
+        public NewsBuilder withTitle(String title) {
             this.title = title;
             return this;
         }
 
-        public MessageBuilder withSummary(String summary) {
+        public NewsBuilder withSummary(String summary) {
             this.summary = summary;
             return this;
         }
 
-        public MessageBuilder withText(String text) {
+        public NewsBuilder withText(String text) {
             this.text = text;
             return this;
         }
 
-        public Message build() {
-            Message message = new Message();
-            message.setId(id);
-            message.setPublishedAt(publishedAt);
-            message.setTitle(title);
-            message.setSummary(summary);
-            message.setText(text);
-            return message;
+        public News build() {
+            News news = new News();
+            news.setId(id);
+            news.setPublishedAt(publishedAt);
+            news.setTitle(title);
+            news.setSummary(summary);
+            news.setText(text);
+            return news;
         }
     }
 }

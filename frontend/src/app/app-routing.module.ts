@@ -3,7 +3,7 @@ import { mapToCanActivate, RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
-import { MessageComponent } from './components/message/message.component';
+import { NewsComponent } from './components/news/news.component';
 import {EventsListComponent} from "./components/events/events-list/events-list.component";
 import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
 import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-detail.component";
@@ -15,9 +15,9 @@ const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   {
-    path: 'message',
+    path: 'news',
     canActivate: mapToCanActivate([AuthGuard]),
-    component: MessageComponent
+    component: NewsComponent
   },
   {
     path: 'orders',
