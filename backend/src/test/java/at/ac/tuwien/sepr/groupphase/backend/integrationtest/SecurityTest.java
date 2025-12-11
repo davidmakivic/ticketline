@@ -33,6 +33,7 @@ import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +41,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 /**
@@ -136,7 +136,7 @@ public class SecurityTest implements TestData {
     @Test
     public void givenUserLoggedIn_whenFindAll_then200() throws Exception {
         MvcResult mvcResult = this.mockMvc.perform(get(MESSAGE_BASE_URI)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(DEFAULT_USER, USER_ROLES)))
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(DEFAULT_USER, USER_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -159,13 +159,11 @@ public class SecurityTest implements TestData {
 
     @Test
     public void givenAdminLoggedIn_whenPost_then201() throws Exception {
-        NewsInquiryDto newsInquiryDto = newsMapper.newsToNewsInquiryDto(news);
-        String body = objectMapper.writeValueAsString(newsInquiryDto);
-
-        MvcResult mvcResult = this.mockMvc.perform(post(MESSAGE_BASE_URI)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult mvcResult = this.mockMvc.perform(multipart(MESSAGE_BASE_URI)
+                .param("title", TEST_NEWS_TITLE)
+                .param("summary", TEST_NEWS_SUMMARY)
+                .param("text", TEST_NEWS_TEXT)
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -175,13 +173,10 @@ public class SecurityTest implements TestData {
 
     @Test
     public void givenNoOneLoggedIn_whenPost_then403() throws Exception {
-        news.setPublishedAt(null);
-        NewsInquiryDto newsInquiryDto = newsMapper.newsToNewsInquiryDto(news);
-        String body = objectMapper.writeValueAsString(newsInquiryDto);
-
-        MvcResult mvcResult = this.mockMvc.perform(post(MESSAGE_BASE_URI)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body))
+        MvcResult mvcResult = this.mockMvc.perform(multipart(MESSAGE_BASE_URI)
+                .param("title", TEST_NEWS_TITLE)
+                .param("summary", TEST_NEWS_SUMMARY)
+                .param("text", TEST_NEWS_TEXT))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -191,18 +186,17 @@ public class SecurityTest implements TestData {
 
     @Test
     public void givenUserLoggedIn_whenPost_then403() throws Exception {
-        news.setPublishedAt(null);
-        NewsInquiryDto newsInquiryDto = newsMapper.newsToNewsInquiryDto(news);
-        String body = objectMapper.writeValueAsString(newsInquiryDto);
-
-        MvcResult mvcResult = this.mockMvc.perform(post(MESSAGE_BASE_URI)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(DEFAULT_USER, USER_ROLES)))
+        MvcResult mvcResult = this.mockMvc.perform(multipart(MESSAGE_BASE_URI)
+                .param("title", TEST_NEWS_TITLE)
+                .param("summary", TEST_NEWS_SUMMARY)
+                .param("text", TEST_NEWS_TEXT)
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(DEFAULT_USER, USER_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
 
         assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatus());
     }
+
+
 }
