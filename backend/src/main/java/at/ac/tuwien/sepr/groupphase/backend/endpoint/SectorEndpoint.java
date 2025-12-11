@@ -6,6 +6,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SectorUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SectorMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,12 +20,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/sectors")
 public class SectorEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final SectorService sectorService;
 
     public SectorEndpoint(SectorService sectorService) {
@@ -33,12 +37,14 @@ public class SectorEndpoint {
     @PermitAll
     @GetMapping("/{id}")
     public SectorDto getById(@PathVariable Long id) {
+        LOGGER.info("GET /api/v1/sectors/{}", id);
         return sectorService.findById(id);
     }
 
     @PermitAll
     @GetMapping
     public List<SectorDto> getAll() {
+        LOGGER.info("GET /api/v1/sectors");
         return sectorService.findAll();
     }
 
@@ -51,6 +57,7 @@ public class SectorEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public SectorDto create(@RequestBody SectorCreateDto dto) {
+        LOGGER.info("POST /api/v1/sectors: {}", dto);
         return sectorService.create(dto);
     }
 
@@ -64,6 +71,7 @@ public class SectorEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
+        LOGGER.info("DELETE /sectors/{id}", id);
         sectorService.delete(id);
     }
 }

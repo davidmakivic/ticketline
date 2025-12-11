@@ -5,6 +5,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.VenueService;
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,12 +19,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/venues")
 public class VenueEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final VenueService venueService;
 
     public VenueEndpoint(VenueService venueService) {
@@ -32,18 +36,21 @@ public class VenueEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public VenueDto createVenue(@RequestBody VenueCreateDto venueDto) {
+        LOGGER.info("POST /api/v1/venues: {}", venueDto);
         return venueService.create(venueDto);
     }
 
     @PermitAll
     @GetMapping("/{id}")
     public VenueDto getById(@PathVariable("id") Long id) {
+        LOGGER.info("GET /api/v1/venues/{}", id);
         return venueService.findById(id);
     }
 
     @PermitAll
     @GetMapping
     public List<VenueDto> getAll() {
+        LOGGER.info("GET /api/v1/venues");
         return venueService.findAll();
     }
 
@@ -51,6 +58,7 @@ public class VenueEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") Long id) {
+        LOGGER.info("DELETE /venues/{id}", id);
         venueService.delete(id);
     }
 

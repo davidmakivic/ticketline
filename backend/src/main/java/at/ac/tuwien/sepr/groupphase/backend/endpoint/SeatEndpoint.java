@@ -7,6 +7,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
 
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,11 +20,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/seats")
 public class SeatEndpoint {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final SeatService seatService;
 
     public SeatEndpoint(SeatService seatService) {
@@ -33,6 +39,7 @@ public class SeatEndpoint {
     @PermitAll
     @GetMapping("/{id}")
     public SeatDto getById(@PathVariable Long id) {
+        LOGGER.info("GET /api/v1/seats/{}", id);
         return seatService.findById(id);
     }
 
@@ -40,6 +47,7 @@ public class SeatEndpoint {
     @PermitAll
     @GetMapping
     public List<SeatDto> getAll() {
+        LOGGER.info("GET /api/v1/seats");
         return seatService.findAll();
     }
 
@@ -54,6 +62,7 @@ public class SeatEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public SeatDto create(@RequestBody SeatCreateDto dto) {
+        LOGGER.info("POST /api/v1/seats: {}", dto);
         return seatService.create(dto);
     }
 
@@ -69,6 +78,7 @@ public class SeatEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
+        LOGGER.info("DELETE /seats/{id}", id);
         seatService.delete(id);
     }
 }
