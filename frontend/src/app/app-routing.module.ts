@@ -47,6 +47,13 @@ const routes: Routes = [
     component: ArtistDetailComponent
   },
   {
+    path: 'performances/:performanceId/seats',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/seat-selection/seat-selection.component')
+        .then(m => m.SeatSelectionComponent)
+  },
+  {
     path: 'tickets',
     canActivate: mapToCanActivate([AuthGuard]),
     loadComponent: () =>

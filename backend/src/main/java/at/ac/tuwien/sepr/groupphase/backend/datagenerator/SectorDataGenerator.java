@@ -23,18 +23,23 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn("hallDataGenerator")
+@DependsOn({"hallDataGenerator", "priceCategoryDataGenerator"})
 @Component
 public class SectorDataGenerator {
+
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final SectorRepository sectorRepository;
+    private final HallRepository hallRepository;
     private final PriceCategoryRepository priceCategoryRepository;
-    private HallRepository hallRepository;
-    private VenueRepository venueRepository;
 
-    public SectorDataGenerator(SectorRepository sectorRepository, PriceCategoryRepository priceCategoryRepository) {
+    public SectorDataGenerator(
+        SectorRepository sectorRepository,
+        HallRepository hallRepository,
+        PriceCategoryRepository priceCategoryRepository
+    ) {
         this.sectorRepository = sectorRepository;
+        this.hallRepository = hallRepository;
         this.priceCategoryRepository = priceCategoryRepository;
     }
 
@@ -45,52 +50,30 @@ public class SectorDataGenerator {
             return;
         }
 
-        LOG.debug("Generating sectors");
+        List<Hall> halls = hallRepository.findAll();
+        if (halls.isEmpty()) {
+            LOG.error("No halls found — cannot generate sectors!");
+            return;
+        }
 
         List<PriceCategory> categories = priceCategoryRepository.findAll();
-
         if (categories.isEmpty()) {
             LOG.error("No price categories found — cannot generate sectors!");
             return;
         }
 
-        Venue venue = new Venue();
-        venue.setName("Venue");
-        venueRepository.save(venue);
-
-        Hall hall = new Hall();
-        hall.setName("Halle 1");
-        hall.setVenue(venue);
-        hallRepository.save(hall);
-
+        // Beispiel: nur für die erste Hall ein kleines Set an Sektoren
+        Hall hall = halls.get(0);
         PriceCategory catA = categories.get(0);
+        PriceCategory catB = categories.get(Math.min(1, categories.size() - 1));
+        PriceCategory catC = categories.get(Math.min(2, categories.size() - 1));
 
         Sector s1 = new Sector(hall, "A1", SectorType.SEATED, catA, "1");
-        s1.setPriceCategory(catA);
-
         Sector s2 = new Sector(hall, "A2", SectorType.SEATED, catA, "2");
-        s2.setPriceCategory(catA);
+        Sector s3 = new Sector(hall, "B1", SectorType.VIP,    catB, "3");
+        Sector s4 = new Sector(hall, "C1", SectorType.STANDING, catC, "4");
 
-
-        PriceCategory catB = categories.get(1 % categories.size());
-
-        Sector s3 = new Sector(hall, "B1", SectorType.VIP, catB, "3");
-        s3.setPriceCategory(catB);
-
-        Sector s4 = new Sector(hall, "B2", SectorType.VIP, catB, "4");
-        s4.setPriceCategory(catB);
-
-
-        PriceCategory catC = categories.get(2 % categories.size());
-
-        Sector s5 = new Sector(hall, "C1", SectorType.STANDING, catC, "5");
-        s5.setPriceCategory(catC);
-
-        Sector s6 = new Sector(hall, "C2", SectorType.STANDING, catC, "6");
-        s6.setPriceCategory(catC);
-
-        sectorRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6));
-
+        sectorRepository.saveAll(List.of(s1, s2, s3, s4));
         LOG.debug("Sector generation complete");
     }
 }

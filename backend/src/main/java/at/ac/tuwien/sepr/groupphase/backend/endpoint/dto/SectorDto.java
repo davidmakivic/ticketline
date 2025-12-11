@@ -11,7 +11,7 @@ public class SectorDto {
     private Long priceCategoryId;
     private String sectorKey;
 
-    public SectorDto(Long id, String name, SectorType type, Long hallId, Long priceCategoryId) {
+    public SectorDto(Long id, String name, SectorType type, Long hallId, Long priceCategoryId,  String sectorKey) {
         this.id = id;
         this.name = name;
         this.hallId = hallId;

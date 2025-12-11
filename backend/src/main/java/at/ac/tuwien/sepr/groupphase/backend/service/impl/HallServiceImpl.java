@@ -84,6 +84,7 @@ public class HallServiceImpl implements HallService {
 
         List<SectorDto> sectorIndex = sectorRepository.findByHallId(id).stream()
             .map(s -> new SectorDto(
+                s.getId(),
                 s.getName(),
                 s.getType(),
                 s.getHall().getId(),
