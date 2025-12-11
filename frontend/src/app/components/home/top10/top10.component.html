@@ -1,0 +1,9 @@
+<div class="top10 d-flex flex-column pt-5 align-items-center" >
+  <h1 class="title">Top Events</h1>
+
+    <mat-button-toggle-group name="top10-categories" [(ngModel)]="selectedCategory" class="mt-4">
+      <mat-button-toggle value="ALL">Alle Events</mat-button-toggle>
+      <mat-button-toggle value="CONCERT">Konzert</mat-button-toggle>
+      <mat-button-toggle value="FESTIVAL">Festival</mat-button-toggle>
+    </mat-button-toggle-group>
+</div>

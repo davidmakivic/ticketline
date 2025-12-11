@@ -1,10 +1,13 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,7 +38,14 @@ public class Artist {
     @Column(name = "artist_type")
     private ArtistType artistType;
 
-    @ManyToMany(mappedBy = "artists")
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+    private byte[] imageData;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
+
+    @ManyToMany(mappedBy = "artists", fetch = FetchType.EAGER)
+    @JsonManagedReference
     private Set<Event> events = new HashSet<>();
 
     public Artist(String firstName, String lastName, String stageName, ArtistType artistType) {
@@ -93,5 +103,21 @@ public class Artist {
 
     public void setEvents(Set<Event> events) {
         this.events = events;
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 }

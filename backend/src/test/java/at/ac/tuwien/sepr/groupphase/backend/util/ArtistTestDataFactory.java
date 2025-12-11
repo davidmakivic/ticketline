@@ -6,13 +6,17 @@ import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 import java.util.HashSet;
 
 public class ArtistTestDataFactory {
-    public static ArtistDto create(ArtistType type, String stageName) {
-        ArtistDto artist = new ArtistDto();
-        artist.setFirstName("Test");
-        artist.setLastName("Test");
-        artist.setStageName(stageName);
-        artist.setArtistType(type);
-        artist.setEvents(new HashSet<>());
-        return artist;
+    public static ArtistDto create(String stageName, ArtistType type) {
+        ArtistDto dto = new ArtistDto();
+        dto.setFirstName("John");
+        dto.setLastName("Doe");
+        dto.setStageName(stageName);
+        dto.setArtistType(type);
+        dto.setEvents(new HashSet<>());
+        return dto;
+    }
+
+    public static ArtistDto create() {
+        return create("TestArtist", ArtistType.SOLO);
     }
 }

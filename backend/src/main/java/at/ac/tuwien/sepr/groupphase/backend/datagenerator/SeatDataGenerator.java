@@ -7,6 +7,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Profile("generateData")
+@DependsOn("sectorDataGenerator")
 @Component
 public class SeatDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

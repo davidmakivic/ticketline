@@ -14,6 +14,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import org.antlr.v4.runtime.misc.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Profile("generateData")
+@DependsOn("hallDataGenerator")
 @Component
 public class SectorDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

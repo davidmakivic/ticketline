@@ -13,12 +13,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface EventMapper {
 
-    @Mapping(source = "imageData", target = "imageData")
     @Mapping(source = "imageContentType", target = "imageContentType")
     EventDto eventToEventDto(Event event);
 
-    @Mapping(source = "imageData", target = "imageData")
     @Mapping(source = "imageContentType", target = "imageContentType")
+    @Mapping(target = "artists", ignore = true)
     List<EventDto> eventToEventDto(List<Event> events);
 
     @Mapping(target = "id", ignore = true)

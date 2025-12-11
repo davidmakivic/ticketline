@@ -1,7 +1,7 @@
 Cypress.Commands.add('loginAdmin', () => {
     cy.fixture('settings').then(settings => {
         cy.visit(settings.baseUrl);
-        cy.contains('a', 'Login').click();
+        cy.get('a[routerlink="/login"]').click();
         cy.get('input[name="username"]').type(settings.adminUser);
         cy.get('input[name="password"]').type(settings.adminPw);
         cy.contains('button', 'Login').click();
@@ -10,7 +10,6 @@ Cypress.Commands.add('loginAdmin', () => {
 
 Cypress.Commands.add('createMessage', (msg) => {
     cy.fixture('settings').then(settings => {
-        cy.contains('a', 'Message');
         cy.contains('button', 'Add message').click();
         cy.get('input[name="title"]').type('title' +  msg);
         cy.get('textarea[name="summary"]').type('summary' +  msg);

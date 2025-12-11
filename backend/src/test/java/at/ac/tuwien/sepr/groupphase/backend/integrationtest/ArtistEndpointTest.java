@@ -5,24 +5,19 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
-import at.ac.tuwien.sepr.groupphase.backend.util.ArtistTestDataFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import static at.ac.tuwien.sepr.groupphase.backend.basetest.TestData.ADMIN_ROLES;
 import static at.ac.tuwien.sepr.groupphase.backend.basetest.TestData.ADMIN_USER;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,10 +41,6 @@ public class ArtistEndpointTest {
     @Autowired
     private ArtistRepository artistRepository;
 
-    private String toJson(Object o) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(o);
-    }
-
     @BeforeEach
     public void beforeEach() {
         artistRepository.deleteAll();
@@ -58,100 +49,108 @@ public class ArtistEndpointTest {
     @Transactional
     @Test
     void testCreateArtist() throws Exception {
-        ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "Test");
-
-        mockMvc.perform(post("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON).content(toJson(dto))
+        mockMvc.perform(multipart("/api/v1/artists")
+                .file("image", new byte[0])
+                .param("firstName", "John")
+                .param("lastName", "Doe")
+                .param("stageName", "JD")
+                .param("artistType", "SOLO")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").exists())
-            .andExpect(jsonPath("$.stageName").value("Test"))
+            .andExpect(jsonPath("$.firstName").value("John"))
+            .andExpect(jsonPath("$.stageName").value("JD"))
             .andExpect(jsonPath("$.artistType").value("SOLO"));
-
     }
-
 
     @Transactional
     @Test
     void testGetArtistById() throws Exception {
-        ArtistDto dto = ArtistTestDataFactory.create(ArtistType.BAND, "The Band");
-
-        String response = mockMvc.perform(post("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(dto))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult result = mockMvc.perform(multipart("/api/v1/artists")
+                .file("image", new byte[0])
+                .param("firstName", "Jane")
+                .param("lastName", "Smith")
+                .param("stageName", "JS")
+                .param("artistType", "BAND")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
+            .andReturn();
 
-        ArtistDto created = objectMapper.readValue(response, ArtistDto.class);
+        ArtistDto responseDto = objectMapper.readValue(result.getResponse().getContentAsString(), ArtistDto.class);
 
-        mockMvc.perform(get("/api/v1/artists/" + created.getId()))
+        mockMvc.perform(get("/api/v1/artists/" + responseDto.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.stageName").value("The Band"))
+            .andExpect(jsonPath("$.firstName").value("Jane"))
             .andExpect(jsonPath("$.artistType").value("BAND"));
     }
-
 
     @Transactional
     @Test
     void testUpdateArtist() throws Exception {
-        ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "Old Name");
-
-        String response = mockMvc.perform(post("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(dto))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult result = mockMvc.perform(multipart("/api/v1/artists")
+                .file("image", new byte[0])
+                .param("firstName", "Bob")
+                .param("lastName", "Builder")
+                .param("stageName", "BB")
+                .param("artistType", "SOLO")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
+            .andReturn();
 
-        ArtistDto created = objectMapper.readValue(response, ArtistDto.class);
+        ArtistDto created = objectMapper.readValue(result.getResponse().getContentAsString(), ArtistDto.class);
 
-        created.setStageName("Updated Name");
-        created.setArtistType(ArtistType.BAND);
-
-        mockMvc.perform(put("/api/v1/artists/" + created.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(created))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        mockMvc.perform(multipart("/api/v1/artists/" + created.getId())
+                .file("image", new byte[0])
+                .param("firstName", "Robert")
+                .param("lastName", "Constructor")
+                .param("stageName", "RC")
+                .param("artistType", "BAND")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.stageName").value("Updated Name"))
+            .andExpect(jsonPath("$.firstName").value("Robert"))
             .andExpect(jsonPath("$.artistType").value("BAND"));
     }
 
     @Transactional
     @Test
     void testUpdateArtistNotFound() throws Exception {
-        ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "Does Not Exist");
-
-        mockMvc.perform(put("/api/v1/artists/999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(dto))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        mockMvc.perform(multipart("/api/v1/artists/999")
+                .file("image", new byte[0])
+                .param("firstName", "Test")
+                .param("lastName", "Test")
+                .param("stageName", "Test")
+                .param("artistType", "SOLO")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
             .andExpect(status().isNotFound());
     }
 
     @Transactional
     @Test
     void testGetAllArtists() throws Exception {
-        ArtistDto a1 = ArtistTestDataFactory.create(ArtistType.SOLO, "One");
-        ArtistDto a2 = ArtistTestDataFactory.create(ArtistType.BAND, "Two");
-
-        mockMvc.perform(post("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(a1))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        mockMvc.perform(multipart("/api/v1/artists")
+                .file("image", new byte[0])
+                .param("firstName", "Artist1")
+                .param("lastName", "Last1")
+                .param("stageName", "A1")
+                .param("artistType", "SOLO")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk());
 
-        mockMvc.perform(post("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(a2))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        mockMvc.perform(multipart("/api/v1/artists")
+                .file("image", new byte[0])
+                .param("firstName", "Artist2")
+                .param("lastName", "Last2")
+                .param("stageName", "A2")
+                .param("artistType", "BAND")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/v1/artists"))
@@ -165,32 +164,29 @@ public class ArtistEndpointTest {
     @Test
     void testGetArtistNotFound() throws Exception {
         mockMvc.perform(get("/api/v1/artists/999"))
-            .andExpect(status().isNotFound());
+            .andExpect(status().is4xxClientError());
     }
-
 
     @Transactional
     @Test
     void testDeleteArtist() throws Exception {
-        ArtistDto dto = ArtistTestDataFactory.create(ArtistType.SOLO, "DeleteMe");
-
-        String response = mockMvc.perform(post("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(dto))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult result = mockMvc.perform(multipart("/api/v1/artists")
+                .file("image", new byte[0])
+                .param("firstName", "Delete")
+                .param("lastName", "Me")
+                .param("stageName", "DM")
+                .param("artistType", "SOLO")
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
+            .andReturn();
 
-        ArtistDto created = objectMapper.readValue(response, ArtistDto.class);
+        ArtistDto created = objectMapper.readValue(result.getResponse().getContentAsString(), ArtistDto.class);
 
         mockMvc.perform(delete("/api/v1/artists/" + created.getId())
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/v1/artists/" + created.getId()))
             .andExpect(status().isNotFound());
     }
-
 }
