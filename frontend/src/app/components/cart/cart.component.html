@@ -1,0 +1,39 @@
+<div class="cart-container">
+
+  <h1 class="title">Einkaufswagen</h1>
+
+  <div class="cart-list">
+    <div *ngFor="let item of cart.getCartItems()" class="cart-item">
+
+      <img [src]="item.imageUrl" class="item-img">
+
+      <div class="item-info">
+        <h2>{{ item.title }}</h2>
+        <p>{{ item.subtitle }}</p>
+
+        <div class="details" *ngIf="item.type === 'TICKET'">
+          <div>{{ item.location }}</div>
+          <div>{{ item.date }}</div>
+          <div>{{ item.time }}</div>
+        </div>
+      </div>
+
+      <div class="item-meta">
+        <div class="quantity">{{ item.quantity }}x</div>
+        <div class="price">{{ toEuro(item.priceCents) }}</div>
+        <button class="edit-btn">Ändern</button>
+        <button class="delete-btn" (click)="cart.removeItem(item.id)">🗑</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="summary">
+    <span>Gesamt:</span>
+    <span>{{ toEuro(cart.getTotalCents()) }}</span>
+    <button class="buy-btn">Kaufen</button>
+  </div>
+
+  <h2 class="subtitle">Reservierungen</h2>
+
+</div>

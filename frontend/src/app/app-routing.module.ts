@@ -19,6 +19,11 @@ const routes: Routes = [
     canActivate: mapToCanActivate([AuthGuard]),
     component: MessageComponent
   },
+{
+  path: 'cart',
+  loadComponent: () =>
+    import('./components/cart/cart.component').then(m => m.CartComponent)
+},
   {
     path: 'orders',
     canActivate: mapToCanActivate([AuthGuard]),

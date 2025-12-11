@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
 import { Ticket } from '../dtos/ticket';
+import { TicketStatus } from '../dtos/ticket';
 
 @Injectable({ providedIn: 'root' })
 export class TicketsService {
@@ -26,5 +27,18 @@ export class TicketsService {
 
   createTicket(ticket: Ticket): Observable<Ticket> {
     return this.httpClient.post<Ticket>(this.ticketsBaseUri, ticket);
+  }
+
+  getTicketsByPerformance(performanceId: number): Observable<Ticket[]> {
+    return this.httpClient.get<Ticket[]>(
+      `${this.ticketsBaseUri}/performance/${performanceId}`
+    );
+  }
+
+  updateStatus(id: number, status: TicketStatus, version: number): Observable<Ticket> {
+    return this.httpClient.put<Ticket>(
+      `${this.ticketsBaseUri}/${id}/status`,
+      { status, version }
+    );
   }
 }
