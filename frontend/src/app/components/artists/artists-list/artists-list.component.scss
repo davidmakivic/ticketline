@@ -1,3 +1,4 @@
+// src/app/components/artists/artists-list/artists-list.component.scss
 .artists-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -17,11 +18,13 @@
 
     .artist-card {
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+      background-color: var(--mat-sys-surface-container);
 
       &:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        background-color: var(--mat-sys-surface-container-high);
       }
 
       .card-content {
@@ -39,29 +42,37 @@
 
         .artist-info {
           flex: 1;
+          padding: 0.5rem;
 
           mat-card-header {
-            padding: 0.5rem;
+            padding: 0;
             margin-bottom: 0.5rem;
           }
 
           mat-card-title {
             font-size: 1.2rem;
-            margin-bottom: 0.25rem;
+            margin: 0 0 0.25rem 0;
+            color: var(--mat-sys-on-surface);
           }
 
           mat-card-subtitle {
             font-size: 0.9rem;
             color: var(--mat-sys-on-surface-variant);
+            margin: 0;
+          }
+
+          mat-card-content {
+            padding: 0;
           }
 
           .artist-type {
             display: inline-block;
             padding: 0.4rem 0.8rem;
             border-radius: 4px;
-            background-color: var(--mat-sys-surface-dim);
-            color: var(--mat-sys-on-surface);
+            background-color: var(--mat-sys-primary-container);
+            color: var(--mat-sys-on-primary-container);
             font-size: 0.85rem;
+            font-weight: 500;
           }
         }
       }
