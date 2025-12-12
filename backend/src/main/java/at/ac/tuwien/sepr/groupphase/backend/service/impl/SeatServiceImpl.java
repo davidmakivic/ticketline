@@ -11,14 +11,17 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class SeatServiceImpl implements SeatService {
 
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final SeatRepository seatRepository;
     private final SeatMapper seatMapper;
     private final SectorRepository sectorRepository;
@@ -31,6 +34,7 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public SeatDto findById(Long id) {
+        LOGGER.info("Fetching seat with id={}", id);
         Seat seat = seatRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Seat not found with id: " + id));
         return seatMapper.seatToSeatDto(seat);
@@ -38,17 +42,21 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public List<SeatDto> findAll() {
+        LOGGER.info("Fetching all seats");
         List<Seat> allSeats = seatRepository.findAll();
         return seatMapper.seatListToSeatDtoList(allSeats);
     }
 
     @Override
     public List<SeatDto> findBySectorId(Long sectorId) {
+        LOGGER.info("Fetching all seats for sector {}", sectorId);
         return seatMapper.seatListToSeatDtoList(seatRepository.findBySectorId(sectorId));
     }
 
     @Override
     public SeatDto create(SeatCreateDto seat) {
+        LOGGER.info("Creating seat in sector {}", seat.getSectorId());
+        LOGGER.debug("Payload: {}", seat);
         if (seat.getSectorId() == null) {
             throw new NotFoundException("Sector with id " + seat.getSectorId() + " not found");
         }
@@ -64,6 +72,8 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public SeatDto update(Long id, SeatUpdateDto seat) {
+        LOGGER.info("Updating seat with id={}", id);
+        LOGGER.debug("Payload: {}", seat);
         Seat existingSeat = seatRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Seat not found with id: " + id));
 
@@ -81,6 +91,7 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public void delete(Long id) {
+        LOGGER.info("Deleting seat with id={}", id);
         Seat seat = seatRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Seat not found with id: " + id));
         seatRepository.delete(seat);

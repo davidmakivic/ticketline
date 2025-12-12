@@ -49,7 +49,8 @@ public class UserEndpoint {
     @PutMapping(path = "{id}")
     @ResponseStatus(HttpStatus.OK)
     public UserDetailDto updateUser(@PathVariable("id") Long id, @RequestBody UserUpdateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("PUT /users/{id}", id);
+        LOGGER.info("Updating user with id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
         dto.setUserId(id);
         return userService.update(dto);
     }
@@ -57,7 +58,7 @@ public class UserEndpoint {
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @DeleteMapping(path = "{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) throws ForbiddenException {
-        LOGGER.info("DELETE /users/{id}", id);
+        LOGGER.info("Deleting user with id={}", id);
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -67,15 +68,15 @@ public class UserEndpoint {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDetailDto createUser(@RequestBody UserCreateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("POST /users/create {}", dto.getEmail());
-
+        LOGGER.info("Creating user");
+        LOGGER.debug("Request payload: {}", dto.getEmail());
         return userService.createApplicationUser(dto);
     }
 
     @PermitAll
     @PostMapping("/resetPassword")
     public ResponseEntity<Void> requestPasswordReset(@RequestParam("email") String email) {
-        LOGGER.info("POST /users/resetPassword {}", email);
+        LOGGER.info("Requesting password reset for user with email={}", email);
         try {
             userService.resetPassword(email);
         } catch (MessagingException e) {
@@ -87,7 +88,8 @@ public class UserEndpoint {
     @PermitAll
     @PostMapping("/changePassword")
     public ResponseEntity<String> showChangePasswordPage(@RequestBody PasswortChangeDto dto) throws ValidationException {
-        LOGGER.info("POST /users/changePassword");
+        LOGGER.info("Changing password for user");
+        LOGGER.debug("Request payload: {}", dto);
         try {
             userService.changePassword(dto);
         } catch (GoneException e) {
@@ -100,12 +102,15 @@ public class UserEndpoint {
     @Secured("ROLE_ADMIN")
     @GetMapping
     public List<UserDetailDto> searchUsers(@RequestBody UserSearchDto dto) throws ValidationException {
+        LOGGER.info("Searching users");
+        LOGGER.debug("Search payload: {}", dto);
         return userService.searchUser(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}/block")
     public ResponseEntity<Void> blockUser(@PathVariable Long id) throws NotFoundException, ForbiddenException {
+        LOGGER.info("Blocking user with id={}", id);
         userService.blockUser(id);
         return ResponseEntity.noContent().build();
     }
@@ -113,6 +118,7 @@ public class UserEndpoint {
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}/unblock")
     public ResponseEntity<Void> unblockUser(@PathVariable Long id) throws NotFoundException {
+        LOGGER.info("Unblocking user with id={}", id);
         userService.unblockUser(id);
         return ResponseEntity.noContent().build();
     }

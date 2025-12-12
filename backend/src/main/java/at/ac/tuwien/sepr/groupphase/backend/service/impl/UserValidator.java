@@ -30,6 +30,8 @@ public class UserValidator {
 
 
     public void validateUserForCreate(UserCreateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Validating user for creation: {}", dto.getEmail());
+        LOGGER.debug("Payload: {}", dto);
 
         List<String> errors = new ArrayList<>();
 
@@ -112,6 +114,9 @@ public class UserValidator {
     }
 
     public void validateUserForUpdate(UserUpdateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Validating user for update: {}", dto.getUserId());
+        LOGGER.debug("Payload: {}", dto);
+
         ApplicationUser userToUpdate = userRepository.findUserByUserId(dto.getUserId());
         if (userToUpdate == null) {
             throw new NotFoundException("User with id " + dto.getUserId() + " does not exist");
@@ -198,6 +203,8 @@ public class UserValidator {
     }
 
     public void validateForDelete(Long id) throws ForbiddenException {
+        LOGGER.info("Validating delete for user id={}", id);
+
         String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
         ApplicationUser currentUser = userRepository.findUserByEmail(userMail);
         ApplicationUser userToDelete = userRepository.findUserByUserId(id);
@@ -220,6 +227,8 @@ public class UserValidator {
     }
 
     public void validatePassword(String password) throws ValidationException {
+        LOGGER.info("Validating password");
+        LOGGER.debug("PasswordLength={}", password != null ? password.length() : null);
         if (password == null || password.isEmpty()) {
             throw new ValidationException("Validation for password failed", Collections.singletonList("Password must not be empty"));
         }

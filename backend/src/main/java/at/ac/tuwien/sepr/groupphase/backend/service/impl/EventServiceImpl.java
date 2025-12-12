@@ -9,16 +9,21 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class EventServiceImpl implements EventService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final EventRepository eventRepository;
     private final ArtistRepository artistRepository;
     private final EventMapper eventMapper;
@@ -31,6 +36,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto create(String title, String description, EventType category, Integer durationMinutes, MultipartFile image) throws IOException {
+        LOGGER.info("Creating event '{}'", title);
+        LOGGER.debug("Payload: category={}, duration={}, imagePresent={}", category, durationMinutes, image != null);
         Event entity = new Event(title, description, category, durationMinutes);
 
         if (image != null && !image.isEmpty()) {
@@ -44,6 +51,9 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto update(Long id, String title, String description, EventType category, Integer durationMinutes, MultipartFile image) throws IOException {
+        LOGGER.info("Updating event with id={}", id);
+        LOGGER.debug("Payload: title={}, description={}, category={}, duration={}, imagePresent={}",
+            title, description, category, durationMinutes, image != null);
         Event existing = eventRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Event not found: " + id));
 
@@ -64,6 +74,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto findById(Long id) {
+        LOGGER.info("Fetching event with id={}", id);
         Event event = eventRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Event not found with id " + id));
 
@@ -72,6 +83,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public ResponseEntity<byte[]> getEventImage(Long id) {
+        LOGGER.info("Fetching event image for id={}", id);
         Event event = eventRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Event not found: " + id));
 
@@ -86,16 +98,19 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventDto> findByAnyTitle(String title) {
+        LOGGER.info("Searching events by title: {}", title);
         return eventMapper.eventToEventDto(eventRepository.findByAnyTitle(title));
     }
 
     @Override
     public List<EventDto> findAll() {
+        LOGGER.info("Fetching all events");
         return eventMapper.eventToEventDto(eventRepository.findAll());
     }
 
     @Override
     public void addArtist(Long eventId, Long artistId) {
+        LOGGER.info("Adding artist {} to event {}", artistId, eventId);
         Event event = eventRepository.findById(eventId)
             .orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
 
@@ -108,6 +123,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void removeArtist(Long eventId, Long artistId) {
+        LOGGER.info("Removing artist {} from event {}", artistId, eventId);
         Event event = eventRepository.findById(eventId)
             .orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
 
@@ -120,6 +136,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void delete(Long id) {
+        LOGGER.info("Deleting event with id={}", id);
         eventRepository.deleteById(id);
     }
 }

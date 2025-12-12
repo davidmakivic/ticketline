@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.LivenessState;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  * This endpoint is used for kubernetes health checks.
  */
@@ -17,8 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/health")
 public class CustomHealthEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ApplicationContext applicationContext;
     private boolean status = true;
+
 
     @Autowired
     public CustomHealthEndpoint(ApplicationContext applicationContext) {
@@ -29,6 +35,8 @@ public class CustomHealthEndpoint {
     @PermitAll
     @GetMapping
     public ResponseEntity<String> getHealth() {
+        LOGGER.info("Health check requested");
+        LOGGER.debug("Health status={}", status);
         if (status) {
             return ResponseEntity.ok("OK");
         }
@@ -42,7 +50,9 @@ public class CustomHealthEndpoint {
     @PermitAll
     @GetMapping("/prepareShutdown")
     public void preShutdown() {
+        LOGGER.warn("Pod shutdown preparation triggered");
         AvailabilityChangeEvent.publish(applicationContext, LivenessState.BROKEN);
+        LOGGER.debug("Health status set to false");
         status = false;
     }
 }

@@ -12,13 +12,17 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.HallService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class HallServiceImpl implements HallService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HallRepository hallRepository;
     private final VenueRepository venueRepository;
     private final HallMapper hallMapper;
@@ -33,6 +37,8 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public HallDto createHall(HallCreateDto dto) {
+        LOGGER.info("Creating hall for venue {}", dto.getVenueId());
+        LOGGER.debug("Payload: {}", dto);
         Venue venue = venueRepository.findById(dto.getVenueId())
             .orElseThrow(() -> new NotFoundException("Venue with id: " + dto.getVenueId() + " not found"));
 
@@ -47,6 +53,8 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public HallDto updateHall(Long id, HallUpdateDto dto) {
+        LOGGER.info("Updating hall with id={}", id);
+        LOGGER.debug("Payload: {}", dto);
         Hall hall = hallRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Hall with id: " + dto.getVenueId() + " not found"));
 
@@ -70,6 +78,7 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public void deleteHall(Long id) {
+        LOGGER.info("Deleting hall with id={}", id);
         if (!hallRepository.existsById(id)) {
             throw new NotFoundException("Hall with id: " + id + " not found");
         }
@@ -79,6 +88,7 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public HallDto getHallbyId(Long id) {
+        LOGGER.info("Fetching hall with id={}", id);
         Hall hall = hallRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Hall with id: " + id + " not found"));
 
@@ -101,6 +111,7 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public List<HallDto> findAll() {
+        LOGGER.info("Fetching all halls");
         return hallMapper.hallListToHallDtoList(hallRepository.findAll());
     }
 }
