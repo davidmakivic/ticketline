@@ -68,12 +68,12 @@ public class HallDataGenerator {
         for (Venue venue : venues) {
 
             Hall mainHall = new Hall();
-            mainHall.setName(venue.getName() + " - Großer Saal");
+            mainHall.setName("Saal A");
             mainHall.setVenue(venue);
             mainHall.setLayoutMetadata(layout);
 
             Hall smallHall = new Hall();
-            smallHall.setName(venue.getName() + " - Kleiner Saal");
+            smallHall.setName("Saal B");
             smallHall.setVenue(venue);
             smallHall.setLayoutMetadata(layout);
 
