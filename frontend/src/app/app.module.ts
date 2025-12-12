@@ -9,7 +9,7 @@ import {HeaderComponent} from './components/header/header.component';
 import {FooterComponent} from './components/footer/footer.component';
 import {HomeComponent} from './components/home/home.component';
 import {LoginComponent} from './components/login/login.component';
-import {MessageComponent} from './components/message/message.component';
+import {NewsComponent} from './components/news/news.component';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {httpInterceptorProviders} from './interceptors';
 import {MatButton, MatIconButton} from "@angular/material/button";
@@ -20,6 +20,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatDivider} from "@angular/material/divider";
 import {Top10Component} from "./components/home/top10/top10.component";
+import {NewsListComponent} from "./components/home/news-list/news-list.component";
 
 
 @NgModule({
@@ -27,9 +28,8 @@ import {Top10Component} from "./components/home/top10/top10.component";
     AppComponent,
     HeaderComponent,
     FooterComponent,
-    HomeComponent,
     LoginComponent,
-    MessageComponent,
+    NewsComponent,
   ],
   bootstrap: [AppComponent],
   imports: [BrowserModule,
@@ -43,7 +43,10 @@ import {Top10Component} from "./components/home/top10/top10.component";
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component],
+    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent],
+  exports: [
+    Top10Component
+  ],
   providers: [httpInterceptorProviders, provideHttpClient(withInterceptorsFromDi())]
 })
 export class AppModule {
