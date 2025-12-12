@@ -47,7 +47,7 @@ public class NewsEndpoint {
     @GetMapping
     @Operation(summary = "Get list of news without details", security = @SecurityRequirement(name = "apiKey"))
     public List<SimpleNewsDto> findAll() {
-        LOGGER.info("GET /api/v1/news");
+        LOGGER.info("Fetching all news");
         return newsMapper.newsToSimpleNewsDto(newsService.findAll());
     }
 
@@ -55,7 +55,7 @@ public class NewsEndpoint {
     @GetMapping(value = "/{id}")
     @Operation(summary = "Get detailed information about a specific news post", security = @SecurityRequirement(name = "apiKey"))
     public DetailedNewsDto find(@PathVariable(name = "id") Long id) {
-        LOGGER.info("GET /api/v1/news/{}", id);
+        LOGGER.info("Fetching news entry with id={}", id);
         return newsMapper.newsToDetailedNewsDto(newsService.findOne(id));
     }
 
@@ -69,7 +69,9 @@ public class NewsEndpoint {
         @RequestParam("text") String text,
         @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
 
-        LOGGER.info("POST /api/v1/news");
+        LOGGER.info("Creating news");
+        LOGGER.debug("Request payload: title={}, summaryLength={}, textLength={}, imagePresent={}",
+            title, summary != null ? summary.length() : 0, text != null ? text.length() : 0, image != null);
         return newsMapper.newsToDetailedNewsDto(
             newsService.publishMessage(title, summary, text, image));
     }
@@ -77,6 +79,7 @@ public class NewsEndpoint {
     @PermitAll
     @GetMapping("/{id}/image")
     public ResponseEntity<byte[]> getNewsImage(@PathVariable Long id) {
+        LOGGER.info("Fetching image for news id={}", id);
         return newsService.getNewsImage(id);
     }
 }
