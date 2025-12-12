@@ -1,6 +1,5 @@
 package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;

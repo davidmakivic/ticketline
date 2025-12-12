@@ -96,7 +96,7 @@ public class SectorEndpointTest implements TestData {
             priceCategoryRepository.save(priceCategory));
 
 
-        sectorDto = new SectorDto( "A", SectorType.SEATED,  hall.getId(), priceCategory.getId());
+        sectorDto = new SectorDto( "A", SectorType.SEATED,  hall.getId(), priceCategory.getId(), "1");
     }
 
     @Test
@@ -150,9 +150,9 @@ public class SectorEndpointTest implements TestData {
         priceCategoryRepository.save(priceCategory3);
 
 
-        sectorRepository.save(new Sector(hall1, "A", SectorType.SEATED, priceCategory1));
-        sectorRepository.save(new Sector(hall2, "B", SectorType.VIP, priceCategory2));
-        sectorRepository.save(new Sector(hall3, "C", SectorType.STANDING, priceCategory3));
+        sectorRepository.save(new Sector(hall1, "A", SectorType.SEATED, priceCategory1, "1"));
+        sectorRepository.save(new Sector(hall2, "B", SectorType.VIP, priceCategory2, "2"));
+        sectorRepository.save(new Sector(hall3, "C", SectorType.STANDING, priceCategory3, "3"));
 
         mockMvc.perform(get("/api/v1/sectors"))
             .andExpect(status().isOk())

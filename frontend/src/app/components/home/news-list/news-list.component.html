@@ -1,0 +1,26 @@
+<div class="news-container">
+  <h2 class="news-title">NEWS</h2>
+
+  @if (loading) {
+    <p class="loading">Laden...</p>
+  }
+
+  @if (!loading && news.length > 0) {
+    <div class="news-list">
+      @for (item of news; track item.id; let last = $last) {
+        <div class="news-item">
+          <h3 class="news-item-title">{{ item.title }}</h3>
+          <p class="news-item-summary">{{ item.summary }}</p>
+          <p class="news-item-date">{{ item.publishedAt | date }}</p>
+        </div>
+        @if (!last) {
+          <mat-divider></mat-divider>
+        }
+      }
+    </div>
+  }
+
+  @if (!loading && news.length === 0) {
+    <p class="no-news">Keine News verfügbar</p>
+  }
+</div>

@@ -2,7 +2,6 @@ package at.ac.tuwien.sepr.groupphase.backend.unittests;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import org.junit.jupiter.api.Test;

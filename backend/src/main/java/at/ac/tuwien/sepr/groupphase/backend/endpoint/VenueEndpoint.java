@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/venues")
+@RequestMapping(value = "/api/v1/venues")
 public class VenueEndpoint {
 
     private final VenueService venueService;

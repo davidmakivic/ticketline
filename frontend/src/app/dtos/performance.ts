@@ -2,7 +2,7 @@ export interface Performance {
   id: number;
   eventId: number;
   hallId: number;
-  startTime: Date;
-  endTime: Date;
+  startTime: string;
+  endTime: string;
   basePriceCents: number;
 }

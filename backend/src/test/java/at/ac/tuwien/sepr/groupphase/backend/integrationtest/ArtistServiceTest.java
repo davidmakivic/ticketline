@@ -3,7 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;

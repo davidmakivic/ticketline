@@ -11,7 +11,6 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

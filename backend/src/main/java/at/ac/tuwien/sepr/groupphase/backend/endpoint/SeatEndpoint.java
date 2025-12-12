@@ -3,7 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SeatUpdateDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.SeatMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.SeatService;
 
 import jakarta.annotation.security.PermitAll;

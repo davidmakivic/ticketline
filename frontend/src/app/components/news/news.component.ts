@@ -1,33 +1,41 @@
 import {ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild, ViewChildren} from '@angular/core';
-import {MessageService} from '../../services/message.service';
-import {Message} from '../../dtos/message';
+import {NewsService} from '../../services/news.service';
+import {News} from '../../dtos/news';
 import {NgbModal, NgbPaginationConfig} from '@ng-bootstrap/ng-bootstrap';
 import {UntypedFormBuilder, NgForm} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
+import {SafeUrl,DomSanitizer} from "@angular/platform-browser";
+
+interface NewsWithImage extends News {
+  imageUrl?: SafeUrl;
+}
 
 @Component({
     selector: 'app-message',
-    templateUrl: './message.component.html',
-    styleUrls: ['./message.component.scss'],
+    templateUrl: './news.component.html',
+    styleUrls: ['./news.component.scss'],
     standalone: false
 })
-export class MessageComponent implements OnInit {
+export class NewsComponent implements OnInit {
 
   error = false;
   errorMessage = '';
   // After first submission attempt, form validation will start
   submitted = false;
 
-  currentMessage: Message;
+  currentMessage: NewsWithImage;
+  selectedFile: File | null = null;
+  isEditMode: boolean = false;
 
-  private message: Message[];
+  private message: NewsWithImage[];
 
-  constructor(private messageService: MessageService,
+  constructor(private messageService: NewsService,
               private ngbPaginationConfig: NgbPaginationConfig,
               private formBuilder: UntypedFormBuilder,
               private cd: ChangeDetectorRef,
               private authService: AuthService,
-              private modalService: NgbModal) {
+              private modalService: NgbModal,
+              private sanitizer: DomSanitizer) {
   }
 
   ngOnInit() {
@@ -42,20 +50,31 @@ export class MessageComponent implements OnInit {
   }
 
   openAddModal(messageAddModal: TemplateRef<any>) {
-    this.currentMessage = new Message();
+    this.isEditMode = false;
+    this.currentMessage = new News() as NewsWithImage;
+    this.selectedFile = null;
     this.modalService.open(messageAddModal, {ariaLabelledBy: 'modal-basic-title'});
   }
 
   openExistingMessageModal(id: number, messageAddModal: TemplateRef<any>) {
+    this.isEditMode = true;
     this.messageService.getMessageById(id).subscribe({
       next: res => {
-        this.currentMessage = res;
+        this.currentMessage = res as NewsWithImage;
+        this.loadNewsImage(this.currentMessage);
         this.modalService.open(messageAddModal, {ariaLabelledBy: 'modal-basic-title'});
       },
       error: err => {
         this.defaultServiceErrorHandling(err);
       }
     });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+    }
   }
 
   /**
@@ -73,7 +92,7 @@ export class MessageComponent implements OnInit {
     }
   }
 
-  getMessage(): Message[] {
+  getMessage(): NewsWithImage[] {
     return this.message;
   }
 
@@ -84,13 +103,8 @@ export class MessageComponent implements OnInit {
     this.error = false;
   }
 
-  /**
-   * Sends message creation request
-   *
-   * @param message the message which should be created
-   */
-  private createMessage(message: Message) {
-    this.messageService.createMessage(message).subscribe({
+  private createMessage(message: NewsWithImage) {
+    this.messageService.createMessage(message, this.selectedFile || undefined).subscribe({
         next: () => {
           this.loadMessage();
         },
@@ -101,18 +115,30 @@ export class MessageComponent implements OnInit {
     );
   }
 
-  /**
-   * Loads the specified page of message from the backend
-   */
   private loadMessage() {
     this.messageService.getMessage().subscribe({
-      next: (message: Message[]) => {
-        this.message = message;
+      next: (messages: NewsWithImage[]) => {
+        this.message = messages;
+        this.message.forEach(msg => this.loadNewsImage(msg));
       },
       error: error => {
         this.defaultServiceErrorHandling(error);
       }
     });
+  }
+
+  private loadNewsImage(news: NewsWithImage) {
+    if (news.imageContentType) {
+      this.messageService.getNewsImage(news.id).subscribe({
+        next: (blob: Blob) => {
+          const url = URL.createObjectURL(blob);
+          news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+        },
+        error: () => {
+          // Bild konnte nicht geladen werden
+        }
+      });
+    }
   }
 
 
@@ -127,7 +153,8 @@ export class MessageComponent implements OnInit {
   }
 
   private clearForm() {
-    this.currentMessage = new Message();
+    this.currentMessage = new News() as NewsWithImage;
+    this.selectedFile = null;
     this.submitted = false;
   }
 
