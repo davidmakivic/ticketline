@@ -12,15 +12,19 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final UserRepository userRepository;
@@ -42,6 +46,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> getAllOrders() {
+        LOGGER.info("Fetching all orders");
         return orderMapper.orderListToOrderDtoList(
             orderRepository.findAllByOrderByCreatedAtDesc()
         );
@@ -49,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto getOrder(long id) {
+        LOGGER.info("Fetching order with id={}", id);
         Order order = orderRepository.findByIdWithTickets(id)
             .orElseThrow(() -> new NotFoundException("Order not found"));
 
@@ -74,6 +80,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> getOrdersByUser(Long userId) {
+        LOGGER.info("Fetching all orders for user {}", userId);
 
         List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId);
 
@@ -102,6 +109,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto createOrder(OrderCreateDto createDto) {
 
+        LOGGER.info("Creating order");
+        LOGGER.debug("Payload: {}", createDto);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
@@ -123,7 +132,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto updateOrder(long id, OrderUpdateDto updateDto) {
-
+        LOGGER.info("Updating order with id={}", id);
+        LOGGER.debug("Payload: {}", updateDto);
         Order order = orderRepository.findByIdWithTickets(id)
             .orElseThrow(() -> new NotFoundException("Order not found"));
 

@@ -29,13 +29,13 @@ public class SimpleNewsService implements NewsService {
 
     @Override
     public List<News> findAll() {
-        LOGGER.debug("Find all news");
+        LOGGER.info("Fetching all news");
         return newsRepository.findAllByOrderByPublishedAtDesc();
     }
 
     @Override
     public News findOne(Long id) {
-        LOGGER.debug("Find news with id {}", id);
+        LOGGER.info("Fetching news with id={}", id);
         Optional<News> message = newsRepository.findById(id);
         if (message.isPresent()) {
             return message.get();
@@ -46,6 +46,9 @@ public class SimpleNewsService implements NewsService {
 
     @Override
     public News publishMessage(String title, String summary, String text, MultipartFile image) throws IOException {
+        LOGGER.info("Publishing news: {}", title);
+        LOGGER.debug("Payload: summary={}, textLength={}, imagePresent={}",
+            summary, text != null ? text.length() : 0, image != null);
         News news = new News();
         news.setTitle(title);
         news.setSummary(summary);
@@ -62,6 +65,7 @@ public class SimpleNewsService implements NewsService {
 
     @Override
     public ResponseEntity<byte[]> getNewsImage(Long id) {
+        LOGGER.info("Fetching news image for id={}", id);
         News news = newsRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("News not found: " + id));
 

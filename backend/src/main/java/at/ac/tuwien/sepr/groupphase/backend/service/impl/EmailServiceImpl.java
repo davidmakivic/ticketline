@@ -20,7 +20,8 @@ public class EmailServiceImpl {
     private JavaMailSender mailSender;
 
     public void sendPasswordResetEmail(String token, String receiver) throws MessagingException {
-        LOGGER.info("Sending password reset email to " + receiver);
+        LOGGER.info("Sending password reset email to {}", receiver);
+        LOGGER.debug("Reset token={}", token);
         String link = "https://localhost:4200/api/users/resetPassword?token=" + escapeHtml(token);
 
         String html = "<!doctype html><html><head><meta charset='utf-8'></head><body>"

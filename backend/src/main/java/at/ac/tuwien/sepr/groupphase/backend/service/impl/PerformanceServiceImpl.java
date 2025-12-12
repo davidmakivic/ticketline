@@ -8,13 +8,18 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class PerformanceServiceImpl implements PerformanceService {
 
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final PerformanceRepository performanceRepository;
     private final PerformanceMapper performanceMapper;
     private final EventRepository eventRepository;
@@ -29,6 +34,8 @@ public class PerformanceServiceImpl implements PerformanceService {
 
     @Override
     public PerformanceDto create(PerformanceDto dto) {
+        LOGGER.info("Creating performance");
+        LOGGER.debug("Payload: {}", dto);
         Performance performance = performanceMapper.performanceDtoToPerformance(dto);
 
         performance.setEvent(eventRepository.getReferenceById(dto.getEventId()));
@@ -41,6 +48,8 @@ public class PerformanceServiceImpl implements PerformanceService {
 
     @Override
     public PerformanceDto update(Long id, PerformanceDto dto) {
+        LOGGER.info("Updating performance with id={}", id);
+        LOGGER.debug("Payload: {}", dto);
         Performance performance = performanceRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Performance " + id + " not found"));
 
@@ -58,6 +67,7 @@ public class PerformanceServiceImpl implements PerformanceService {
 
     @Override
     public PerformanceDto findById(Long id) {
+        LOGGER.info("Fetching performance with id={}", id);
         Performance performance = performanceRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Performance with id " + id + " not found"));
 
@@ -66,6 +76,7 @@ public class PerformanceServiceImpl implements PerformanceService {
 
     @Override
     public List<PerformanceDto> findAll() {
+        LOGGER.info("Fetching all performances");
         return performanceMapper.performanceListToPerformanceDtoList(
             performanceRepository.findAll()
         );
@@ -73,6 +84,7 @@ public class PerformanceServiceImpl implements PerformanceService {
 
     @Override
     public void delete(Long id) {
+        LOGGER.info("Deleting performance with id={}", id);
         if (!performanceRepository.existsById(id)) {
             throw new NotFoundException("Performance with id " + id + " not found");
         }

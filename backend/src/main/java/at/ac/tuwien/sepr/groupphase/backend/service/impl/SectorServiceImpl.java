@@ -12,13 +12,17 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.SectorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class SectorServiceImpl implements SectorService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final SectorRepository sectorRepository;
     private final HallRepository hallRepository;
     private final SectorMapper sectorMapper;
@@ -33,6 +37,7 @@ public class SectorServiceImpl implements SectorService {
 
     @Override
     public SectorDto findById(Long id) {
+        LOGGER.info("Fetching sector with id={}", id);
         Sector sector =  sectorRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Sector not found with id: " + id));
         return sectorMapper.sectorToSectorDto(sector);
@@ -40,17 +45,21 @@ public class SectorServiceImpl implements SectorService {
 
     @Override
     public List<SectorDto> findAll() {
+        LOGGER.info("Fetching all sectors");
         List<Sector> allSeats = sectorRepository.findAll();
         return sectorMapper.sectorListToSectorDtoList(allSeats);
     }
 
     @Override
     public List<SectorDto> findByHallId(Long hallId) {
+        LOGGER.info("Fetching sectors for hall {}", hallId);
         return sectorMapper.sectorListToSectorDtoList(sectorRepository.findByHallId(hallId));
     }
 
     @Override
     public SectorDto create(SectorCreateDto sector) {
+        LOGGER.info("Creating sector in hall {}", sector.getHallId());
+        LOGGER.debug("Payload: {}", sector);
         if (sector.getHallId() == null) {
             throw new NotFoundException("Hall with id " + sector.getHallId() + " not found");
         }
@@ -73,6 +82,8 @@ public class SectorServiceImpl implements SectorService {
 
     @Override
     public SectorDto update(Long id, SectorUpdateDto sector) {
+        LOGGER.info("Updating sector with id={}", id);
+        LOGGER.debug("Payload: {}", sector);
         Sector existing = sectorRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Sector not found with id: " + id));
 
@@ -104,6 +115,7 @@ public class SectorServiceImpl implements SectorService {
 
     @Override
     public void delete(Long id) {
+        LOGGER.info("Deleting sector with id={}", id);
         Sector sector = sectorRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Sector not found with id: " + id));
         sectorRepository.delete(sector);
