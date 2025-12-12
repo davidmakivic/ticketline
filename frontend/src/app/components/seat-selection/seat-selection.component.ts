@@ -8,6 +8,9 @@ import { HallsService } from '../../services/halls.service';
 import { VenuesService } from '../../services/venues.service';
 import { SeatsService } from '../../services/seats.service';
 import { TicketsService } from '../../services/tickets.service';
+import { CartService } from '../../services/cart.service';
+import { Router } from '@angular/router';
+
 
 import { Performance } from '../../dtos/performance';
 import { Hall, LayoutElement, LayoutMetadata, SectorIndexEntry } from '../../dtos/hall';
@@ -68,7 +71,9 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     private hallsService: HallsService,
     private venuesService: VenuesService,
     private seatsService: SeatsService,
-    private ticketsService: TicketsService
+    private ticketsService: TicketsService,
+     private cart: CartService,
+      private router: Router
   ) {
     this.init();
   }
@@ -172,6 +177,27 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+addSelectedToCart() {
+  for (const seatId of this.selectedSeatIds) {
+    const ticket = this.ticketBySeatId.get(seatId);
+    if (!ticket) continue;
+
+   this.cart.addTicketToCart({
+     id: ticket.id,
+     title: 'Sitzplatz Ticket',
+     subtitle: this.venueLine,
+     date: this.dateLabel,
+     time: this.beginLabel,
+     location: this.addressLine,
+     priceCents: ticket.priceFinalCents ?? 0,
+     imageUrl: ''
+   });
+
+}
+  this.clearSelection();
+  this.router.navigate(['/cart']);
+}
+
 
   // ---- aspect ratio lock box ----
   get box() {
