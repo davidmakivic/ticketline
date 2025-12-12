@@ -7,8 +7,8 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
@@ -24,20 +24,18 @@ import java.util.List;
 @DependsOn("venueDataGenerator")
 @Component
 public class HallDataGenerator {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int NUMBER_OF_HALLS_TO_GENERATE = 10;
-    private static final String[] TEST_HALL_NAME = new String[] {
-        "HALL NAME 1", "HALL NAME 2", "HALL NAME 3", "HALL NAME 4", "HALL NAME 5",
-        "HALL NAME 6", "HALL NAME 7", "HALL NAME 8", "HALL NAME 9", "HALL NAME 10"
-    };
 
-    private final HallRepository hallRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final VenueRepository venueRepository;
+    private final HallRepository hallRepository;
     private final ObjectMapper objectMapper;
 
-    public HallDataGenerator(HallRepository hallRepository, VenueRepository venueRepository, ObjectMapper objectMapper) {
-        this.hallRepository = hallRepository;
+    public HallDataGenerator(VenueRepository venueRepository,
+                             HallRepository hallRepository,
+                             ObjectMapper objectMapper) {
         this.venueRepository = venueRepository;
+        this.hallRepository = hallRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -62,21 +60,27 @@ public class HallDataGenerator {
             return;
         }
 
-        LOGGER.debug("Generating {} hall entries", NUMBER_OF_HALLS_TO_GENERATE);
+        // Layout wird einmal geladen und anschließend für jede Hall gesetzt
+        JsonNode layout = loadLayout("hall1_layout.json");
 
-        for (int i = 0; i < NUMBER_OF_HALLS_TO_GENERATE; i++) {
-            Venue venue = venues.get(i % venues.size());
+        LOGGER.debug("Generating halls for venues");
 
-            Hall hall = new Hall();
-            hall.setName(TEST_HALL_NAME[i]);
-            hall.setVenue(venue);
+        for (Venue venue : venues) {
 
-            // We are only setting the hall_layout json for the hall with name "HALL NAME 1"
-            if ("HALL NAME 1".equals(TEST_HALL_NAME[i])) {
-                hall.setLayoutMetadata(loadLayout("hall1_layout.json"));
-            }
+            Hall mainHall = new Hall();
+            mainHall.setName(venue.getName() + " - Großer Saal");
+            mainHall.setVenue(venue);
+            mainHall.setLayoutMetadata(layout);
 
-            hallRepository.save(hall);
+            Hall smallHall = new Hall();
+            smallHall.setName(venue.getName() + " - Kleiner Saal");
+            smallHall.setVenue(venue);
+            smallHall.setLayoutMetadata(layout);
+
+            hallRepository.save(mainHall);
+            hallRepository.save(smallHall);
         }
+
+        LOGGER.debug("Hall generation complete");
     }
 }

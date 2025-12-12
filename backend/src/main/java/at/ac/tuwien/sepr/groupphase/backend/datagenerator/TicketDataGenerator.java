@@ -14,19 +14,19 @@ import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.Random;
 
 @Profile("generateData")
+@DependsOn({"performanceDataGenerator", "seatDataGenerator"})
 @Component
 public class TicketDataGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int TICKETS_PER_PERFORMANCE = 10;
 
     private final TicketRepository ticketRepository;
     private final PerformanceRepository performanceRepository;
@@ -55,36 +55,37 @@ public class TicketDataGenerator {
             return;
         }
 
-        List<Seat> seats = seatRepository.findAll();
+        LOGGER.debug("Generating tickets: one ticket per seat & performance");
 
-        Random random = new Random();
-
-        LOGGER.debug("Generating {} tickets for each of {} performances",
-            TICKETS_PER_PERFORMANCE, performances.size());
+        int created = 0;
 
         for (Performance performance : performances) {
-            for (int i = 0; i < TICKETS_PER_PERFORMANCE; i++) {
 
-                long finalPrice = performance.getBasePriceCents()
-                    + random.nextInt(300);
+            Long hallId = performance.getHall().getId();
 
+            List<Seat> seatsForHall = seatRepository.findBySector_Hall_Id(hallId);
+
+            if (seatsForHall.isEmpty()) {
+                LOGGER.warn("No seats found for hall {} (performance id = {})",
+                    hallId, performance.getId());
+                continue;
+            }
+
+            for (Seat seat : seatsForHall) {
 
                 Ticket ticket = new Ticket();
                 ticket.setPerformance(performance);
-
-                if (!seats.isEmpty() && random.nextBoolean()) {
-                    Seat seat = seats.get(random.nextInt(seats.size()));
-                    ticket.setSeat(seat);
-                } else {
-                    ticket.setSeat(null);
-                }
-
-                ticket.setPriceFinalCents(finalPrice);
+                ticket.setSeat(seat);
                 ticket.setStatus(TicketStatus.AVAILABLE);
 
-                LOGGER.debug("Saving ticket {}", ticket);
+                ticket.setPriceFinalCents(performance.getBasePriceCents());
+
                 ticketRepository.save(ticket);
+                created++;
             }
         }
+
+        LOGGER.debug("Ticket generation complete – created {} tickets", created);
     }
 }
+
