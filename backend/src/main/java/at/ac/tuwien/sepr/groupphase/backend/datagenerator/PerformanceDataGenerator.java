@@ -45,8 +45,6 @@ public class PerformanceDataGenerator {
             return;
         }
 
-        LOGGER.debug("Generating {} performance entries");
-
         List<Event> events = eventRepository.findAll();
         List<Hall> halls = hallRepository.findAll();
 
@@ -55,25 +53,49 @@ public class PerformanceDataGenerator {
             return;
         }
 
-        long now = System.currentTimeMillis();
-        int counter = 0;
+        LOGGER.debug("Generating {} performance entries", (long) events.size() * halls.size());
+
+        var zone = java.time.ZoneId.systemDefault();
+        var baseDate = java.time.LocalDate.now(zone);
+
+        int eventIndex = 0;
 
         for (Event event : events) {
+            // pro Event: Datum +2 Tage
+
+            int hallIndex = 0;
             for (Hall hall : halls) {
+                var eventDate = baseDate.plusDays(hallIndex * 2L);
+                // pro Hall an diesem Event-Abend eine volle Stunde später starten: 16:00, 17:00, 18:00, ...
+                int startHour = 16 + hallIndex;
+
+                // optional: falls viele Halls, clamp auf spätestens 21:00
+                if (startHour > 21) {
+                    startHour = 21;
+                }
+
+                var startLdt = eventDate.atTime(startHour, 0);
+                var endLdt = startLdt.plusMinutes(event.getDurationMinutes());
+
+                Date start = Date.from(startLdt.atZone(zone).toInstant());
+                Date end = Date.from(endLdt.atZone(zone).toInstant());
+
                 Performance p = new Performance();
                 p.setEvent(event);
                 p.setHall(hall);
-
-                Date start = new Date(now + counter * 2L * 60 * 60 * 1000);
-                Date end   = new Date(start.getTime() + event.getDurationMinutes() * 60L * 1000);
-
                 p.setStartTime(start);
                 p.setEndTime(end);
-                p.setBasePriceCents(2500L + counter * 500);
+                p.setBasePriceCents(2500L + (eventIndex * 500L) + (hallIndex * 100L));
 
                 performanceRepository.save(p);
-                counter++;
+                hallIndex++;
             }
+
+            eventIndex++;
         }
     }
+
+
 }
+
+

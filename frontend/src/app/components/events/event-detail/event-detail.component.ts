@@ -53,6 +53,12 @@ export class EventDetailComponent implements OnInit {
     this.loading = true;
     this.eventService.getEventById(id).subscribe({
       next: (event: EventDto) => {
+        event.performances = [...event.performances].sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() -
+            new Date(b.startTime).getTime()
+        );
+
         this.event = event;
         this.loadEventImage(id);
         this.loading = false;

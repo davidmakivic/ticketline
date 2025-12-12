@@ -10,7 +10,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {PerformanceMapper.class})
 public interface EventMapper {
 
     @Mapping(source = "imageContentType", target = "imageContentType")
