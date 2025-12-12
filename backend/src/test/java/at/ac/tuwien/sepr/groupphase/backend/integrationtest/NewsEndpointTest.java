@@ -2,12 +2,12 @@ package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.basetest.TestData;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.DetailedMessageDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MessageInquiryDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SimpleMessageDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.MessageMapper;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Message;
-import at.ac.tuwien.sepr.groupphase.backend.repository.MessageRepository;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.DetailedNewsDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.NewsInquiryDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SimpleNewsDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.NewsMapper;
+import at.ac.tuwien.sepr.groupphase.backend.entity.News;
+import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,28 +28,30 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class MessageEndpointTest implements TestData {
+public class NewsEndpointTest implements TestData {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private MessageRepository messageRepository;
+    private NewsRepository newsRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
-    private MessageMapper messageMapper;
+    private NewsMapper newsMapper;
 
     @Autowired
     private JwtTokenizer jwtTokenizer;
@@ -57,7 +59,7 @@ public class MessageEndpointTest implements TestData {
     @Autowired
     private SecurityProperties securityProperties;
 
-    private Message message = Message.MessageBuilder.aMessage()
+    private News news = News.NewsBuilder.aMessage()
         .withTitle(TEST_NEWS_TITLE)
         .withSummary(TEST_NEWS_SUMMARY)
         .withText(TEST_NEWS_TEXT)
@@ -66,8 +68,8 @@ public class MessageEndpointTest implements TestData {
 
     @BeforeEach
     public void beforeEach() {
-        messageRepository.deleteAll();
-        message = Message.MessageBuilder.aMessage()
+        newsRepository.deleteAll();
+        news = News.NewsBuilder.aMessage()
             .withTitle(TEST_NEWS_TITLE)
             .withSummary(TEST_NEWS_SUMMARY)
             .withText(TEST_NEWS_TEXT)
@@ -78,7 +80,7 @@ public class MessageEndpointTest implements TestData {
     @Test
     public void givenNothing_whenFindAll_thenEmptyList() throws Exception {
         MvcResult mvcResult = this.mockMvc.perform(get(MESSAGE_BASE_URI)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -86,19 +88,19 @@ public class MessageEndpointTest implements TestData {
         assertEquals(HttpStatus.OK.value(), response.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType());
 
-        List<SimpleMessageDto> simpleMessageDtos = Arrays.asList(objectMapper.readValue(response.getContentAsString(),
-            SimpleMessageDto[].class));
+        List<SimpleNewsDto> simpleNewsDtos = Arrays.asList(objectMapper.readValue(response.getContentAsString(),
+            SimpleNewsDto[].class));
 
-        assertEquals(0, simpleMessageDtos.size());
+        assertEquals(0, simpleNewsDtos.size());
     }
 
     @Test
     public void givenOneMessage_whenFindAll_thenListWithSizeOneAndMessageWithAllPropertiesExceptSummary()
         throws Exception {
-        messageRepository.save(message);
+        newsRepository.save(news);
 
         MvcResult mvcResult = this.mockMvc.perform(get(MESSAGE_BASE_URI)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -106,25 +108,25 @@ public class MessageEndpointTest implements TestData {
         assertEquals(HttpStatus.OK.value(), response.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType());
 
-        List<SimpleMessageDto> simpleMessageDtos = Arrays.asList(objectMapper.readValue(response.getContentAsString(),
-            SimpleMessageDto[].class));
+        List<SimpleNewsDto> simpleNewsDtos = Arrays.asList(objectMapper.readValue(response.getContentAsString(),
+            SimpleNewsDto[].class));
 
-        assertEquals(1, simpleMessageDtos.size());
-        SimpleMessageDto simpleMessageDto = simpleMessageDtos.get(0);
+        assertEquals(1, simpleNewsDtos.size());
+        SimpleNewsDto simpleNewsDto = simpleNewsDtos.get(0);
         assertAll(
-            () -> assertEquals(message.getId(), simpleMessageDto.getId()),
-            () -> assertEquals(TEST_NEWS_TITLE, simpleMessageDto.getTitle()),
-            () -> assertEquals(TEST_NEWS_SUMMARY, simpleMessageDto.getSummary()),
-            () -> assertEquals(TEST_NEWS_PUBLISHED_AT, simpleMessageDto.getPublishedAt())
+            () -> assertEquals(news.getId(), simpleNewsDto.getId()),
+            () -> assertEquals(TEST_NEWS_TITLE, simpleNewsDto.getTitle()),
+            () -> assertEquals(TEST_NEWS_SUMMARY, simpleNewsDto.getSummary()),
+            () -> assertEquals(TEST_NEWS_PUBLISHED_AT, simpleNewsDto.getPublishedAt())
         );
     }
 
     @Test
     public void givenOneMessage_whenFindById_thenMessageWithAllProperties() throws Exception {
-        messageRepository.save(message);
+        newsRepository.save(news);
 
-        MvcResult mvcResult = this.mockMvc.perform(get(MESSAGE_BASE_URI + "/{id}", message.getId())
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult mvcResult = this.mockMvc.perform(get(MESSAGE_BASE_URI + "/{id}", news.getId())
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -134,18 +136,18 @@ public class MessageEndpointTest implements TestData {
             () -> assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType())
         );
 
-        DetailedMessageDto detailedMessageDto = objectMapper.readValue(response.getContentAsString(),
-            DetailedMessageDto.class);
+        DetailedNewsDto detailedMessageDto = objectMapper.readValue(response.getContentAsString(),
+            DetailedNewsDto.class);
 
-        assertEquals(message, messageMapper.detailedMessageDtoToMessage(detailedMessageDto));
+        assertEquals(news, newsMapper.detailedNewsDtoToNews(detailedMessageDto));
     }
 
     @Test
     public void givenOneMessage_whenFindByNonExistingId_then404() throws Exception {
-        messageRepository.save(message);
+        newsRepository.save(news);
 
         MvcResult mvcResult = this.mockMvc.perform(get(MESSAGE_BASE_URI + "/{id}", -1)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -154,14 +156,11 @@ public class MessageEndpointTest implements TestData {
 
     @Test
     public void givenNothing_whenPost_thenMessageWithAllSetPropertiesPlusIdAndPublishedDate() throws Exception {
-        message.setPublishedAt(null);
-        MessageInquiryDto messageInquiryDto = messageMapper.messageToMessageInquiryDto(message);
-        String body = objectMapper.writeValueAsString(messageInquiryDto);
-
-        MvcResult mvcResult = this.mockMvc.perform(post(MESSAGE_BASE_URI)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult mvcResult = this.mockMvc.perform(multipart(MESSAGE_BASE_URI)
+                .param("title", TEST_NEWS_TITLE)
+                .param("summary", TEST_NEWS_SUMMARY)
+                .param("text", TEST_NEWS_TEXT)
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -169,45 +168,30 @@ public class MessageEndpointTest implements TestData {
         assertEquals(HttpStatus.CREATED.value(), response.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType());
 
-        DetailedMessageDto messageResponse = objectMapper.readValue(response.getContentAsString(),
-            DetailedMessageDto.class);
+        DetailedNewsDto messageResponse = objectMapper.readValue(response.getContentAsString(),
+            DetailedNewsDto.class);
 
         assertNotNull(messageResponse.getId());
         assertNotNull(messageResponse.getPublishedAt());
         assertTrue(isNow(messageResponse.getPublishedAt()));
-        //Set generated properties to null to make the response comparable with the original input
-        messageResponse.setId(null);
-        messageResponse.setPublishedAt(null);
-        assertEquals(message, messageMapper.detailedMessageDtoToMessage(messageResponse));
+        assertAll(
+            () -> assertEquals(TEST_NEWS_TITLE, messageResponse.getTitle()),
+            () -> assertEquals(TEST_NEWS_SUMMARY, messageResponse.getSummary()),
+            () -> assertEquals(TEST_NEWS_TEXT, messageResponse.getText())
+        );
     }
 
     @Test
     public void givenNothing_whenPostInvalid_then400() throws Exception {
-        message.setTitle(null);
-        message.setSummary(null);
-        message.setText(null);
-        MessageInquiryDto messageInquiryDto = messageMapper.messageToMessageInquiryDto(message);
-        String body = objectMapper.writeValueAsString(messageInquiryDto);
-
-        MvcResult mvcResult = this.mockMvc.perform(post(MESSAGE_BASE_URI)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body)
-            .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+        MvcResult mvcResult = this.mockMvc.perform(multipart(MESSAGE_BASE_URI)
+                .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andDo(print())
             .andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
 
-        assertAll(
-            () -> assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus()),
-            () -> {
-                //Reads the errors from the body
-                String content = response.getContentAsString();
-                content = content.substring(content.indexOf('[') + 1, content.indexOf(']'));
-                String[] errors = content.split(",");
-                assertEquals(3, errors.length);
-            }
-        );
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
     }
+
 
     private boolean isNow(LocalDateTime date) {
         LocalDateTime today = LocalDateTime.now();

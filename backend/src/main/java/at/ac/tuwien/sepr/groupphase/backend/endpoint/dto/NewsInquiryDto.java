@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Objects;
 
-public class MessageInquiryDto {
+public class NewsInquiryDto {
 
     @NotNull(message = "Title must not be null")
     @Size(max = 100)
@@ -47,7 +47,7 @@ public class MessageInquiryDto {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MessageInquiryDto that)) {
+        if (!(o instanceof NewsInquiryDto that)) {
             return false;
         }
         return Objects.equals(title, that.title)
@@ -70,39 +70,39 @@ public class MessageInquiryDto {
     }
 
 
-    public static final class MessageInquiryDtoBuilder {
+    public static final class NewsInquiryDtoBuilder {
         private String title;
         private String summary;
         private String text;
 
-        private MessageInquiryDtoBuilder() {
+        private NewsInquiryDtoBuilder() {
         }
 
-        public static MessageInquiryDtoBuilder aMessageInquiryDto() {
-            return new MessageInquiryDtoBuilder();
+        public static NewsInquiryDtoBuilder aMessageInquiryDto() {
+            return new NewsInquiryDtoBuilder();
         }
 
-        public MessageInquiryDtoBuilder withTitle(String title) {
+        public NewsInquiryDtoBuilder withTitle(String title) {
             this.title = title;
             return this;
         }
 
-        public MessageInquiryDtoBuilder withSummary(String summary) {
+        public NewsInquiryDtoBuilder withSummary(String summary) {
             this.summary = summary;
             return this;
         }
 
-        public MessageInquiryDtoBuilder withText(String text) {
+        public NewsInquiryDtoBuilder withText(String text) {
             this.text = text;
             return this;
         }
 
-        public MessageInquiryDto build() {
-            MessageInquiryDto messageInquiryDto = new MessageInquiryDto();
-            messageInquiryDto.setTitle(title);
-            messageInquiryDto.setSummary(summary);
-            messageInquiryDto.setText(text);
-            return messageInquiryDto;
+        public NewsInquiryDto build() {
+            NewsInquiryDto newsInquiryDto = new NewsInquiryDto();
+            newsInquiryDto.setTitle(title);
+            newsInquiryDto.setSummary(summary);
+            newsInquiryDto.setText(text);
+            return newsInquiryDto;
         }
     }
 }
