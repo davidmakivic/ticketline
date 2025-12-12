@@ -1,3 +1,10 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
 .seat-page {
   display: flex;
   flex-direction: column;
@@ -125,3 +132,4 @@
     &.outline { background: transparent; border-color: #3b5bdb; color: #3b5bdb; }
   }
 }
+

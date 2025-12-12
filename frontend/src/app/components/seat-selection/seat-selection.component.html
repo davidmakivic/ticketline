@@ -127,7 +127,14 @@
       </div>
 
       <div class="actions">
-        <button class="btn primary" type="button">In den Einkaufswagen</button>
+        <button
+          class="btn primary"
+          type="button"
+          (click)="addSelectedToCart()"
+          [disabled]="selectedSeatIds.size === 0"
+        >
+          In den Einkaufswagen
+        </button>
         <button class="btn secondary" type="button" (click)="reserveSelected()" [disabled]="selectedSeatIds.size === 0">
           Reservieren
         </button>
