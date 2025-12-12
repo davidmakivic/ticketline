@@ -8,6 +8,8 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatIconButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import { PerformanceCardComponent } from '../../performance/performance-card/performance-card.component';
+
 
 interface EventWithImage extends EventDto {
   imageUrl?: SafeUrl;
@@ -16,7 +18,15 @@ interface EventWithImage extends EventDto {
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatCardModule, MatProgressSpinnerModule, MatIcon, MatIconButton],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatIcon,
+    MatIconButton,
+    PerformanceCardComponent
+  ],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.scss',
 })

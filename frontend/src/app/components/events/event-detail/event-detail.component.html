@@ -41,29 +41,7 @@
           <h2>Aufführungen</h2>
           <div class="performances-list">
             @for (performance of event.performances; track performance.id) {
-              <mat-card class="performance-card">
-                <mat-card-content>
-                  <div class="performance-info">
-                    <div class="performance-details">
-                      <div class="performance-time">
-                        <strong>Zeit:</strong>
-                        {{ performance.startTime | date: 'dd.MM.yyyy HH:mm' }} - {{ performance.endTime | date: 'HH:mm' }}
-                      </div>
-                      <div class="performance-price">
-                        <strong>Preis:</strong>
-                        {{ (performance.basePriceCents / 100) | currency: 'EUR' }}
-                      </div>
-                      <div class="performance-hall">
-                        <strong>Saal:</strong>
-                        {{ performance.hallId }}
-                      </div>
-                    </div>
-                    <button mat-raised-button color="primary" class="seat-button">
-                      Sitzplatz auswählen
-                    </button>
-                  </div>
-                </mat-card-content>
-              </mat-card>
+              <app-performance-card [performance]="performance"></app-performance-card>
             }
           </div>
         </div>
