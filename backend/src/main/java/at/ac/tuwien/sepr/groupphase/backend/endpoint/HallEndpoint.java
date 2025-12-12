@@ -34,14 +34,15 @@ public class HallEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public HallDto createHall(@RequestBody HallCreateDto hall) {
-        LOGGER.info("POST /api/v1/hall: {}", hall);
+        LOGGER.info("POST /api/v1/halls");
+        LOGGER.debug("Body of request: {}", hall);
         return hallService.createHall(hall);
     }
 
     @PermitAll
     @GetMapping("/{id}")
     public HallDto getById(@PathVariable Long id) {
-        LOGGER.info("GET /api/v1/halls/{}", id);
+        LOGGER.info("Fetching hall with id={}", id);
         return hallService.getHallbyId(id);
     }
 
@@ -49,19 +50,22 @@ public class HallEndpoint {
     @GetMapping
     public List<HallDto> getAll() {
         LOGGER.info("GET /api/v1/halls");
+        LOGGER.debug("Requesting list of all halls");
         return hallService.findAll();
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public HallDto update(@RequestBody HallUpdateDto hall, @PathVariable Long id) {
+        LOGGER.info("Updating hall with id={}", id);
+        LOGGER.debug("Update hall payload: {}", hall);
         return hallService.updateHall(id, hall);
     }
 
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        LOGGER.info("DELETE /halls/{id}", id);
+        LOGGER.info("Deleting hall with id={}", id);
         hallService.deleteHall(id);
     }
 }

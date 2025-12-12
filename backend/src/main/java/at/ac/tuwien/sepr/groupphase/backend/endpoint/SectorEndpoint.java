@@ -36,33 +36,37 @@ public class SectorEndpoint {
     @PermitAll
     @GetMapping("/{id}")
     public SectorDto getById(@PathVariable Long id) {
-        LOGGER.info("GET /api/v1/sectors/{}", id);
+        LOGGER.info("Fetching sector with id={}", id);
         return sectorService.findById(id);
     }
 
     @PermitAll
     @GetMapping
     public List<SectorDto> getAll() {
-        LOGGER.info("GET /api/v1/sectors");
+        LOGGER.info("Fetching all sectors");
         return sectorService.findAll();
     }
 
     @PermitAll
     @GetMapping("/hall/{hallId}")
     public List<SectorDto> getByHall(@PathVariable Long hallId) {
+        LOGGER.info("Fetching sectors for hallId={}", hallId);
         return sectorService.findByHallId(hallId);
     }
 
     @Secured("ROLE_ADMIN")
     @PostMapping
     public SectorDto create(@RequestBody SectorCreateDto dto) {
-        LOGGER.info("POST /api/v1/sectors: {}", dto);
+        LOGGER.info("Creating sector");
+        LOGGER.debug("Request payload: {}", dto);
         return sectorService.create(dto);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public SectorDto update(@PathVariable Long id, @RequestBody SectorUpdateDto dto) {
+        LOGGER.info("Updating sector with id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
         return sectorService.update(id, dto);
     }
 
@@ -70,7 +74,7 @@ public class SectorEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        LOGGER.info("DELETE /sectors/{id}", id);
+        LOGGER.info("Deleting sector with id={}", id);
         sectorService.delete(id);
     }
 }

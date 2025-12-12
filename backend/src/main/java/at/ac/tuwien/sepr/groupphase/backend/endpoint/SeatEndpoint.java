@@ -38,7 +38,7 @@ public class SeatEndpoint {
     @PermitAll
     @GetMapping("/{id}")
     public SeatDto getById(@PathVariable Long id) {
-        LOGGER.info("GET /api/v1/seats/{}", id);
+        LOGGER.info("Fetching seat with id={}", id);
         return seatService.findById(id);
     }
 
@@ -46,7 +46,7 @@ public class SeatEndpoint {
     @PermitAll
     @GetMapping
     public List<SeatDto> getAll() {
-        LOGGER.info("GET /api/v1/seats");
+        LOGGER.info("Fetching all seats");
         return seatService.findAll();
     }
 
@@ -54,6 +54,7 @@ public class SeatEndpoint {
     @PermitAll
     @GetMapping("/sector/{sectorId}")
     public List<SeatDto> getBySector(@PathVariable Long sectorId) {
+        LOGGER.info("Fetching seats for sectorId={}", sectorId);
         return seatService.findBySectorId(sectorId);
     }
 
@@ -61,7 +62,8 @@ public class SeatEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public SeatDto create(@RequestBody SeatCreateDto dto) {
-        LOGGER.info("POST /api/v1/seats: {}", dto);
+        LOGGER.info("Creating seat");
+        LOGGER.debug("Request payload: {}", dto);
         return seatService.create(dto);
     }
 
@@ -69,6 +71,8 @@ public class SeatEndpoint {
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public SeatDto update(@PathVariable Long id, @RequestBody SeatUpdateDto dto) {
+        LOGGER.info("Updating seat with id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
         return seatService.update(id, dto);
     }
 
@@ -77,7 +81,7 @@ public class SeatEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        LOGGER.info("DELETE /seats/{id}", id);
+        LOGGER.info("Deleting seat with id={}", id);
         seatService.delete(id);
     }
 }

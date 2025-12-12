@@ -36,21 +36,22 @@ public class VenueEndpoint {
     @Secured("ROLE_ADMIN")
     @PostMapping
     public VenueDto createVenue(@RequestBody VenueCreateDto venueDto) {
-        LOGGER.info("POST /api/v1/venues: {}", venueDto);
+        LOGGER.info("Creating venue");
+        LOGGER.debug("Request payload: {}", venueDto);
         return venueService.create(venueDto);
     }
 
     @PermitAll
     @GetMapping("/{id}")
     public VenueDto getById(@PathVariable("id") Long id) {
-        LOGGER.info("GET /api/v1/venues/{}", id);
+        LOGGER.info("Fetching venue with id={}", id);
         return venueService.findById(id);
     }
 
     @PermitAll
     @GetMapping
     public List<VenueDto> getAll() {
-        LOGGER.info("GET /api/v1/venues");
+        LOGGER.info("Fetching all venues");
         return venueService.findAll();
     }
 
@@ -58,13 +59,15 @@ public class VenueEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") Long id) {
-        LOGGER.info("DELETE /venues/{id}", id);
+        LOGGER.info("Deleting venue with id={}", id);
         venueService.delete(id);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}")
     public VenueDto updateVenue(@PathVariable("id") Long id, @RequestBody VenueUpdateDto venueDto) {
+        LOGGER.info("Updating venue with id={}", id);
+        LOGGER.debug("Request payload: {}", venueDto);
         return venueService.update(id, venueDto);
     }
 }
