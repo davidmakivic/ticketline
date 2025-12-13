@@ -13,7 +13,9 @@ import { AuthRequest } from '../../dtos/auth-request';
 export class LoginComponent implements OnInit {
 
   loginForm: UntypedFormGroup;
+  // After first submission attempt, form validation will start
   submitted = false;
+  // Error flag
   error = false;
   errorMessage = '';
 
@@ -29,6 +31,9 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  /**
+   * Form validation will start after the method is called, additionally an AuthRequest will be sent
+   */
   loginUser() {
     this.submitted = true;
     if (this.loginForm.valid) {
@@ -43,6 +48,11 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  /**
+   * Send authentication data to the authService. If the authentication was successfully, the user will be forwarded to the message page
+   *
+   * @param authRequest authentication data from the user login form
+   */
   authenticateUser(authRequest: AuthRequest) {
     console.log('Try to authenticate user: ' + authRequest.email);
     this.authService.loginUser(authRequest).subscribe({
@@ -50,7 +60,7 @@ export class LoginComponent implements OnInit {
         console.log('Successfully logged in user: ' + authRequest.email);
 
         const redirect = this.route.snapshot.queryParamMap.get('redirect');
-        this.router.navigate([redirect ?? '/news']);
+        this.router.navigate([redirect ?? '/']);
       },
       error: error => {
         console.log('Could not log in due to:');
@@ -65,9 +75,18 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  /**
+   * Error flag will be deactivated, which clears the error message
+   */
   vanishError() {
     this.error = false;
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
+
+  protected cancel() {
+    const redirect = this.route.snapshot.queryParamMap.get('redirect');
+    this.router.navigate([redirect ?? '/']);
+  }
 }

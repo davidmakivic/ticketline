@@ -4,16 +4,18 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { NewsComponent } from './components/news/news.component';
-import { EventsListComponent } from './components/events/events-list/events-list.component';
-import { EventDetailComponent } from './components/events/event-detail/event-detail.component';
-import { ArtistDetailComponent } from './components/artists/artist-detail/artist-detail.component';
-import { ArtistsListComponent } from './components/artists/artists-list/artists-list.component';
+import {EventsListComponent} from './components/events/events-list/events-list.component';
+import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
+import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
+import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
+import {RegisterComponent} from './components/register/register.component';
+
+
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
-
   { path: 'login', component: LoginComponent },
-
+  { path: 'register', component: RegisterComponent},
   {
     path: 'news',
     canActivate: mapToCanActivate([AuthGuard]),
