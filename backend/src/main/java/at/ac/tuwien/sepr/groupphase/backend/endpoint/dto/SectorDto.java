@@ -9,8 +9,9 @@ public class SectorDto {
     private Long hallId;
     private SectorType type;
     private Long priceCategoryId;
+    private String sectorKey;
 
-    public SectorDto(Long id, String name, SectorType type, Long hallId, Long priceCategoryId) {
+    public SectorDto(Long id, String name, SectorType type, Long hallId, Long priceCategoryId,  String sectorKey) {
         this.id = id;
         this.name = name;
         this.hallId = hallId;
@@ -18,11 +19,12 @@ public class SectorDto {
         this.priceCategoryId = priceCategoryId;
     }
 
-    public SectorDto(String name, SectorType type, Long hallId,  Long priceCategoryId) {
+    public SectorDto(String name, SectorType type, Long hallId,  Long priceCategoryId,  String sectorKey) {
         this.name = name;
         this.hallId = hallId;
         this.type = type;
         this.priceCategoryId = priceCategoryId;
+        this.sectorKey = sectorKey;
     }
 
     public SectorDto() {
@@ -67,5 +69,13 @@ public class SectorDto {
 
     public void setPriceCategoryId(Long priceCategoryId) {
         this.priceCategoryId = priceCategoryId;
+    }
+
+    public String getSectorKey() {
+        return sectorKey;
+    }
+
+    public void setSectorKey(String sectorKey) {
+        this.sectorKey = sectorKey;
     }
 }

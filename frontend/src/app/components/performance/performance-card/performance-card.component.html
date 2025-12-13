@@ -1,0 +1,52 @@
+<mat-card class="performance-card">
+  <mat-card-content>
+    <div class="performance-info">
+      <div class="performance-left">
+        <div class="performance-date">
+          {{ performance.startTime | date: 'dd. MMMM yyyy' }}
+        </div>
+
+        <div class="performance-times">
+          <div class="performance-time-row">
+            <strong>Beginn:</strong>
+            {{ performance.startTime | date: 'HH:mm' }} Uhr
+          </div>
+          <div class="performance-time-row">
+            <strong>Ende:</strong>
+            {{ performance.endTime | date: 'HH:mm' }} Uhr
+          </div>
+
+          <div class="performance-price">
+            <strong>ab {{ basePriceEuro | currency : 'EUR' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="performance-location">
+        @if (venue && hall) {
+        <div class="performance-city">
+          {{ venue.city }}
+        </div>
+
+        <div class="performance-venue">
+          {{ venue.name }} - {{ hall.name }}
+        </div>
+
+        @if (fullAddress) {
+        <div class="performance-address">
+          {{ fullAddress }}
+        </div>
+        }
+        }
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="seat-button"
+        [routerLink]="['/performances', performance.id, 'seats']">
+        Sitzplatz auswählen
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

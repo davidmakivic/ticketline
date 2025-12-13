@@ -5,17 +5,20 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PriceCategoryUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.PriceCategoryMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.PriceCategory;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.PriceCategoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Service
 public class PriceCategoryServiceImpl implements PriceCategoryService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final PriceCategoryRepository repository;
     private final PriceCategoryMapper mapper;
 
@@ -26,12 +29,14 @@ public class PriceCategoryServiceImpl implements PriceCategoryService {
 
     @Override
     public List<PriceCategoryDto> findAll() {
+        LOGGER.info("Fetching all price categories");
         List<PriceCategory> entities = repository.findAll();
         return mapper.priceCategoryListToPriceCategoryDtoList(entities);
     }
 
     @Override
     public PriceCategoryDto findById(Long id) {
+        LOGGER.info("Fetching price category with id={}", id);
         return repository.findById(id)
             .map(mapper::priceCategoryToPriceCategoryDto)
             .orElse(null);
@@ -39,9 +44,8 @@ public class PriceCategoryServiceImpl implements PriceCategoryService {
 
     @Override
     public PriceCategoryDto update(Long id, PriceCategoryUpdateDto dto) {
-        /*PriceCategory entity = mapper.priceCategoryDtoToPriceCategory(dto);
-        PriceCategory saved = repository.save(entity);
-        return mapper.priceCategoryToPriceCategoryDto(saved);*/
+        LOGGER.info("Updating price category with id={}", id);
+        LOGGER.debug("Payload: {}", dto);
 
         PriceCategory existingPriceCategory = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("PriceCategory not found with id: " + id));
@@ -59,6 +63,8 @@ public class PriceCategoryServiceImpl implements PriceCategoryService {
 
     @Override
     public PriceCategoryDto create(PriceCategoryCreateDto dto) {
+        LOGGER.info("Creating price category");
+        LOGGER.debug("Payload: {}", dto);
         PriceCategory entity = mapper.priceCategoryCreateToPriceCategory(dto);
         entity.setPrice(dto.getPrice());
         entity.setName(dto.getName());
@@ -69,6 +75,7 @@ public class PriceCategoryServiceImpl implements PriceCategoryService {
 
     @Override
     public void delete(Long id) {
+        LOGGER.info("Deleting price category with id={}", id);
         repository.deleteById(id);
     }
 }

@@ -58,7 +58,7 @@ public class VenueEndpointTest {
     void testCreateVenue() throws Exception {
         VenueDto dto = VenueTestDataFactory.create();
 
-        mockMvc.perform(post("/api/venues")
+        mockMvc.perform(post("/api/v1/venues")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -76,7 +76,7 @@ public class VenueEndpointTest {
     void testGetVenueById() throws Exception {
         VenueDto dto = VenueTestDataFactory.create();
 
-        String response = mockMvc.perform(post("/api/venues")
+        String response = mockMvc.perform(post("/api/v1/venues")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -85,7 +85,7 @@ public class VenueEndpointTest {
 
         VenueDto responseDto = objectMapper.readValue(response, VenueDto.class);
 
-        mockMvc.perform(get("/api/venues/" + responseDto.getId()))
+        mockMvc.perform(get("/api/v1/venues/" + responseDto.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.name").value("Test Name"))
@@ -100,7 +100,7 @@ public class VenueEndpointTest {
     void testUpdateVenue() throws Exception {
         VenueDto dto = VenueTestDataFactory.create();
 
-        String response = mockMvc.perform(post("/api/venues")
+        String response = mockMvc.perform(post("/api/v1/venues")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -115,7 +115,7 @@ public class VenueEndpointTest {
         created.setPostalCode("Updated Postal Code");
         created.setCountry("Updated Country");
 
-        mockMvc.perform(put("/api/venues/" + created.getId())
+        mockMvc.perform(put("/api/v1/venues/" + created.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(created))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -134,7 +134,7 @@ public class VenueEndpointTest {
         VenueDto dto = VenueTestDataFactory.create();
         dto.setName("Updated Name");
 
-        mockMvc.perform(put("/api/venues/999")
+        mockMvc.perform(put("/api/v1/venues/999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -147,21 +147,21 @@ public class VenueEndpointTest {
         VenueDto dto1 = VenueTestDataFactory.create();
         VenueDto dto2 = VenueTestDataFactory.create();
 
-        mockMvc.perform(post("/api/venues")
+        mockMvc.perform(post("/api/v1/venues")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto1))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(post("/api/venues")
+        mockMvc.perform(post("/api/v1/venues")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto2))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(get("/api/venues"))
+        mockMvc.perform(get("/api/v1/venues"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].name").exists())
@@ -171,7 +171,7 @@ public class VenueEndpointTest {
     @Transactional
     @Test
     void testGetVenueNotFound() throws Exception {
-        mockMvc.perform(get("/api/venues/999"))
+        mockMvc.perform(get("/api/v1/venues/999"))
             .andExpect(status().isNotFound());
     }
 
@@ -180,7 +180,7 @@ public class VenueEndpointTest {
     void testDeleteVenue() throws Exception {
         VenueDto dto = VenueTestDataFactory.create();
 
-        String response = mockMvc.perform(post("/api/venues")
+        String response = mockMvc.perform(post("/api/v1/venues")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
@@ -189,11 +189,11 @@ public class VenueEndpointTest {
 
         VenueDto created  = objectMapper.readValue(response, VenueDto.class);
 
-        mockMvc.perform(delete("/api/venues/" + created.getId())
+        mockMvc.perform(delete("/api/v1/venues/" + created.getId())
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/venues/" +  created.getId()))
+        mockMvc.perform(get("/api/v1/venues/" +  created.getId()))
             .andExpect(status().isNotFound());
 
     }

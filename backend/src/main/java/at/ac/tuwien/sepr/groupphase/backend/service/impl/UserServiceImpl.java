@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        LOGGER.debug("Load all user by email");
+        LOGGER.info("Loading user by email {}", email);
         try {
             ApplicationUser applicationUser = findApplicationUserByEmail(email);
 
@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApplicationUser findApplicationUserByEmail(String email) {
-        LOGGER.debug("Find application user by email");
+        LOGGER.info("Fetching application user by email {}", email);
         ApplicationUser applicationUser = userRepository.findUserByEmail(email);
         if (applicationUser != null) {
             return applicationUser;
@@ -99,6 +99,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailDto createApplicationUser(UserCreateDto dto) throws ValidationException, ConflictException {
 
+        LOGGER.info("Creating new application user: {}", dto.getEmail());
+        LOGGER.debug("Payload: {}", dto);
         userValidator.validateUserForCreate(dto);
         ApplicationUser newUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
             .withEmail(dto.getEmail())
@@ -120,6 +122,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String login(UserLoginDto userLoginDto) {
+        LOGGER.info("Attempting login for {}", userLoginDto.getEmail());
         UserDetails userDetails = loadUserByUsername(userLoginDto.getEmail());
         if (userDetails != null
             && userDetails.isAccountNonExpired()
@@ -139,6 +142,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void resetPassword(String email) throws MessagingException {
+        LOGGER.info("Requesting password reset for {}", email);
 
         ApplicationUser user = userRepository.findUserByEmail(email);
         if (user == null) {
@@ -162,6 +166,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void changePassword(PasswortChangeDto dto) throws ValidationException, GoneException, NotFoundException {
+        LOGGER.info("Changing password");
+        LOGGER.debug("Payload: tokenPresent={}", dto.token() != null);
         //If user is logged in
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         userValidator.validatePassword(dto.password());
@@ -174,9 +180,11 @@ public class UserServiceImpl implements UserService {
         }
         PasswordResetToken token = passwordTokenRepository.findByToken(dto.token());
         if (token == null) {
+            LOGGER.error("Password change failed because token was not found");
             throw new NotFoundException("Token not found");
         }
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            LOGGER.error("Password change failed because token expired");
             throw new GoneException("Token is expired");
         }
         ApplicationUser user = token.getUser();
@@ -187,6 +195,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailDto update(UserUpdateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Updating user with id {}", dto.getUserId());
+        LOGGER.debug("Payload: {}", dto);
         userValidator.validateUserForUpdate(dto);
         ApplicationUser applicationUser = userRepository.findUserByUserId(dto.getUserId());
         applicationUser.setFirstName(dto.getFirstName());
@@ -203,6 +213,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long id) throws ForbiddenException {
+        LOGGER.info("Deleting user with id {}", id);
         userValidator.validateForDelete(id);
         if (id == null) {
             return;
@@ -212,6 +223,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDetailDto> searchUser(UserSearchDto dto) throws ValidationException {
+        LOGGER.info("Searching users");
+        LOGGER.debug("Payload: {}", dto);
         List<ApplicationUser> users;
         if (dto == null) {
             users = userRepository.findAll();
@@ -243,6 +256,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void blockUser(Long id) throws ForbiddenException {
+        LOGGER.info("Blocking user with id {}", id);
+
         ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         if (user.getRole() == Roles.ADMIN) {
             throw new ForbiddenException("Can not block an admin");
@@ -253,6 +268,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void unblockUser(Long id) {
+        LOGGER.info("Unblocking user with id {}", id);
+
         ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         user.setUserStatus(UserStatus.UNLOCKED);
         userRepository.save(user);

@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
@@ -25,6 +28,7 @@ import java.util.List;
 @Tag(name = "Performances")
 public class PerformanceEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final PerformanceService performanceService;
 
     public PerformanceEndpoint(PerformanceService performanceService) {
@@ -35,6 +39,7 @@ public class PerformanceEndpoint {
     @GetMapping
     @Operation(summary = "Get all performances", security = @SecurityRequirement(name = "apiKey"))
     public List<PerformanceDto> getAll() {
+        LOGGER.info("Fetching all performances");
         return performanceService.findAll();
     }
 
@@ -42,6 +47,7 @@ public class PerformanceEndpoint {
     @GetMapping("/{id}")
     @Operation(summary = "Get performance by id", security = @SecurityRequirement(name = "apiKey"))
     public PerformanceDto getById(@PathVariable Long id) {
+        LOGGER.info("Fetching performance with id={}", id);
         return performanceService.findById(id);
     }
 
@@ -49,6 +55,8 @@ public class PerformanceEndpoint {
     @PostMapping
     @Operation(summary = "Create performance", security = @SecurityRequirement(name = "apiKey"))
     public PerformanceDto create(@RequestBody PerformanceDto dto) {
+        LOGGER.info("Creating performance");
+        LOGGER.debug("Request payload: {}", dto);
         return performanceService.create(dto);
     }
 
@@ -56,6 +64,8 @@ public class PerformanceEndpoint {
     @PutMapping("/{id}")
     @Operation(summary = "Update performance", security = @SecurityRequirement(name = "apiKey"))
     public PerformanceDto update(@PathVariable Long id, @RequestBody PerformanceDto dto) {
+        LOGGER.info("Updating performance with id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
         return performanceService.update(id, dto);
     }
 
@@ -64,6 +74,7 @@ public class PerformanceEndpoint {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete performance", security = @SecurityRequirement(name = "apiKey"))
     public void delete(@PathVariable Long id) {
+        LOGGER.info("Deleting performance with id={}", id);
         performanceService.delete(id);
     }
 

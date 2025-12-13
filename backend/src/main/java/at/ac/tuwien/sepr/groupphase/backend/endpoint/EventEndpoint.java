@@ -4,6 +4,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/events")
 public class EventEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final EventService eventService;
 
     public EventEndpoint(EventService eventService) {
@@ -42,6 +46,10 @@ public class EventEndpoint {
         @RequestParam("durationMinutes") Integer durationMinutes,
         @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
 
+
+        LOGGER.info("Request to create new event: {}", title);
+        LOGGER.debug("Create event payload: title={}, descriptionLength={}, category={}, duration={}, imagePresent={}",
+            title, description != null ? description.length() : 0, category, durationMinutes, image != null);
         return eventService.create(title, description, category, durationMinutes, image);
     }
 
@@ -55,30 +63,39 @@ public class EventEndpoint {
         @RequestParam("durationMinutes") Integer durationMinutes,
         @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
 
+        LOGGER.info("Request to update event id={}", id);
+        LOGGER.debug("Update event payload: title={}, descriptionLength={}, category={}, duration={}, imagePresent={}",
+            title, description != null ? description.length() : 0, category, durationMinutes, image != null);
         return eventService.update(id, title, description, category, durationMinutes, image);
     }
 
     @PermitAll
     @GetMapping("/{id}")
     public EventDto getById(@PathVariable Long id) {
+        LOGGER.info("Fetching event with id={}", id);
         return eventService.findById(id);
     }
 
     @PermitAll
     @GetMapping("/{id}/image")
     public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
+        LOGGER.info("Fetching event image for id={}", id);
         return eventService.getEventImage(id);
     }
 
     @PermitAll
     @GetMapping("/query")
     public List<EventDto> searchByTitle(@RequestParam String title) {
+        LOGGER.info("Searching events by title '{}'", title);
+        LOGGER.debug("Search query length={}", title.length());
         return eventService.findByAnyTitle(title);
     }
 
     @PermitAll
     @GetMapping
     public List<EventDto> getAll() {
+        LOGGER.info("Fetching all events");
+        LOGGER.debug("Event list requested");
         return eventService.findAll()
             .stream()
             .toList();
@@ -88,6 +105,7 @@ public class EventEndpoint {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
+        LOGGER.info("Deleting event with id={}", id);
         eventService.delete(id);
     }
 }

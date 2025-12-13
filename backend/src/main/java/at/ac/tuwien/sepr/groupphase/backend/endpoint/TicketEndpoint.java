@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
@@ -28,6 +31,7 @@ import java.util.List;
 @Tag(name = "Tickets")
 public class TicketEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final TicketService ticketService;
 
     public TicketEndpoint(TicketService ticketService) {
@@ -39,6 +43,7 @@ public class TicketEndpoint {
     @GetMapping("/{id}")
     @Operation(summary = "Get ticket by id", security = @SecurityRequirement(name = "apiKey"))
     public TicketDto getById(@PathVariable Long id) {
+        LOGGER.info("Fetching ticket with id={}", id);
         return ticketService.findById(id);
     }
 
@@ -46,6 +51,8 @@ public class TicketEndpoint {
     @PostMapping
     @Operation(summary = "Create ticket", security = @SecurityRequirement(name = "apiKey"))
     public TicketDto create(@RequestBody TicketDto dto) {
+        LOGGER.info("Creating ticket");
+        LOGGER.debug("Request payload: {}", dto);
         return ticketService.create(dto);
     }
 
@@ -53,6 +60,8 @@ public class TicketEndpoint {
     @PutMapping("/{id}")
     @Operation(summary = "Update ticket", security = @SecurityRequirement(name = "apiKey"))
     public TicketDto update(@PathVariable Long id, @RequestBody TicketDto dto) {
+        LOGGER.info("Updating ticket with id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
         return ticketService.update(id, dto);
     }
 
@@ -60,6 +69,8 @@ public class TicketEndpoint {
     @PutMapping("/{id}/status")
     @Operation(summary = "Update ticket status", security = @SecurityRequirement(name = "apiKey"))
     public TicketDto updateStatus(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
+        LOGGER.info("Updating ticket status for Ticket with id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
         return ticketService.updateStatus(id, dto.getStatus(), dto.getVersion());
     }
 
@@ -67,6 +78,7 @@ public class TicketEndpoint {
     @GetMapping("/performance/{performanceId}")
     @Operation(summary = "Get tickets by performance id", security = @SecurityRequirement(name = "apiKey"))
     public List<TicketDto> getByPerformanceId(@PathVariable Long performanceId) {
+        LOGGER.info("Fetching tickets for performanceId={}", performanceId);
         return ticketService.findByPerformanceId(performanceId);
     }
 

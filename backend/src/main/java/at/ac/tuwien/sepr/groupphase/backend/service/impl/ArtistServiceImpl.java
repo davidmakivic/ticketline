@@ -11,18 +11,22 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ArtistRepository artistRepository;
     private final ArtistMapper artistMapper;
     private final EventRepository eventRepository;
@@ -37,6 +41,8 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public ArtistDto create(String firstName, String lastName, String stageName, ArtistType artistType, MultipartFile image) throws IOException {
+        LOGGER.info("Creating artist: {} {}", firstName, lastName);
+        LOGGER.debug("StageName={}, ArtistType={}, ImagePresent={}", stageName, artistType, image != null);
         Artist entity = new Artist(firstName, lastName, stageName, artistType);
 
         if (image != null && !image.isEmpty()) {
@@ -50,6 +56,9 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public ArtistDto update(Long id, String firstName, String lastName, String stageName, ArtistType artistType, MultipartFile image) throws IOException {
+        LOGGER.info("Updating artist with id={}", id);
+        LOGGER.debug("Payload: firstName={}, lastName={}, stageName={}, artistType={}, imagePresent={}",
+            firstName, lastName, stageName, artistType, image != null);
         Artist existingArtist = artistRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Artist not found with id " + id));
 
@@ -68,6 +77,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public ArtistDto findById(Long id) {
+        LOGGER.info("Fetching artist with id={}", id);
         Artist artist = artistRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Artist not found with id " + id));
 
@@ -76,6 +86,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public ResponseEntity<byte[]> getArtistImage(Long id) {
+        LOGGER.info("Fetching artist image for id={}", id);
         Artist artist = artistRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Artist not found: " + id));
 
@@ -92,11 +103,13 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public List<ArtistDto> findAll() {
+        LOGGER.info("Fetching all artists");
         return artistMapper.artistToArtistDto(artistRepository.findAll());
     }
 
     @Override
     public void addEvent(Long artistId, Long eventId) {
+        LOGGER.info("Adding event {} to artist {}", eventId, artistId);
         Artist artist = artistRepository.findById(artistId)
             .orElseThrow(() -> new NotFoundException("Artist not found: " + artistId));
 
@@ -109,6 +122,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public void deleteEvent(Long artistId, Long eventId) {
+        LOGGER.info("Removing event {} from artist {}", eventId, artistId);
         Artist artist = artistRepository.findById(artistId)
             .orElseThrow(() -> new NotFoundException("Artist not found: " + artistId));
 
@@ -121,6 +135,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public List<EventDto> findEventsByArtistId(Long artistId) {
+        LOGGER.info("Fetching events for artist {}", artistId);
         Artist artist = artistRepository.findById(artistId)
             .orElseThrow(() -> new NotFoundException("Artist not found: " + artistId));
 
@@ -132,17 +147,20 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public List<ArtistDto> findByName(String name) {
+        LOGGER.info("Searching artists by name: {}", name);
         var artists = artistRepository.findByAnyName(name);
         return getArtistListDtoStream(artists).toList();
     }
 
     private Stream<ArtistDto> getArtistListDtoStream(List<Artist> artists) {
+        LOGGER.info("Fetching all artists dtos from artist list: {}", artists);
         return artists.stream()
             .map(artistMapper::artistToArtistDto);
     }
 
     @Override
     public void delete(Long id) {
+        LOGGER.info("Deleting artist with id={}", id);
         artistRepository.deleteById(id);
     }
 }
