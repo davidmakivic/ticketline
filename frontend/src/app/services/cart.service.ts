@@ -1,34 +1,45 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+
 import { CartItem } from '../dtos/cart-item';
+import { TicketsService } from './tickets.service';
+import { Ticket } from '../dtos/ticket';
 
 const STORAGE_KEY = 'cart.items.v1';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly items$ = new BehaviorSubject<CartItem[]>(this.load());
-
-  /** Observable für UI */
   readonly cartItems$ = this.items$.asObservable();
 
-  /** Sync getter (z.B. für Guards/Checks) */
+  constructor(private ticketsService: TicketsService) {}
+
   getItems(): CartItem[] {
     return this.items$.value;
   }
 
   addTicket(ticketId: number): void {
     const current = this.items$.value;
-
-    // Du willst wahrscheinlich keine doppelten Tickets im Cart
     if (current.some(i => i.ticketId === ticketId)) return;
+    this.set([...current, { ticketId, addedAt: new Date().toISOString() }]);
+  }
 
-    const next = [...current, { ticketId, addedAt: new Date().toISOString() }];
-    this.set(next);
+  addTicketAndReserve(ticketId: number): Observable<Ticket> {
+    return this.ticketsService.getTicketById(ticketId).pipe(
+      switchMap((ticket: Ticket) => this.ticketsService.reserve(ticketId, ticket.version)),
+      tap(() => this.addTicket(ticketId))
+    );
+  }
+
+  removeTicketAndRelease(ticketId: number) {
+    return this.ticketsService.getTicketById(ticketId).pipe(
+      switchMap(ticket => this.ticketsService.release(ticketId, ticket.version)),
+      tap(() => this.removeTicket(ticketId))
+    );
   }
 
   removeTicket(ticketId: number): void {
-    const next = this.items$.value.filter(i => i.ticketId !== ticketId);
-    this.set(next);
+    this.set(this.items$.value.filter(i => i.ticketId !== ticketId));
   }
 
   clear(): void {

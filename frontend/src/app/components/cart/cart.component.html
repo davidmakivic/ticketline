@@ -1,23 +1,21 @@
-<mat-card>
-  <mat-card-content>
-    <h2>Warenkorb</h2>
+<div class="cart-page">
+  <div class="cart-header">
+    <h1 class="cart-title">Warenkorb</h1>
 
     @if (loading) {
-    <p>Lade Tickets…</p>
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
     }
 
     @if (!loading && tickets.length === 0) {
-    <p>Dein Warenkorb ist leer.</p>
-    } @else {
-    <div style="display:flex; gap:12px; margin-bottom: 12px;">
-      <button mat-stroked-button (click)="clear()">Leeren</button>
+    <p class="empty">Dein Warenkorb ist leer.</p>
+    }
+  </div>
 
-      <a mat-raised-button color="primary" [routerLink]="['/cart/checkout']">
-        Kaufen
-      </a>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:12px;">
+  @if (!loading && tickets.length > 0) {
+  <div class="cart-content">
+    <div class="cart-list">
       @for (t of tickets; track t.id) {
       <app-ticket-cart-item
         [ticket]="t"
@@ -25,6 +23,26 @@
       </app-ticket-cart-item>
       }
     </div>
-    }
-  </mat-card-content>
-</mat-card>
+  </div>
+
+  <div class="cart-footer">
+    <button mat-stroked-button (click)="clear()">Leeren</button>
+
+    <div class="summary">
+      <div class="total">
+        <span class="label">Gesamt</span>
+        <span class="value">{{ totalPriceCents / 100 | currency:'EUR' }}</span>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="loading || tickets.length === 0"
+        [routerLink]="['/cart/checkout']">
+        Kaufen
+      </button>
+    </div>
+  </div>
+  }
+</div>
+

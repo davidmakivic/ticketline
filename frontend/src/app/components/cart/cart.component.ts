@@ -10,17 +10,25 @@ import { CartService } from '../../services/cart.service';
 import { TicketsService } from '../../services/tickets.service';
 import { Ticket } from '../../dtos/ticket';
 import { TicketCartItemComponent } from '../tickets/ticket-cart-item/ticket-cart-item.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, TicketCartItemComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatCardModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    TicketCartItemComponent],
   templateUrl: './cart.component.html',
+  styleUrl: './cart.component.scss',
 })
 export class CartComponent {
   loading = false;
 
-  // hier liegen dann die echten Tickets für die UI
   tickets: Ticket[] = [];
 
   constructor(private cart: CartService, private ticketsService: TicketsService) {
@@ -34,8 +42,19 @@ export class CartComponent {
   }
 
   removeTicket(ticket: Ticket) {
-    this.cart.removeTicket(ticket.id);
+    this.cart.removeTicketAndRelease(ticket.id).subscribe({
+      next: () => {},
+      error: (e) => {
+        console.error(e);
+      }
+    });
   }
+
+
+  get totalPriceCents(): number {
+    return this.tickets.reduce((sum, t) => sum + (t.priceFinalCents ?? 0), 0);
+  }
+
 
   private loadTickets(ids: number[]) {
     if (ids.length === 0) {
@@ -45,18 +64,16 @@ export class CartComponent {
 
     this.loading = true;
 
-    // Für jede ID Ticket laden (parallel)
     forkJoin(
       ids.map(id =>
         this.ticketsService.getTicketById(id).pipe(
-          catchError(() => of(null)) // wenn ein Ticket nicht ladbar ist, ignorieren
+          catchError(() => of(null))
         )
       )
     ).pipe(
       map(list => list.filter((t): t is Ticket => t !== null))
     ).subscribe({
       next: (tickets) => {
-        // sortiere stabil nach Cart-Reihenfolge
         const order = new Map(ids.map((id, idx) => [id, idx]));
         this.tickets = tickets.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
         this.loading = false;

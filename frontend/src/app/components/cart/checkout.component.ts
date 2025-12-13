@@ -11,7 +11,7 @@ import { CartService } from '../../services/cart.service';
     <mat-card>
       <mat-card-content>
         <h2>Checkout</h2>
-        <p>Du bist eingeloggt. Hier kommt später "Order erstellen" usw.</p>
+        <p>Du bist eingeloggt."</p>
         <p>Items im Warenkorb: {{ cart.count() }}</p>
       </mat-card-content>
     </mat-card>

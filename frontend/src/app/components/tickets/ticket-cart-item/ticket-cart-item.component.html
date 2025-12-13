@@ -8,7 +8,7 @@
 
     <div class="row">
 
-      <!-- Spalte 1: Bild -->
+      <!-- Spalte 1-->
       <div class="col image-col">
         @if (eventImageUrl) {
         <img class="event-image" [src]="eventImageUrl" alt="Event Bild" loading="lazy">
@@ -17,7 +17,7 @@
         }
       </div>
 
-      <!-- Spalte 2: Event + Performance Zeit -->
+      <!-- Spalte 2 -->
       <div class="col event-col">
         <div class="title">{{ eventTitle ?? '—' }}</div>
 
@@ -32,7 +32,7 @@
         }
       </div>
 
-      <!-- Spalte 3: Location -->
+      <!-- Spalte 3 -->
       <div class="col location-col">
         <div class="city">{{ venue?.city ?? '—' }}</div>
         <div class="venue-hall">
@@ -41,7 +41,7 @@
         <div class="address">{{ fullAddress ?? '—' }}</div>
       </div>
 
-      <!-- Spalte 4: Seat -->
+      <!-- Spalte 4 -->
       <div class="col seat-col">
         <div class="seat-row">
           <strong>Sektor:</strong> {{ sectorName ?? '—' }}
@@ -54,14 +54,14 @@
         </div>
       </div>
 
-      <!-- Spalte 5: Preis -->
+      <!-- Spalte 5 -->
       <div class="col price-col">
         <div class="price">
           {{ (priceEuro ?? 0) | currency:'EUR' }}
         </div>
       </div>
 
-      <!-- Spalte 6: Delete -->
+      <!-- Spalte 6 -->
       <div class="col actions-col">
         <button mat-icon-button color="warn" (click)="onRemoveClick()" [attr.aria-label]="'Ticket entfernen'">
           <mat-icon>delete</mat-icon>
