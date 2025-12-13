@@ -3,7 +3,7 @@ import {Globals} from '../global/globals';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {AuthService} from "./auth.service";
 import {Observable} from "rxjs";
-import {EventAutocompleteDto, EventDto} from "../dtos/event";
+import {EventAutocompleteDto, EventDto, EventTypeDto} from "../dtos/event";
 import {ArtistDataDto} from "../dtos/artist";
 
 @Injectable({providedIn: "root"})
@@ -19,6 +19,55 @@ export class EventsService {
   searchEventsByTitle(title: string): Observable<EventDto[]> {
     const params = new HttpParams().set('title', title);
     return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, { params });
+  }
+
+  searchEventsByFilters(title: string, artist: string, location: string): Observable<EventDto[]> {
+    return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, {
+      params: {
+        title: title || '',
+        artist: artist || '',
+        location: location || ''
+      }
+    });
+  }
+
+  searchAdvanced(filters: {
+    title?: string;
+    artist?: string;
+    location?: string;
+    eventType?: string;
+    startDate?: Date;
+    durationMinutes?: number;
+  }): Observable<EventDto[]> {
+    let params = new HttpParams();
+
+    if (filters.title) {
+      params = params.set('title', filters.title);
+    }
+    if (filters.artist) {
+      params = params.set('artist', filters.artist);
+    }
+    if (filters.location) {
+      params = params.set('location', filters.location);
+    }
+    if (filters.eventType) {
+      params = params.set('eventType', filters.eventType);
+    }
+    if (filters.startDate) {
+      params = params.set('startDate', this.formatDate(filters.startDate));
+    }
+    if (filters.durationMinutes) {
+      params = params.set('durationMinutes', filters.durationMinutes.toString());
+    }
+
+    return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, { params });
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   getArtistAutoCompleteByName(title:string, limit:number): Observable<EventAutocompleteDto[]>{
