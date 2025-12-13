@@ -43,16 +43,6 @@ public class Hall {
 
     public Hall() {}
 
-    public void addSector(Sector sector) {
-        this.sectors.add(sector);
-        sector.setHall(this);
-    }
-
-    public void removeSector(Sector sector) {
-        this.sectors.remove(sector);
-        sector.setHall(null);
-    }
-
     public Long getId() {
         return id;
     }

@@ -56,4 +56,8 @@ public class HallDto {
     public void setSectorIndex(List<SectorDto> sectorIndex) {
         this.sectorIndex = sectorIndex;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

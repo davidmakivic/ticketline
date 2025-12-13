@@ -7,7 +7,7 @@
             "type": "stage",
             "id": "stage",
             "label": "Bühne",
-            "rectN": { "x": 0.3556, "y": 0.0500, "w": 0.2889, "h": 0.1333 }
+            "rectN": { "x": 0.3556, "y": 0.0500, "w": 0.7, "h": 0.1333 }
         },
 
         {
@@ -15,20 +15,20 @@
             "id": "A1",
             "label": "A1",
             "sectorKey": "1",
-            "originN": { "x": 0.2444, "y": 0.2667 },
+            "originN": { "x": 0.1444, "y": 0.7333 },
             "rows": 5,
             "seatsPerRow": 10,
-            "spacingN": { "dx": 0.0222, "dy": 0.0400 }
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
         },
         {
             "type": "seatBlock",
             "id": "A2",
             "label": "A2",
             "sectorKey": "2",
-            "originN": { "x": 0.5778, "y": 0.2667 },
+            "originN": { "x": 0.5778, "y": 0.7333 },
             "rows": 5,
             "seatsPerRow": 10,
-            "spacingN": { "dx": 0.0222, "dy": 0.0400 }
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
         },
 
         {
@@ -36,10 +36,10 @@
             "id": "B1",
             "label": "B1 (VIP)",
             "sectorKey": "3",
-            "originN": { "x": 0.2444, "y": 0.5000 },
+            "originN": { "x": 0.1444, "y": 0.4000 },
             "rows": 5,
             "seatsPerRow": 10,
-            "spacingN": { "dx": 0.0222, "dy": 0.0400 }
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
         },
         {
             "type": "seatBlock",
@@ -49,7 +49,7 @@
             "originN": { "x": 0.5778, "y": 0.5000 },
             "rows": 5,
             "seatsPerRow": 10,
-            "spacingN": { "dx": 0.0222, "dy": 0.0400 }
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
         },
 
         {
@@ -57,7 +57,7 @@
             "id": "C1",
             "label": "C1 (Steh)",
             "sectorKey": "5",
-            "rectN": { "x": 0.1333, "y": 0.7833, "w": 0.3333, "h": 0.1500 },
+            "rectN": { "x": 0.1333, "y": 0.2667, "w": 0.3333, "h": 0.1500 },
             "capacity": 100
         },
         {
@@ -65,7 +65,7 @@
             "id": "C2",
             "label": "C2 (Steh)",
             "sectorKey": "6",
-            "rectN": { "x": 0.5333, "y": 0.7833, "w": 0.3333, "h": 0.1500 },
+            "rectN": { "x": 0.5333, "y": 0.2667, "w": 0.3333, "h": 0.1500 },
             "capacity": 100
         }
     ]

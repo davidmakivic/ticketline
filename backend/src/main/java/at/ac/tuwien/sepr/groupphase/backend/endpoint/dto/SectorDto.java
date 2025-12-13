@@ -17,6 +17,7 @@ public class SectorDto {
         this.hallId = hallId;
         this.type = type;
         this.priceCategoryId = priceCategoryId;
+        this.sectorKey = sectorKey;
     }
 
     public SectorDto(String name, SectorType type, Long hallId,  Long priceCategoryId,  String sectorKey) {
