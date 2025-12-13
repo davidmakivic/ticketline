@@ -116,4 +116,10 @@ public class TicketServiceImpl implements TicketService {
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketDto> findAll() {
+        return ticketMapper.ticketListToTicketDtoList(ticketRepository.findAll());
+    }
+
 }

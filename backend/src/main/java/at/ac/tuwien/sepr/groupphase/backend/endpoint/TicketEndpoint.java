@@ -82,4 +82,12 @@ public class TicketEndpoint {
         return ticketService.findByPerformanceId(performanceId);
     }
 
+    @PermitAll
+    @GetMapping
+    @Operation(summary = "Get all tickets", security = @SecurityRequirement(name = "apiKey"))
+    public List<TicketDto> getAll() {
+        LOGGER.info("Fetching all tickets");
+        return ticketService.findAll();
+    }
+
 }

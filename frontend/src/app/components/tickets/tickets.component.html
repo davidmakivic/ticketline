@@ -1,1 +1,7 @@
-<h1>Tickets</h1>
+<p>Tickets geladen: {{ tickets.length }}</p>
+
+<div class="tickets-list">
+  @for (ticket of tickets; track ticket.id) {
+  <app-ticket-card [ticket]="ticket"></app-ticket-card>
+  }
+</div>
