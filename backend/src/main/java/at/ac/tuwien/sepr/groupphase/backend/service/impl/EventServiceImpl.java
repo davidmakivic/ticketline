@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.EventMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
@@ -11,6 +12,7 @@ import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -138,5 +140,10 @@ public class EventServiceImpl implements EventService {
     public void delete(Long id) {
         LOGGER.info("Deleting event with id={}", id);
         eventRepository.deleteById(id);
+    }
+
+    @Override
+    public List<EventAutocompleteDto> findEventAutocomplete(String title, int limit) {
+        return this.eventRepository.findEventAutocompleteDto(title, PageRequest.of(0, limit));
     }
 }

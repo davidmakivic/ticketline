@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.repository;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +18,14 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
         + "LOWER(a.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR "
         + "LOWER(a.stageName) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Artist> findByAnyName(@Param("name") String name);
+
+
+    @Query("""
+            SELECT a.id AS id, a.firstName AS firstName, a.lastName AS lastName, a.stageName AS stageName, a.artistType AS artistType
+            FROM Artist a
+            WHERE LOWER(a.firstName) LIKE LOWER(CONCAT('%', :name, '%'))
+               OR LOWER(a.lastName) LIKE LOWER(CONCAT('%', :name, '%'))
+               OR LOWER(a.stageName) LIKE LOWER(CONCAT('%', :name, '%'))
+        """)
+    List<ArtistAutocompleteDto> findArtistAutocompleteDto(@Param("name") String name, Pageable pageable);
 }

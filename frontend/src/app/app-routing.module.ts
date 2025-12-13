@@ -64,7 +64,11 @@ const routes: Routes = [
     loadComponent: () =>
       import('./components/tickets/tickets.component')
         .then(m => m.TicketsComponent)
-  }
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  },
 ];
 
 @NgModule({
