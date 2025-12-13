@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -6,19 +6,21 @@ import { MatButtonModule } from '@angular/material/button';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 
+import { Router } from '@angular/router';
+
 import { CartService } from '../../services/cart.service';
 import { TicketsService } from '../../services/tickets.service';
 import { Ticket } from '../../dtos/ticket';
 import { TicketCartItemComponent } from '../tickets/ticket-cart-item/ticket-cart-item.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     MatCardModule,
     MatButtonModule,
     MatProgressSpinnerModule,
@@ -28,10 +30,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class CartComponent {
   loading = false;
-
   tickets: Ticket[] = [];
 
-  constructor(private cart: CartService, private ticketsService: TicketsService) {
+  constructor(
+    private cart: CartService,
+    private ticketsService: TicketsService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.cart.cartItems$.subscribe(items => {
       this.loadTickets(items.map(i => i.ticketId));
     });
@@ -83,5 +89,22 @@ export class CartComponent {
         this.loading = false;
       }
     });
+  }
+
+
+  onBuy(): void {
+    if (this.cart.getCartItems().length === 0) {
+      return;
+    }
+
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login'], {
+        queryParams: { redirect: '/checkout' }
+      });
+      return;
+    }
+
+
+    this.router.navigate(['/checkout']);
   }
 }

@@ -37,8 +37,8 @@
       <button
         mat-raised-button
         color="primary"
-        [disabled]="loading || tickets.length === 0"
-        [routerLink]="['/cart/checkout']">
+        (click)="onBuy()"
+        [disabled]="loading || tickets.length === 0">
         Kaufen
       </button>
     </div>

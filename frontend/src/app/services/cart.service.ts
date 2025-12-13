@@ -14,10 +14,22 @@ export class CartService {
 
   constructor(private ticketsService: TicketsService) {}
 
+  getCartItems(): CartItem[] {
+    return this.getItems();
+  }
+
   getItems(): CartItem[] {
     return this.items$.value;
   }
 
+  getTotalCents(ticketById?: Map<number, { priceFinalCents?: number }>): number {
+    if (!ticketById) return 0;
+
+    return this.getItems().reduce((sum, i) => {
+      const t = ticketById.get(i.ticketId);
+      return sum + (t?.priceFinalCents ?? 0);
+    }, 0);
+  }
   addTicket(ticketId: number): void {
     const current = this.items$.value;
     if (current.some(i => i.ticketId === ticketId)) return;

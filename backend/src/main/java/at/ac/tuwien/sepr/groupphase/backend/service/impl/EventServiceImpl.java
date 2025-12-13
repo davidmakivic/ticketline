@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -102,6 +103,21 @@ public class EventServiceImpl implements EventService {
     public List<EventDto> findByAnyTitle(String title) {
         LOGGER.info("Searching events by title: {}", title);
         return eventMapper.eventToEventDto(eventRepository.findByAnyTitle(title));
+    }
+
+    @Override
+    public List<EventDto> findByAdvancedFilters(String title, String artist, String location,
+                                                EventType eventType, Date startDate, Integer durationMinutes) {
+        LOGGER.info("Searching events with advanced filters");
+
+        String titleParam = (title == null || title.trim().isEmpty()) ? null : title;
+        String artistParam = (artist == null || artist.trim().isEmpty()) ? null : artist;
+        String locationParam = (location == null || location.trim().isEmpty()) ? null : location;
+
+        List<Event> events = eventRepository.findByAdvancedFilters(
+            titleParam, artistParam, locationParam, eventType, startDate, durationMinutes
+        );
+        return eventMapper.eventToEventDto(events);
     }
 
     @Override
