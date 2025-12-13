@@ -1,0 +1,97 @@
+.ticket-card {
+  background-color: var(--mat-sys-surface-container);
+  padding: 1.25rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-container-high);
+  }
+
+  mat-card-content {
+    padding: 0;
+  }
+
+  .ticket-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 2rem;
+  }
+
+  .ticket-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 220px;
+
+    .ticket-id {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--mat-sys-on-surface);
+    }
+
+    .ticket-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .ticket-row {
+        font-size: 0.95rem;
+        color: var(--mat-sys-on-surface);
+
+        strong {
+          color: var(--mat-sys-primary);
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .ticket-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0.5rem;
+    min-width: 140px;
+
+    .status-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .ticket-version {
+      font-size: 0.85rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .status-available {
+      background-color: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+      border-color: var(--mat-sys-primary);
+    }
+
+    .status-reserved {
+      background-color: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
+      border-color: var(--mat-sys-secondary);
+    }
+
+    .status-purchased {
+      background-color: var(--mat-sys-tertiary-container);
+      color: var(--mat-sys-on-tertiary-container);
+      border-color: var(--mat-sys-tertiary);
+    }
+
+    .status-unknown {
+      background-color: var(--mat-sys-surface-container-high);
+      color: var(--mat-sys-on-surface);
+      border-color: var(--mat-sys-outline);
+    }
+  }
+}

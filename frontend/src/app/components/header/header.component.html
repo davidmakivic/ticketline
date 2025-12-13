@@ -7,10 +7,10 @@
 
   <div class="d-flex align-items-center">
     <nav class="d-flex gap-2 me-5">
-      <button mat-button routerLink="/">Artists</button>
-      <button mat-button routerLink="/">Events</button>
-      <button mat-button routerLink="/">News</button>
-      <button mat-button routerLink="/">Shop</button>
+      <button mat-button routerLink="/artists">Artists</button>
+      <button mat-button routerLink="/events">Events</button>
+      <button mat-button routerLink="/news">News</button>
+      <button mat-button routerLink="/shop">Shop</button>
     </nav>
 
     <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
@@ -18,13 +18,16 @@
       <input type="text"
              placeholder="Suche nach Künstlern und Events"
              matInput
-             [matAutocomplete]="auto">
+             [matAutocomplete]="auto"
+             [(ngModel)]="searchTerm"
+             (ngModelChange)="searchChanged()"
+      >
 
       <button mat-icon-button matSuffix>
         <mat-icon>search</mat-icon>
       </button>
 
-      <mat-autocomplete #auto="matAutocomplete" >
+      <mat-autocomplete #auto="matAutocomplete">
 
         <div class="group-header" routerLink="artists">
           Künstler ansehen →
@@ -32,9 +35,12 @@
         @if (artists.length > 0) {
           <mat-optgroup label="Künstler">
             @for (artist of artists; track artist) {
-              <mat-option [value]="artist">
-                <div class=" ">
-                  <span>{{ artist }}</span>
+              <mat-option [value]="artist.stageName" (onSelectionChange)="openArtistDetail(artist.id)">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="autocomplete-image-wrapper mt-2">
+                    <img class="autocomplete-image me-2" [src]="artist.image" alt="">
+                  </div>
+                  <span>{{ artist.stageName}}</span>
                 </div>
               </mat-option>
             }
@@ -43,24 +49,31 @@
           @if (artists.length > 0 && events.length > 0) {
             <mat-divider></mat-divider>
           }
-
         }
 
 
-        <!-- TODO: set correct router link -->
         <div class="group-header" routerLink="events">
           Events ansehen →
         </div>
         @if (events.length > 0) {
           <mat-optgroup label="Events">
             @for (event of events; track event.id) {
-              <mat-option [value]="event.title">
-                <div class="option">
+              <mat-option
+                [value]="event.title"
+                (onSelectionChange)="openEventDetail(event.id)"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <div class="autocomplete-image-wrapper mt-2">
+                    <img
+                      class="autocomplete-image me-2"
+                      [src]="event.image"
+                      alt=""
+                    >
+                  </div>
                   <span>{{ event.title }}</span>
                 </div>
               </mat-option>
             }
-
           </mat-optgroup>
         }
 

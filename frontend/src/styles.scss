@@ -44,3 +44,12 @@ app-root {
   min-height: 100vh;
   background-color: var(--mat-sys-surface);
 }
+
+@media print {
+  body.invoice-print app-header,
+  body.invoice-print header,
+  body.invoice-print nav {
+    display: none !important;
+  }
+}
+

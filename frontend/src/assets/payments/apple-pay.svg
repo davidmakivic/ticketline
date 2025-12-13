@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" aria-label="Apple Pay">
+  <rect width="180" height="48" rx="8" fill="#000000"/>
+
+  <text x="24" y="32"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="26"
+        font-weight="700"
+        fill="#ffffff">
+     Pay
+  </text>
+</svg>

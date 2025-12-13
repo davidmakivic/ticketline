@@ -4,11 +4,11 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { NewsComponent } from './components/news/news.component';
-import {EventsListComponent} from "./components/events/events-list/events-list.component";
-import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
-import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-detail.component";
-import {ArtistsListComponent} from "./components/artists/artists-list/artists-list.component";
-import {RegisterComponent} from "./components/register/register.component";
+import {EventsListComponent} from './components/events/events-list/events-list.component';
+import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
+import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
+import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
+import {RegisterComponent} from './components/register/register.component';
 
 
 
@@ -21,11 +21,22 @@ const routes: Routes = [
     canActivate: mapToCanActivate([AuthGuard]),
     component: NewsComponent
   },
-{
-  path: 'cart',
-  loadComponent: () =>
-    import('./components/cart/cart.component').then(m => m.CartComponent)
-},
+
+  {
+    path: 'cart',
+    loadComponent: () =>
+      import('./components/cart/cart.component')
+        .then(m => m.CartComponent)
+  },
+
+  {
+    path: 'checkout',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/checkout/checkout.component')
+        .then(m => m.CheckoutComponent)
+  },
+
   {
     path: 'orders',
     canActivate: mapToCanActivate([AuthGuard]),
@@ -33,26 +44,31 @@ const routes: Routes = [
       import('./components/orders/orders.component')
         .then(m => m.OrdersComponent)
   },
+
   {
     path: 'events',
     canActivate: mapToCanActivate([AuthGuard]),
-    component: EventsListComponent,
+    component: EventsListComponent
   },
+
   {
     path: 'events/:id',
     canActivate: mapToCanActivate([AuthGuard]),
     component: EventDetailComponent
   },
+
   {
     path: 'artists',
     canActivate: mapToCanActivate([AuthGuard]),
-    component: ArtistsListComponent,
+    component: ArtistsListComponent
   },
+
   {
     path: 'artists/:id',
     canActivate: mapToCanActivate([AuthGuard]),
     component: ArtistDetailComponent
   },
+
   {
     path: 'performances/:performanceId/seats',
     canActivate: mapToCanActivate([AuthGuard]),
@@ -60,12 +76,26 @@ const routes: Routes = [
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
   },
+
   {
     path: 'tickets',
     canActivate: mapToCanActivate([AuthGuard]),
     loadComponent: () =>
       import('./components/tickets/tickets.component')
         .then(m => m.TicketsComponent)
+  },
+
+  {
+    path: 'invoice/:id',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/invoice/invoice.component')
+        .then(m => m.InvoiceComponent)
+  },
+
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];
 

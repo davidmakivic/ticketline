@@ -1,11 +1,13 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -85,11 +87,17 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/query")
-    public List<EventDto> searchByTitle(@RequestParam String title) {
-        LOGGER.info("Searching events by title '{}'", title);
-        LOGGER.debug("Search query length={}", title.length());
-        return eventService.findByAnyTitle(title);
+    public List<EventDto> searchByAdvancedFilters(
+        @RequestParam(required = false) String title,
+        @RequestParam(required = false) String artist,
+        @RequestParam(required = false) String location,
+        @RequestParam(required = false) EventType eventType,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+        @RequestParam(required = false) Integer durationMinutes) {
+        LOGGER.info("Searching events with advanced filters");
+        return eventService.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes);
     }
+
 
     @PermitAll
     @GetMapping
@@ -99,6 +107,15 @@ public class EventEndpoint {
         return eventService.findAll()
             .stream()
             .toList();
+    }
+
+    @PermitAll
+    @GetMapping("/autocomplete")
+    public List<EventAutocompleteDto> getAutocompleteByTitle(
+        @RequestParam("title") String title,
+        @RequestParam("limit") int limit) {
+        LOGGER.info("Fetching artists by name={}", title);
+        return eventService.findEventAutocomplete(title, limit);
     }
 
     @Secured("ROLE_ADMIN")
