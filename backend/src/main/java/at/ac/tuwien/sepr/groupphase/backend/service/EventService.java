@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 public interface EventService {
@@ -19,6 +20,9 @@ public interface EventService {
     ResponseEntity<byte[]> getEventImage(Long id);
 
     List<EventDto> findByAnyTitle(String title);
+
+    List<EventDto> findByAdvancedFilters(String title, String artist, String location,
+                                         EventType eventType, Date startDate, Integer durationMinutes);
 
     List<EventDto> findAll();
 
