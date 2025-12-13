@@ -21,8 +21,10 @@
       <div class="item-meta">
         <div class="quantity">{{ item.quantity }}x</div>
         <div class="price">{{ toEuro(item.priceCents) }}</div>
-        <button class="edit-btn">Ändern</button>
-        <button class="delete-btn" (click)="cart.removeItem(item.id)">🗑</button>
+        <button type="button" class="edit-btn">Ändern</button>
+        <button type="button"
+                class="delete-btn"
+                (click)="cart.removeItem(item.id)">🗑</button>
       </div>
 
     </div>
@@ -31,7 +33,14 @@
   <div class="summary">
     <span>Gesamt:</span>
     <span>{{ toEuro(cart.getTotalCents()) }}</span>
-    <button class="buy-btn">Kaufen</button>
+
+    <button
+      type="button"
+    class="buy-btn"
+    [disabled]="cart.getCartItems().length === 0"
+    (click)="onBuy()">
+    Kaufen
+    </button>
   </div>
 
   <h2 class="subtitle">Reservierungen</h2>

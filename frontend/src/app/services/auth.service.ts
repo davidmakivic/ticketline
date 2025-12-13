@@ -77,4 +77,12 @@ export class AuthService {
     return date;
   }
 
+registerUser(authRequest: AuthRequest): Observable<void> {
+  return this.httpClient.post<void>(
+    this.globals.backendUri + '/users',
+    authRequest
+  );
+}
+
+
 }
