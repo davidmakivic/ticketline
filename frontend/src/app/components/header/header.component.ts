@@ -1,6 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthService} from '../../services/auth.service';
-import {EventDto, EventType} from '../../dtos/event'
+import {EventAutocompleteDto, EventDto} from '../../dtos/event'
+import {debounceTime, Subject} from "rxjs";
+import {ArtistsService} from "../../services/artists.service";
+import {EventsService} from "../../services/events.service";
+import {ArtistAutocompleteDto} from "../../dtos/artist";
+import {Router} from "@angular/router";
 @Component({
     selector: 'app-header',
     templateUrl: './header.component.html',
@@ -8,39 +13,69 @@ import {EventDto, EventType} from '../../dtos/event'
     standalone: false
 })
 export class HeaderComponent implements OnInit {
+  constructor(
+    public authService: AuthService,
+    private artistsService: ArtistsService,
+    private eventsService: EventsService,
+    private router: Router
+  ) { }
 
-  constructor(public authService: AuthService) { }
+  searchTerm = '';
+  searchChangedObservable = new Subject<void>();
+  artists: ArtistAutocompleteDto[] = [];
+  events: EventAutocompleteDto[] = [];
+
 
   ngOnInit() {
+    this.searchChangedObservable
+      .pipe(debounceTime(300))
+      .subscribe({next: () => this.reloadAutocompleteOptions()})
   }
-  artists = ["The Electric Owls", "Luna Harmony", "Dj Thunderstrike"];
-  events: EventDto[] = [
-    {
-      id: 1,
-      title: 'Rock am Ring',
-      description: 'Großes jährliches Rockfestival mit internationalen Headlinern.',
-      category: EventType.FESTIVAL,
-      durationMinutes: 720,
-      artists: [],
-      performances: []
-    },
-    {
-      id: 2,
-      title: 'Symphonic Night Vienna',
-      description: 'Konzertabend mit klassischer Musik im Wiener Konzerthaus.',
-      category: EventType.CONCERT,
-      durationMinutes: 120,
-      artists: [],
-      performances: []
-    },
-    {
-      id: 3,
-      title: 'Electronic Summer Bash',
-      description: 'Open-Air EDM Event mit bekannten DJs.',
-      category: EventType.FESTIVAL,
-      durationMinutes: 480,
-      artists: [],
-      performances: []
-    }
-  ]
+
+
+  searchChanged() {
+    this.searchChangedObservable.next();
+
+  }
+
+  private reloadAutocompleteOptions() {
+    this.artistsService.getArtistAutoCompleteByName(this.searchTerm, 5)
+      .subscribe({
+        next: data => {
+          this.artists = data;
+
+          for (const artist of this.artists) {
+            this.artistsService.getArtistImage(artist.id).subscribe(async blob => {
+              artist.image = URL.createObjectURL(blob);
+              }
+            )
+          }
+
+        }
+      });
+
+    this.eventsService.getArtistAutoCompleteByName(this.searchTerm, 5)
+      .subscribe({
+        next: data => {
+          this.events = data;
+
+          for (const event of this.events) {
+            this.eventsService.getEventImage(event.id).subscribe(async blob => {
+                event.image = URL.createObjectURL(blob);
+              }
+            )
+          }
+
+        }
+      });
+
+  }
+
+  protected openArtistDetail(id: number) {
+    this.router.navigate(['/artists', id]);
+  }
+
+  protected openEventDetail(id: number) {
+    this.router.navigate(['/events', id]);
+  }
 }

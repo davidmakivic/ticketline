@@ -11,6 +11,12 @@ export interface EventDto {
   performances: Performance[];
 }
 
+export interface EventAutocompleteDto {
+  id: number;
+  title: string;
+  image?: string;
+}
+
 export enum EventType {
   CONCERT = 'CONCERT',
   FESTIVAL = 'FESTIVAL',

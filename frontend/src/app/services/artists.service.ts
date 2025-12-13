@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Artist } from '../dtos/artist';
+import {Artist, ArtistDataDto} from '../dtos/artist';
 import { Globals } from '../global/globals';
 import { AuthService } from './auth.service';
 import {EventDto} from "../dtos/event";
@@ -24,6 +24,15 @@ export class ArtistsService {
 
   getArtistById(id: number): Observable<Artist> {
     return this.httpClient.get<Artist>(`${this.artistsBaseUri}/${id}`);
+  }
+
+  getArtistAutoCompleteByName(name:string, limit:number): Observable<ArtistDataDto[]>{
+    const params = new HttpParams()
+      .set("name", name)
+      .set("limit", limit);
+
+    console.log("name:" + name + "\nlimit:" + limit);
+    return this.httpClient.get<ArtistDataDto[]>(`${this.artistsBaseUri}/autocomplete`, {params});
   }
 
   getArtistImage(id: number): Observable<Blob> {

@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -99,6 +99,15 @@ public class EventEndpoint {
         return eventService.findAll()
             .stream()
             .toList();
+    }
+
+    @PermitAll
+    @GetMapping("/autocomplete")
+    public List<EventAutocompleteDto> getAutocompleteByTitle(
+        @RequestParam("title") String title,
+        @RequestParam("limit") int limit) {
+        LOGGER.info("Fetching artists by name={}", title);
+        return eventService.findEventAutocomplete(title, limit);
     }
 
     @Secured("ROLE_ADMIN")
