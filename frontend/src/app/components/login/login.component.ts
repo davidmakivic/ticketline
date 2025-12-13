@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit {
   // Error flag
   error = false;
   errorMessage = '';
+  passwordError = 'error';
 
   constructor(private formBuilder: UntypedFormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.formBuilder.group({
@@ -75,4 +76,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
   }
 
+  protected cancel() {
+    this.router.navigate(['/']);
+  }
 }
