@@ -3,7 +3,8 @@ import {Globals} from '../global/globals';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {AuthService} from "./auth.service";
 import {Observable} from "rxjs";
-import {EventDto} from "../dtos/event";
+import {EventAutocompleteDto, EventDto} from "../dtos/event";
+import {ArtistDataDto} from "../dtos/artist";
 
 @Injectable({providedIn: "root"})
 export class EventsService {
@@ -18,6 +19,14 @@ export class EventsService {
   searchEventsByTitle(title: string): Observable<EventDto[]> {
     const params = new HttpParams().set('title', title);
     return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, { params });
+  }
+
+  getArtistAutoCompleteByName(title:string, limit:number): Observable<EventAutocompleteDto[]>{
+    const params = new HttpParams()
+      .set("title", title)
+      .set("limit", limit);
+
+    return this.httpClient.get<EventAutocompleteDto[]>(`${this.eventsBaseUri}/autocomplete`, {params});
   }
 
   getEventById(id: number): Observable<EventDto> {

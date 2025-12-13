@@ -21,6 +21,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatDivider} from "@angular/material/divider";
 import {Top10Component} from "./components/home/top10/top10.component";
 import {NewsListComponent} from "./components/home/news-list/news-list.component";
+import {NgOptimizedImage} from "@angular/common";
 
 
 @NgModule({
@@ -43,7 +44,7 @@ import {NewsListComponent} from "./components/home/news-list/news-list.component
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent],
+    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent, NgOptimizedImage],
   exports: [
     Top10Component
   ],

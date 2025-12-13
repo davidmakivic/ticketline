@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.ArtistMapper;
@@ -13,6 +14,7 @@ import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -100,7 +102,6 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
 
-
     @Override
     public List<ArtistDto> findAll() {
         LOGGER.info("Fetching all artists");
@@ -162,5 +163,10 @@ public class ArtistServiceImpl implements ArtistService {
     public void delete(Long id) {
         LOGGER.info("Deleting artist with id={}", id);
         artistRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ArtistAutocompleteDto> findArtistAutocomplete(String name, int maxAmount) {
+        return this.artistRepository.findArtistAutocompleteDto(name, PageRequest.of(0, maxAmount));
     }
 }

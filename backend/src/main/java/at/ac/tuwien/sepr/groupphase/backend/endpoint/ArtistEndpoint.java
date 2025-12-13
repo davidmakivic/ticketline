@@ -1,8 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.ArtistMapper;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 import jakarta.annotation.security.PermitAll;
@@ -102,6 +102,16 @@ public class ArtistEndpoint {
     public void delete(@PathVariable Long id) {
         LOGGER.info("Deleting artist with id={}", id);
         artistService.delete(id);
+    }
+
+
+    @PermitAll
+    @GetMapping("/autocomplete")
+    public List<ArtistAutocompleteDto> getByName(
+        @RequestParam("name") String name,
+        @RequestParam("limit") int limit) {
+        LOGGER.info("Fetching artists by name={}", name);
+        return artistService.findArtistAutocomplete(name, limit);
     }
 
 }
