@@ -107,7 +107,10 @@ export class TicketCartItemComponent implements OnChanges {
             if (blob) {
               const url = URL.createObjectURL(blob);
               this.eventImageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+            } else {
+              this.eventImageUrl = null;
             }
+
           });
         } else {
           this.eventTitle = null;
@@ -134,8 +137,12 @@ export class TicketCartItemComponent implements OnChanges {
       }),
       catchError(() => of(null))
     ).subscribe({
-      next: () => { this.loading = false; },
-      error: () => { this.loading = false; }
+      next: () => {
+ this.loading = false; 
+},
+      error: () => {
+ this.loading = false; 
+}
     });
   }
 
