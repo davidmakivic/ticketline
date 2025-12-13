@@ -177,26 +177,41 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+
+
 addSelectedToCart() {
+  const calls = [];
+
   for (const seatId of this.selectedSeatIds) {
     const ticket = this.ticketBySeatId.get(seatId);
     if (!ticket) continue;
 
-   this.cart.addTicketToCart({
-     id: ticket.id,
-     title: 'Sitzplatz Ticket',
-     subtitle: this.venueLine,
-     date: this.dateLabel,
-     time: this.beginLabel,
-     location: this.addressLine,
-     priceCents: ticket.priceFinalCents ?? 0,
-     imageUrl: ''
-   });
+    calls.push(this.cart.addTicketAndReserve(ticket.id));
+  }
 
+  if (calls.length === 0) {
+    this.clearSelection();
+    this.router.navigate(['/cart']);
+    return;
+  }
+
+  this.loading = true;
+  this.error = null;
+
+  forkJoin(calls).subscribe({
+    next: () => {
+      this.loading = false;
+      this.clearSelection();
+      this.router.navigate(['/cart']);
+    },
+    error: (e) => {
+      console.error(e);
+      this.loading = false;
+      this.error = 'Reservierung fehlgeschlagen (Ticket evtl. nicht mehr verfügbar).';
+    }
+  });
 }
-  this.clearSelection();
-  this.router.navigate(['/cart']);
-}
+
 
 
   // ---- aspect ratio lock box ----

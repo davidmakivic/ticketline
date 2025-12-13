@@ -2,8 +2,8 @@ Cypress.Commands.add('loginAdmin', () => {
     cy.fixture('settings').then(settings => {
         cy.visit('http://' + settings.baseUrl);
         cy.get('a[routerlink="/login"]').click();
-        cy.get('input[name="username"]').type(settings.adminUser);
-        cy.get('input[name="password"]').type(settings.adminPw);
+        cy.get('input[type="email"]').type(settings.adminUser);
+        cy.get('input[type="password"]').type(settings.adminPw);
         cy.contains('button', 'Login').click();
         cy.wait(1000);
     })
