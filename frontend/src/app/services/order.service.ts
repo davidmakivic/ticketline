@@ -22,7 +22,7 @@ export class OrdersService {
 
   createFromCart(items: CartItem[]): Observable<OrderDto> {
     return this.http.post<OrderDto>(this.baseUrl, {
-      ticketIds: items.map(i => i.id)
+      ticketIds: items.map(i => i.ticketId)
     });
   }
 }
