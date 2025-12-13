@@ -254,7 +254,7 @@ addSelectedToCart() {
 
   get seatR(): number {
     const b = this.box;
-    return Math.min(b.targetW, b.targetH) * 0.010;
+    return Math.min(b.targetW, b.targetH) * 0.025;
   }
 
   // ---- layout helpers ----
