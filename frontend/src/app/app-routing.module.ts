@@ -8,6 +8,9 @@ import {EventsListComponent} from "./components/events/events-list/events-list.c
 import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
 import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-detail.component";
 import {ArtistsListComponent} from "./components/artists/artists-list/artists-list.component";
+import { CheckoutGuard } from './guards/checkout.guard';
+
+
 
 
 
@@ -19,11 +22,17 @@ const routes: Routes = [
     canActivate: mapToCanActivate([AuthGuard]),
     component: NewsComponent
   },
-{
-  path: 'cart',
-  loadComponent: () =>
-    import('./components/cart/cart.component').then(m => m.CartComponent)
-},
+  {
+    path: 'cart',
+    loadComponent: () =>
+      import('./components/cart/cart.component').then(m => m.CartComponent)
+  },
+  {
+    path: 'cart/checkout',
+    canActivate: mapToCanActivate([CheckoutGuard]),
+    loadComponent: () =>
+      import('./components/cart/checkout.component').then(m => m.CheckoutComponent)
+  },
   {
     path: 'orders',
     canActivate: mapToCanActivate([AuthGuard]),

@@ -1,39 +1,30 @@
-<div class="cart-container">
+<mat-card>
+  <mat-card-content>
+    <h2>Warenkorb</h2>
 
-  <h1 class="title">Einkaufswagen</h1>
+    @if (loading) {
+    <p>Lade Tickets…</p>
+    }
 
-  <div class="cart-list">
-    <div *ngFor="let item of cart.getCartItems()" class="cart-item">
+    @if (!loading && tickets.length === 0) {
+    <p>Dein Warenkorb ist leer.</p>
+    } @else {
+    <div style="display:flex; gap:12px; margin-bottom: 12px;">
+      <button mat-stroked-button (click)="clear()">Leeren</button>
 
-      <img [src]="item.imageUrl" class="item-img">
-
-      <div class="item-info">
-        <h2>{{ item.title }}</h2>
-        <p>{{ item.subtitle }}</p>
-
-        <div class="details" *ngIf="item.type === 'TICKET'">
-          <div>{{ item.location }}</div>
-          <div>{{ item.date }}</div>
-          <div>{{ item.time }}</div>
-        </div>
-      </div>
-
-      <div class="item-meta">
-        <div class="quantity">{{ item.quantity }}x</div>
-        <div class="price">{{ toEuro(item.priceCents) }}</div>
-        <button class="edit-btn">Ändern</button>
-        <button class="delete-btn" (click)="cart.removeItem(item.id)">🗑</button>
-      </div>
-
+      <a mat-raised-button color="primary" [routerLink]="['/cart/checkout']">
+        Kaufen
+      </a>
     </div>
-  </div>
 
-  <div class="summary">
-    <span>Gesamt:</span>
-    <span>{{ toEuro(cart.getTotalCents()) }}</span>
-    <button class="buy-btn">Kaufen</button>
-  </div>
-
-  <h2 class="subtitle">Reservierungen</h2>
-
-</div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      @for (t of tickets; track t.id) {
+      <app-ticket-cart-item
+        [ticket]="t"
+        (remove)="removeTicket($event)">
+      </app-ticket-cart-item>
+      }
+    </div>
+    }
+  </mat-card-content>
+</mat-card>

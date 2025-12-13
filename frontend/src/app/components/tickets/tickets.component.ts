@@ -1,38 +1,32 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Ticket } from '../../dtos/ticket';
-import { TicketsService } from '../../services/tickets.service';
-import { TicketCardComponent } from '../tickets/ticket-card/ticket-card.component';
+import { Ticket, TicketStatus } from '../../dtos/ticket';
+import { TicketCartItemComponent } from '../tickets/ticket-cart-item/ticket-cart-item.component'; // <- anpassen!
 
 @Component({
   selector: 'app-tickets',
   standalone: true,
   imports: [
     CommonModule,
-    TicketCardComponent
+    TicketCartItemComponent, // <- wichtig
   ],
   templateUrl: './tickets.component.html',
   styleUrl: './tickets.component.scss',
 })
 export class TicketsComponent {
 
-  loading = false;
-  tickets: Ticket[] = [];
+  // zum schnellen Preview: nur 1 Ticket
+  tickets: Ticket[] = [{
+    id: 1,
+    performanceId: 10,
+    seatId: 55,
+    priceFinalCents: 2500,
+    status: TicketStatus.RESERVED,
+    version: 0
+  }];
 
-  constructor(private ticketsService: TicketsService) {
-    this.load();
-  }
-
-  load(): void {
-    this.loading = true;
-    this.ticketsService.getTickets().subscribe({
-      next: (tickets: Ticket[]) => {
-        this.tickets = tickets;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
+  onRemove(ticket: Ticket) {
+    console.log('remove clicked', ticket);
+    // fürs Preview reicht das
   }
 }

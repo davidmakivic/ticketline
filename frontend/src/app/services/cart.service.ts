@@ -1,64 +1,57 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { CartItem } from '../dtos/cart-item';
+
+const STORAGE_KEY = 'cart.items.v1';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
+  private readonly items$ = new BehaviorSubject<CartItem[]>(this.load());
 
-  private items: CartItem[] = [];
+  /** Observable für UI */
+  readonly cartItems$ = this.items$.asObservable();
 
+  /** Sync getter (z.B. für Guards/Checks) */
   getItems(): CartItem[] {
-    return this.items;
+    return this.items$.value;
   }
 
-  getCartItems(): CartItem[] {
-    return this.items.filter(i => !i.reserved);
+  addTicket(ticketId: number): void {
+    const current = this.items$.value;
+
+    // Du willst wahrscheinlich keine doppelten Tickets im Cart
+    if (current.some(i => i.ticketId === ticketId)) return;
+
+    const next = [...current, { ticketId, addedAt: new Date().toISOString() }];
+    this.set(next);
   }
 
-  getReservedItems(): CartItem[] {
-    return this.items.filter(i => i.reserved);
+  removeTicket(ticketId: number): void {
+    const next = this.items$.value.filter(i => i.ticketId !== ticketId);
+    this.set(next);
   }
 
-  addItem(item: CartItem) {
-    this.items.push(item);
+  clear(): void {
+    this.set([]);
   }
 
-  removeItem(id: number) {
-    this.items = this.items.filter(i => i.id !== id);
+  count(): number {
+    return this.items$.value.length;
   }
 
-  clear() {
-    this.items = [];
+  private set(items: CartItem[]): void {
+    this.items$.next(items);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }
 
-  getTotalCents(): number {
-    return this.items
-      .filter(i => !i.reserved)
-      .reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
-  }
-
-  reserveItem(id: number) {
-    const item = this.items.find(i => i.id === id);
-    if (item) {
-      item.reserved = true;
-      item.reservedUntil = Date.now() + 15 * 60 * 1000;
+  private load(): CartItem[] {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw) as CartItem[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
     }
-  }
-
-  addTicketToCart(ticket: {
-    id: number;
-    title: string;
-    subtitle?: string;
-    date?: string;
-    time?: string;
-    location?: string;
-    priceCents: number;
-    imageUrl: string;
-  }) {
-    this.items.push({
-      ...ticket,
-      type: 'TICKET',
-      quantity: 1,
-      reserved: false
-    });
   }
 }

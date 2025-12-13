@@ -1,7 +1,6 @@
 <p>Tickets geladen: {{ tickets.length }}</p>
 
-<div class="tickets-list">
-  @for (ticket of tickets; track ticket.id) {
-  <app-ticket-card [ticket]="ticket"></app-ticket-card>
-  }
-</div>
+<app-ticket-cart-item
+  [ticket]="tickets[0]"
+  (remove)="onRemove($event)">
+</app-ticket-cart-item>

@@ -182,16 +182,7 @@ addSelectedToCart() {
     const ticket = this.ticketBySeatId.get(seatId);
     if (!ticket) continue;
 
-   this.cart.addTicketToCart({
-     id: ticket.id,
-     title: 'Sitzplatz Ticket',
-     subtitle: this.venueLine,
-     date: this.dateLabel,
-     time: this.beginLabel,
-     location: this.addressLine,
-     priceCents: ticket.priceFinalCents ?? 0,
-     imageUrl: ''
-   });
+   this.cart.addTicket(ticket.id);
 
 }
   this.clearSelection();
