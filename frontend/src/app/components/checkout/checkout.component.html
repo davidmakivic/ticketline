@@ -28,7 +28,7 @@
 
     <div class="summary">
       <span>Gesamt</span>
-      <strong>{{ toEuro(cart.getTotalCents()) }}</strong>
+      <strong>{{ toEuro((totalCents$ | async) ?? 0) }}</strong>
     </div>
 
     <button class="pay-btn" (click)="pay()">
