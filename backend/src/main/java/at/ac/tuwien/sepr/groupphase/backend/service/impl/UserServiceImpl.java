@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
         if (applicationUser != null) {
             return applicationUser;
         }
-        throw new NotFoundException(String.format("Could not find the user with the email address %s", email));
+        throw new NotFoundException("E-Mail-Adresse oder Passwort ist falsch.");
     }
 
     @Override
