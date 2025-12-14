@@ -9,6 +9,7 @@
       <div class="subtitle">
         <div class="date">{{ dateLabel }}</div>
         <div class="city">{{ city }}</div>
+        <div class="event-title">{{ title }}</div>
       </div>
 
       <div class="meta">
@@ -79,7 +80,7 @@
 
                 <text
                   [attr.x]="x(o.x)"
-                  [attr.y]="y(o.y) - 10"
+                  [attr.y]="y(o.y) - 20"
                   class="block-label"
                 >
                   {{ el.label }}
@@ -93,7 +94,7 @@
                       [attr.r]="seatR"
                       class="seat"
                       [ngClass]="seatStatus(el.sectorKey, (el.rows - i), (j + 1))"
-                      (click)="onSeatClick(el.sectorKey, (el.rows - i), (j + 1))"
+                      (pointerdown)="onSeatClick(el.sectorKey, (el.rows - i), (j + 1))"
                     />
                   </ng-container>
                 </ng-container>
@@ -117,7 +118,7 @@
 
     <div class="summary">
       <div class="sum-row" *ngFor="let s of sectorSummary()">
-        <div>Sektor {{ s.sectorKey }}: {{ s.count }} Tickets</div>
+        <div>Sektor {{ s.name }}: {{ s.count }} Ticket(s)</div>
         <div class="muted">{{ s.priceLabel }}</div>
       </div>
 
@@ -138,7 +139,7 @@
         <button class="btn secondary" type="button" (click)="reserveSelected()" [disabled]="selectedSeatIds.size === 0">
           Reservieren
         </button>
-        <button class="btn outline" type="button" (click)="clearSelection()">Abbrechen</button>
+        <button class="btn outline" type="button" (click)="clearSelection()">Auswahl leeren</button>
       </div>
     </div>
   </ng-container>

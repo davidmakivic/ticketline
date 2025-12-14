@@ -18,6 +18,9 @@ import { Venue } from '../../dtos/venue';
 import { Seat } from '../../dtos/seat';
 import { Ticket, TicketStatus } from '../../dtos/ticket';
 
+import { EventsService   } from "../../services/events.service";
+import { EventDto } from "../../dtos/event";
+
 type StageEl = Extract<LayoutElement, { type: 'stage' }>;
 type StandingEl = Extract<LayoutElement, { type: 'standingArea' }>;
 type SeatBlockEl = Extract<LayoutElement, { type: 'seatBlock' }>;
@@ -40,6 +43,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   performance!: Performance;
   hall!: Hall;
   venue!: Venue;
+  event?: EventDto;
 
   layout!: LayoutMetadata;
 
@@ -49,7 +53,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   // container size for responsive svg
   @ViewChild('planWrap', { static: false }) planWrap?: ElementRef<HTMLDivElement>;
   cw = 800;
-  ch = 520;
+  ch = 700;
   private ro?: ResizeObserver;
 
   // Lookups
@@ -73,7 +77,8 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     private seatsService: SeatsService,
     private ticketsService: TicketsService,
      private cart: CartService,
-      private router: Router
+      private router: Router,
+    private eventsService: EventsService
   ) {
     this.init();
   }
@@ -111,13 +116,14 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
         this.performance = perf;
         return forkJoin({
           hall: this.hallsService.getById(perf.hallId),
-          tickets: this.ticketsService.getTicketsByPerformance(perf.id)
+          tickets: this.ticketsService.getTicketsByPerformance(perf.id),
+          event: this.eventsService.getEventById(perf.eventId)
         });
       }),
-      switchMap(({ hall, tickets }) => {
+      switchMap(({ hall, tickets, event }) => {
         this.hall = hall;
         this.layout = hall.layoutMetadata ?? { elements: [], version: 1 };
-
+        this.event = event;
         // sector index mappings
         this.sectorByKey.clear();
         this.sectorKeyBySectorId.clear();
@@ -318,6 +324,10 @@ addSelectedToCart() {
     return this.venue?.city ?? '';
   }
 
+  get title(): string {
+    return this.event?.title ?? '';
+  }
+
   get doorsOpenLabel(): string {
     const d = new Date(this.performance.startTime);
     d.setMinutes(d.getMinutes() - 30);
@@ -361,7 +371,7 @@ addSelectedToCart() {
   }
 
   // ---- summary: selected tickets grouped by sectorKey ----
-  sectorSummary(): Array<{ sectorKey: string; count: number; priceLabel: string }> {
+  sectorSummary(): Array<{ sectorKey: string; name: string; count: number; priceLabel: string }> {
     const bySector = new Map<string, number[]>();
 
     for (const seatId of this.selectedSeatIds) {
@@ -376,7 +386,7 @@ addSelectedToCart() {
       bySector.set(sectorKey, arr);
     }
 
-    const result: Array<{ sectorKey: string; count: number; priceLabel: string }> = [];
+    const result: Array<{ sectorKey: string; name: string; count: number; priceLabel: string }> = [];
 
     for (const [sectorKey, prices] of bySector.entries()) {
       const unique = Array.from(new Set(prices)).sort((a, b) => a - b);
@@ -385,10 +395,11 @@ addSelectedToCart() {
           ? `Preis pro Ticket: ${this.euro(unique[0] ?? 0)}`
           : `Preis pro Ticket: ${this.euro(unique[0])} – ${this.euro(unique[unique.length - 1])}`;
 
-      result.push({ sectorKey, count: prices.length, priceLabel });
+      const name = this.sectorByKey.get(sectorKey)?.name ?? `Sektor ${sectorKey}`;
+
+      result.push({ sectorKey, name, count: prices.length, priceLabel });
     }
 
-    // nicer ordering if sectorKey numeric
     result.sort((a, b) => Number(a.sectorKey) - Number(b.sectorKey));
     return result;
   }
