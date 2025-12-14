@@ -1,5 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.CancelTicketsDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.CancellationResultDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderUpdateDto;
@@ -71,4 +73,13 @@ public class OrdersEndpoint {
         LOGGER.debug("Request payload: {}", updateDto);
         return orderService.updateOrder(id, updateDto);
     }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PostMapping("/{id}/cancel")
+    public CancellationResultDto cancelTickets(@PathVariable long id, @RequestBody CancelTicketsDto dto) {
+        LOGGER.info("Cancelling tickets for order id={}", id);
+        LOGGER.debug("Request payload: {}", dto);
+        return orderService.cancelTickets(id, dto.getTicketIds());
+    }
+
 }
