@@ -30,7 +30,6 @@ import { SeatsService } from '../../../services/seats.service';
   styleUrl: './ticket-card.component.scss',
 })
 export class TicketCardComponent implements OnChanges {
-
   @Input({ required: true }) ticket!: Ticket;
 
   loading = false;
@@ -66,7 +65,9 @@ export class TicketCardComponent implements OnChanges {
   }
 
   private loadAll(): void {
-    if (!this.ticket) return;
+    if (!this.ticket) {
+      return;
+    }
 
     this.loading = true;
     this.priceEuro = (this.ticket.priceFinalCents ?? 0) / 100;
@@ -125,8 +126,12 @@ export class TicketCardComponent implements OnChanges {
       }),
       catchError(() => of(null))
     ).subscribe({
-      next: () => { this.loading = false; },
-      error: () => { this.loading = false; }
+      next: () => {
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
     });
   }
 
