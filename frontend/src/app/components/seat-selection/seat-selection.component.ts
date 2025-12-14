@@ -50,6 +50,9 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   // seatId -> sectorKey (für sectorSummary)
   sectorKeyBySeatId = new Map<number, string>();
 
+  // sectorKey -> alle seatIds in dem sector
+  seatIdsBySectorKey = new Map<string, number[]>();
+
   // container size for responsive svg
   @ViewChild('planWrap', { static: false }) planWrap?: ElementRef<HTMLDivElement>;
   cw = 800;
@@ -159,6 +162,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
         // build seat mappings
         this.seatIdByKey.clear();
         this.sectorKeyBySeatId.clear();
+        this.seatIdsBySectorKey.clear();
 
         for (const seat of allSeats) {
           const sectorKey = this.sectorKeyBySectorId.get(seat.sectorId);
@@ -166,6 +170,10 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
 
           this.seatIdByKey.set(this.seatKey(sectorKey, seat.rowNumber, seat.seatNumber), seat.id);
           this.sectorKeyBySeatId.set(seat.id, sectorKey);
+
+          const arr = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+          arr.push(seat.id);
+          this.seatIdsBySectorKey.set(sectorKey, arr);
         }
 
         // Optional: wenn bisher selektierte seats plötzlich nicht mehr existieren (z.B. reload),
@@ -304,6 +312,79 @@ addSelectedToCart() {
 
     if (this.selectedSeatIds.has(seatId)) this.selectedSeatIds.delete(seatId);
     else this.selectedSeatIds.add(seatId);
+  }
+
+  // ---- standing seat state mapping
+
+  standingAvailableCount(sectorKey: string): number {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+    let c = 0;
+
+    for (const seatId of seatIds) {
+      const t = this.ticketBySeatId.get(seatId);
+      if (t && t.status === TicketStatus.AVAILABLE && !this.selectedSeatIds.has(seatId)) c++;
+    }
+    return c;
+  }
+
+  standingSelectedCount(sectorKey: string): number {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+    let c = 0;
+    for (const seatId of seatIds) {
+      if (this.selectedSeatIds.has(seatId)) c++;
+    }
+    return c;
+  }
+
+  standingStatus(sectorKey: string): 'free' | 'reserved' | 'selected' {
+    if (this.standingSelectedCount(sectorKey) > 0) return 'selected';
+    return this.standingAvailableCount(sectorKey) > 0 ? 'free' : 'reserved';
+  }
+
+  standingAvailabilityLabel(sectorKey: string): string {
+    const n = this.standingAvailableCount(sectorKey);
+    return n > 0 ? `${n} verfügbar` : 'Ausverkauft';
+  }
+
+  private selectOneStanding(sectorKey: string) {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+
+    // pick first AVAILABLE + not already selected
+    for (const seatId of seatIds) {
+      const t = this.ticketBySeatId.get(seatId);
+      if (!t) continue;
+      if (t.status !== TicketStatus.AVAILABLE) continue;
+      if (this.selectedSeatIds.has(seatId)) continue;
+
+      this.selectedSeatIds.add(seatId);
+      return;
+    }
+  }
+
+  private deselectOneStanding(sectorKey: string) {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+
+    for (let i = seatIds.length - 1; i >= 0; i--) {
+      const seatId = seatIds[i];
+      if (this.selectedSeatIds.has(seatId)) {
+        this.selectedSeatIds.delete(seatId);
+        return;
+      }
+    }
+  }
+
+  onStandingClick(ev: PointerEvent, sectorKey: string) {
+    // Right click OR Shift-click => remove one
+    const remove = ev.button === 2 || ev.shiftKey;
+
+    // Prevent text selection / context menu quirks
+    ev.preventDefault();
+
+    if (remove) {
+      this.deselectOneStanding(sectorKey);
+    } else {
+      this.selectOneStanding(sectorKey);
+    }
   }
 
   // ---- header formatting ----

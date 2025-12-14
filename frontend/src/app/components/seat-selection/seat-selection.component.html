@@ -62,13 +62,40 @@
                 [attr.height]="h(r.h)"
                 rx="14"
                 class="standing"
+                [ngClass]="standingStatus(el.sectorKey)"
+                (pointerdown)="onStandingClick($event, el.sectorKey)"
+                (contextmenu)="$event.preventDefault()"
               />
               <text
                 [attr.x]="x(r.x) + 10"
                 [attr.y]="y(r.y) + 22"
                 class="standing-text"
+                style="pointer-events:none;"
               >
                 {{ el.label }}
+              </text>
+
+              <text
+                [attr.x]="x(r.x) + 10"
+                [attr.y]="y(r.y) + 42"
+                class="standing-subtext"
+                style="pointer-events:none;"
+              >
+                {{ standingAvailabilityLabel(el.sectorKey) }}
+                <tspan *ngIf="standingSelectedCount(el.sectorKey) > 0">
+                  · {{ standingSelectedCount(el.sectorKey) }} ausgewählt
+                </tspan>
+              </text>
+
+              <text
+                [attr.x]="x(r.x)"
+                [attr.y]="y(r.y) + 62"
+                class="standing-subtext"
+                style="pointer-events:none;"
+              >
+                <tspan dx="6" *ngIf="standingAvailabilityLabel(el.sectorKey) !== 'Ausverkauft'">
+                  (Links-Klick +1, Rechts-Klick −1)
+                </tspan>
               </text>
             </ng-container>
           </g>
