@@ -1,5 +1,5 @@
 import { Artist } from './artist';
-import { Performance } from './performance';
+import { PerformanceDto } from './performanceDto';
 import {SafeUrl} from "@angular/platform-browser";
 
 export interface EventDto {
@@ -9,7 +9,7 @@ export interface EventDto {
   category: EventTypeDto;
   durationMinutes: number;
   artists: Artist[];
-  performances: Performance[];
+  performances: PerformanceDto[];
 }
 
 export interface EventAutocompleteDto {

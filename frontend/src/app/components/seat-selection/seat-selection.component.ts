@@ -12,7 +12,7 @@ import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 
 
-import { Performance } from '../../dtos/performance';
+import { PerformanceDto } from '../../dtos/performanceDto';
 import { Hall, LayoutElement, LayoutMetadata, SectorIndexEntry } from '../../dtos/hall';
 import { Venue } from '../../dtos/venue';
 import { Seat } from '../../dtos/seat';
@@ -37,7 +37,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
 
   performanceId!: number;
 
-  performance!: Performance;
+  performance!: PerformanceDto;
   hall!: Hall;
   venue!: Venue;
 
