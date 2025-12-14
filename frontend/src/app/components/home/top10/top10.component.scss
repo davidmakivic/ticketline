@@ -1,8 +1,67 @@
 .top10 {
   background: linear-gradient(to bottom, #906437, #F6AA5E);
-  height: 1080px;
 }
 .title {
   font-size: 4em;
-  color: whitesmoke;
+  color: var(--mat-sys-on-surface);
+}
+
+.chart {
+  width: 100%;
+  max-width: 900px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5em;
+}
+
+.row:hover{
+  cursor:pointer;
+}
+
+.label {
+  width: 200px;
+  padding-right: 12px;
+  font-weight: 600;
+}
+
+.bar-container {
+  flex: 1;          /* nimmt den restlichen Platz */
+  height: 4em;
+  position: relative;
+}
+
+.bar {
+  position: relative;
+  height: 100%;
+  background: var(--mat-sys-primary-container);
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  min-width: 3em;
+}
+
+.bar.small {
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.tickets {
+  color: var(--mat-sys-on-surface);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.event-image {
+  position: absolute;
+  right: 3px;                 /* 📍 rechter Rand der Bar */
+  top: 50%;
+  transform: translate(100%, -50%); /* ➜ komplett nach außen */
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
 }

@@ -6,6 +6,6 @@ public record EventTop10Dto(
     Long eventId,
     String title,
     EventType category,
-    Long soldCount
+    Long soldTickets
 ) {
 }
