@@ -1,5 +1,20 @@
 <div class="events-container">
   <div class="search-filters">
+    @if (isAdmin()) {
+      <div class="admin-actions" style="margin-bottom: 20px;">
+        <button mat-raised-button color="primary" (click)="openAddEventModal(eventAddModal)">
+          <mat-icon>add</mat-icon> Neues Event
+        </button>
+      </div>
+    }
+
+    @if (error) {
+      <div class="alert alert-danger">
+        {{ errorMessage }}
+        <button type="button" (click)="vanishError()" class="close">×</button>
+      </div>
+    }
+
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Event Titel</mat-label>
@@ -46,6 +61,106 @@
       <button mat-stroked-button (click)="resetFilters()">Zurücksetzen</button>
     </div>
   </div>
+
+  <ng-template #eventAddModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Neues Event erstellen</h5>
+      <button type="button" (click)="modal.dismiss('close')" class="close">×</button>
+    </div>
+    <div class="modal-body">
+      @if (error) {
+        <div class="alert alert-danger">{{ errorMessage }}</div>
+      }
+
+      @if (currentEvent) {
+        <form>
+          <div class="form-group">
+            <label>Titel *</label>
+            <input type="text" class="form-control" [(ngModel)]="currentEvent.title" name="title" required>
+          </div>
+
+          <div class="form-group">
+            <label>Beschreibung *</label>
+            <textarea class="form-control" [(ngModel)]="currentEvent.description" name="description" rows="4" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Kategorie *</label>
+            <select class="form-control" [(ngModel)]="currentEvent.category" name="category">
+              @for (type of eventTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Dauer (Minuten) *</label>
+            <input type="number" class="form-control" [(ngModel)]="currentEvent.durationMinutes" name="duration" required>
+          </div>
+
+          <div class="form-group">
+            <label>Bild (optional)</label>
+            <div class="file-input-wrapper">
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" id="eventImage">
+              <label for="eventImage" class="file-input-label">
+              </label>
+            </div>
+          </div>
+
+          <hr>
+          <h6>Performances hinzufügen</h6>
+
+          <div class="form-group">
+            <label>Halle ID</label>
+            <input type="number" class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId">
+          </div>
+
+          <div class="form-group">
+            <label>Startzeit</label>
+            <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime">
+          </div>
+
+          <div class="form-group">
+            <label>Endzeit</label>
+            <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime">
+          </div>
+
+          <div class="form-group">
+            <label>Basispreis (Cents)</label>
+            <input type="number" class="form-control" [(ngModel)]="newPerformance.basePriceCents" name="basePrice">
+          </div>
+
+          <button type="button" class="btn btn-secondary" (click)="addPerformanceToList()">Performance hinzufügen</button>
+
+          <div class="performance-list">
+            <h6>Performances</h6>
+            @for (perf of performances; track $index) {
+              <div class="performance-item">
+                <div class="performance-info">
+                  <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
+                  <p><strong>Hall:</strong> {{ perf.hallId }}</p>
+                  <p><strong>Preis:</strong> €{{ perf.basePriceCents / 100 }}</p>
+                </div>
+                <button type="button" class="remove-btn" (click)="removePerformance($index)">
+                  Entfernen
+                </button>
+              </div>
+            }
+          </div>
+        </form>
+      }
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.dismiss('close')">Abbrechen</button>
+      <button type="button" class="btn btn-primary" (click)="saveEvent(modal)" [disabled]="isLoading">
+        @if (isLoading) {
+          <span>Wird gespeichert...</span>
+        } @else {
+          <span>Speichern</span>
+        }
+      </button>
+    </div>
+  </ng-template>
 
   @if (isLoading) {
     <mat-spinner></mat-spinner>

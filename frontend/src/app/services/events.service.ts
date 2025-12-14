@@ -96,11 +96,19 @@ export class EventsService {
     return this.httpClient.get(`${this.eventsBaseUri}/${id}/image`, { responseType: 'blob' });
   }
 
-  createEvent(event: EventDto): Observable<EventDto> {
+  createEvent(event: EventDto, image?: File): Observable<EventDto> {
     if (this.authService.getUserRole() !== 'ADMIN') {
       throw new Error('Nur Administratoren können Events erstellen');
     }
-    return this.httpClient.post<EventDto>(this.eventsBaseUri, event);
+    const formData = new FormData();
+    formData.append('title', event.title);
+    formData.append('description', event.description);
+    formData.append('category', event.category);
+    formData.append('durationMinutes', event.durationMinutes.toString());
+    if (image) {
+      formData.append('image', image);
+    }
+    return this.httpClient.post<EventDto>(this.eventsBaseUri, formData);
   }
 
   updateEvent(id: number, event: EventDto): Observable<EventDto> {
