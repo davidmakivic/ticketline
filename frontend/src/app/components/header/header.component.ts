@@ -6,6 +6,7 @@ import {ArtistsService} from "../../services/artists.service";
 import {EventsService} from "../../services/events.service";
 import {ArtistAutocompleteDto} from "../../dtos/artist";
 import {Router} from "@angular/router";
+
 @Component({
     selector: 'app-header',
     templateUrl: './header.component.html',

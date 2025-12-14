@@ -28,6 +28,15 @@ const routes: Routes = [
   },
 
   {
+    path: 'storno-invoice/:id',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/storno-invoice/storno-invoice.component')
+        .then(m => m.StornoInvoiceComponent)
+  },
+
+
+  {
     path: 'checkout',
     canActivate: mapToCanActivate([AuthGuard]),
     loadComponent: () =>
@@ -37,6 +46,7 @@ const routes: Routes = [
 
   {
     path: 'orders',
+    canActivate: mapToCanActivate([AuthGuard]),
     loadComponent: () =>
       import('./components/orders/orders.component')
         .then(m => m.OrdersComponent)

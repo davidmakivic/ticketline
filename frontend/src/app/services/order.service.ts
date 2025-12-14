@@ -6,6 +6,12 @@ import { OrderDto } from '../dtos/order.dto';
 import { CartItem } from '../dtos/cart-item';
 import { environment } from '../../environments/environment';
 
+export interface CancellationResultDto {
+  orderId: number;
+  cancelledTicketIds: number[];
+  refundTotalCents: number;
+  createdAt: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -25,4 +31,11 @@ export class OrdersService {
       ticketIds: items.map(i => i.ticketId)
     });
   }
-}
+
+cancelTickets(orderId: number, ticketIds: number[]): Observable<CancellationResultDto> {
+     return this.http.post<CancellationResultDto>(
+       `${this.baseUrl}/${orderId}/cancel`,
+       { ticketIds }
+     );
+   }
+ }
