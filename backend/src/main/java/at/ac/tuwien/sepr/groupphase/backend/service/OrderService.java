@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.groupphase.backend.service;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderUpdateDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 
 import java.util.List;
 
@@ -38,7 +40,7 @@ public interface OrderService {
      * @param createDto the DTO containing the ticket IDs required to build the order
      * @return the newly created order as OrderDto
      */
-    OrderDto createOrder(OrderCreateDto createDto);
+    OrderDto createOrder(OrderCreateDto createDto) throws ValidationException, ConflictException;
 
 
     /**
