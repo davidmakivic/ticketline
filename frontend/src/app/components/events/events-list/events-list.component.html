@@ -68,99 +68,138 @@
       <button type="button" (click)="modal.dismiss('close')" class="close">×</button>
     </div>
     <div class="modal-body">
-      @if (error) {
-        <div class="alert alert-danger">{{ errorMessage }}</div>
-      }
+      <div *ngIf="error" class="alert alert-danger">{{ errorMessage }}</div>
 
-      @if (currentEvent) {
-        <form>
-          <div class="form-group">
-            <label>Titel *</label>
-            <input type="text" class="form-control" [(ngModel)]="currentEvent.title" name="title" required>
+      <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal)">
+        <!-- Event-Titel -->
+        <div class="form-group">
+          <label>Titel *</label>
+          <input type="text" class="form-control" [(ngModel)]="currentEvent.title" name="title"
+                 required minlength="3" maxlength="100" #title="ngModel">
+          <div class="error" *ngIf="(title.touched || eventForm.submitted) && title.invalid">
+            <small *ngIf="title.errors?.['required']">Titel ist erforderlich</small>
+            <small *ngIf="title.errors?.['minlength']">Mindestens 3 Zeichen</small>
+            <small *ngIf="title.errors?.['maxlength']">Maximal 100 Zeichen</small>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Beschreibung *</label>
-            <textarea class="form-control" [(ngModel)]="currentEvent.description" name="description" rows="4" required></textarea>
+        <!-- Event-Beschreibung -->
+        <div class="form-group">
+          <label>Beschreibung *</label>
+          <textarea class="form-control" [(ngModel)]="currentEvent.description" name="description" rows="4"
+                    required minlength="10" maxlength="1000" #description="ngModel"></textarea>
+          <div class="error" *ngIf="(description.touched || eventForm.submitted) && description.invalid">
+            <small *ngIf="description.errors?.['required']">Beschreibung ist erforderlich</small>
+            <small *ngIf="description.errors?.['minlength']">Mindestens 10 Zeichen</small>
+            <small *ngIf="description.errors?.['maxlength']">Maximal 1000 Zeichen</small>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Kategorie *</label>
-            <select class="form-control" [(ngModel)]="currentEvent.category" name="category">
-              @for (type of eventTypes; track type) {
-                <option [value]="type">{{ type }}</option>
-              }
-            </select>
+        <!-- Kategorie -->
+        <div class="form-group">
+          <label>Kategorie *</label>
+          <select class="form-control" [(ngModel)]="currentEvent.category" name="category" required #category="ngModel">
+            <option [ngValue]="null">Bitte wählen</option>
+            <option *ngFor="let type of eventTypes" [ngValue]="type">{{ type }}</option>
+          </select>
+          <div class="error" *ngIf="(category.touched || eventForm.submitted) && category.invalid">
+            <small *ngIf="category.errors?.['required']">Kategorie ist erforderlich</small>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Dauer (Minuten) *</label>
-            <input type="number" class="form-control" [(ngModel)]="currentEvent.durationMinutes" name="duration" required>
+        <!-- Dauer -->
+        <div class="form-group">
+          <label>Dauer (Minuten) *</label>
+          <input type="number" class="form-control" [(ngModel)]="currentEvent.durationMinutes" name="duration"
+                 required min="1" #duration="ngModel">
+          <div class="error" *ngIf="(duration.touched || eventForm.submitted) && duration.invalid">
+            <small *ngIf="duration.errors?.['required']">Dauer ist erforderlich</small>
+            <small *ngIf="duration.errors?.['min']">Dauer muss mindestens 1 Minute sein</small>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Bild (optional)</label>
-            <div class="file-input-wrapper">
-              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" id="eventImage">
-              <label for="eventImage" class="file-input-label">
-              </label>
+        <!-- Bild (optional) -->
+        <div class="form-group">
+          <label>Bild (optional)</label>
+          <div class="file-input-wrapper">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" id="eventImage">
+          </div>
+        </div>
+
+        <hr>
+        <h6>Performances hinzufügen</h6>
+
+        <!-- Performance-HallId -->
+        <div class="form-group">
+          <label>Halle ID *</label>
+          <input type="number" class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId" required min="1"
+                 #hallId="ngModel">
+          <div class="error" *ngIf="(hallId.touched || performanceSubmitted) && hallId.invalid">
+            <small *ngIf="hallId.errors?.['required']">HallId ist erforderlich</small>
+            <small *ngIf="hallId.errors?.['min']">HallId muss größer als 0 sein</small>
+          </div>
+        </div>
+
+        <!-- Startzeit -->
+        <div class="form-group">
+          <label>Startzeit *</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime" required
+                 #startTime="ngModel">
+          <div class="error" *ngIf="(startTime.touched || performanceSubmitted) && startTime.invalid">
+            <small *ngIf="startTime.errors?.['required']">Startzeit ist erforderlich</small>
+          </div>
+        </div>
+
+        <!-- Endzeit -->
+        <div class="form-group">
+          <label>Endzeit *</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime" required
+                 #endTime="ngModel">
+          <div class="error" *ngIf="(endTime.touched || performanceSubmitted) && (endTime.invalid || newPerformance.endTime <= newPerformance.startTime)">
+            <small *ngIf="endTime.errors?.['required']">Endzeit ist erforderlich</small>
+            <small *ngIf="newPerformance.endTime <= newPerformance.startTime">Endzeit muss nach Startzeit liegen</small>
+          </div>
+        </div>
+
+        <!-- Basispreis -->
+        <div class="form-group">
+          <label>Basispreis (Cents) *</label>
+          <input type="number" class="form-control" [(ngModel)]="newPerformance.basePriceCents" name="basePrice"
+                 required min="0" #basePrice="ngModel">
+          <div class="error" *ngIf="(basePrice.touched || performanceSubmitted) && basePrice.invalid">
+            <small *ngIf="basePrice.errors?.['required']">Basispreis ist erforderlich</small>
+            <small *ngIf="basePrice.errors?.['min']">Basispreis darf nicht negativ sein</small>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-secondary" (click)="addPerformanceToList()">Performance hinzufügen</button>
+
+        <!-- Performance-Liste -->
+        <div class="performance-list" *ngIf="performances.length > 0">
+          <h6>Performances</h6>
+          <div *ngFor="let perf of performances; let i = index" class="performance-item">
+            <div class="performance-info">
+              <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
+              <p><strong>Ende:</strong> {{ perf.endTime | date:'short' }}</p>
+              <p><strong>Hall:</strong> {{ perf.hallId }}</p>
+              <p><strong>Preis:</strong> €{{ perf.basePriceCents / 100 }}</p>
             </div>
+            <button type="button" class="remove-btn" (click)="removePerformance(i)">Entfernen</button>
           </div>
-
-          <hr>
-          <h6>Performances hinzufügen</h6>
-
-          <div class="form-group">
-            <label>Halle ID</label>
-            <input type="number" class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId">
-          </div>
-
-          <div class="form-group">
-            <label>Startzeit</label>
-            <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime">
-          </div>
-
-          <div class="form-group">
-            <label>Endzeit</label>
-            <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime">
-          </div>
-
-          <div class="form-group">
-            <label>Basispreis (Cents)</label>
-            <input type="number" class="form-control" [(ngModel)]="newPerformance.basePriceCents" name="basePrice">
-          </div>
-
-          <button type="button" class="btn btn-secondary" (click)="addPerformanceToList()">Performance hinzufügen</button>
-
-          <div class="performance-list">
-            <h6>Performances</h6>
-            @for (perf of performances; track $index) {
-              <div class="performance-item">
-                <div class="performance-info">
-                  <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
-                  <p><strong>Hall:</strong> {{ perf.hallId }}</p>
-                  <p><strong>Preis:</strong> €{{ perf.basePriceCents / 100 }}</p>
-                </div>
-                <button type="button" class="remove-btn" (click)="removePerformance($index)">
-                  Entfernen
-                </button>
-              </div>
-            }
-          </div>
-        </form>
-      }
+        </div>
+      </form>
     </div>
+
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="modal.dismiss('close')">Abbrechen</button>
-      <button type="button" class="btn btn-primary" (click)="saveEvent(modal)" [disabled]="isLoading">
-        @if (isLoading) {
-          <span>Wird gespeichert...</span>
-        } @else {
-          <span>Speichern</span>
-        }
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+        <span *ngIf="isLoading">Wird gespeichert...</span>
+        <span *ngIf="!isLoading">Speichern</span>
       </button>
     </div>
   </ng-template>
+
+
 
   @if (isLoading) {
     <mat-spinner></mat-spinner>
