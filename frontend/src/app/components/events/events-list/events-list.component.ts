@@ -13,7 +13,7 @@ import {
   MatDatepickerToggle
 } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { FormsModule } from '@angular/forms';
+import {FormsModule, NgForm} from '@angular/forms';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
@@ -67,6 +67,7 @@ export class EventsListComponent implements OnInit {
 
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
+  performanceSubmitted: boolean = false;
 
   // Admin-Eigenschaften
   currentEvent: EventDto | null = null;
@@ -195,12 +196,30 @@ export class EventsListComponent implements OnInit {
   }
 
   addPerformanceToList(): void {
-    if (this.newPerformance.startTime && this.newPerformance.hallId && this.newPerformance.basePriceCents !== undefined) {
-      this.performances.push({...this.newPerformance,
-        id: Date.now()
-      } as PerformanceDto);
-      this.newPerformance = {};
+    this.performanceSubmitted = true; // für die Fehlermeldungen
+
+    const p = this.newPerformance;
+
+    // Validierung
+    if (
+      !p.startTime ||
+      !p.endTime ||
+      !p.hallId ||
+      p.hallId <= 0 ||
+      p.basePriceCents === undefined ||
+      p.basePriceCents < 0 ||
+      new Date(p.endTime) <= new Date(p.startTime)
+    ) {
+      return; // ungültige Eingaben -> nicht hinzufügen
     }
+
+    this.performances.push({
+      ...p,
+      id: Date.now() // temporäre ID für Frontend
+    } as PerformanceDto);
+
+    this.newPerformance = {};
+    this.performanceSubmitted = false; // reset für nächste Eingabe
   }
 
   removePerformance(index: number): void {
