@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 
-import { Performance } from '../../../dtos/performance';
+import { PerformanceDto } from '../../../dtos/performanceDto';
 import { Hall } from '../../../dtos/hall';
 import { Venue } from '../../../dtos/venue';
 import { HallsService } from '../../../services/halls.service';
@@ -25,7 +25,7 @@ import { VenuesService } from '../../../services/venues.service';
 export class PerformanceCardComponent implements OnInit, OnChanges {
 
   @Input({ required: true })
-  performance!: Performance;
+  performance!: PerformanceDto;
 
   hall: Hall | null = null;
   venue: Venue | null = null;

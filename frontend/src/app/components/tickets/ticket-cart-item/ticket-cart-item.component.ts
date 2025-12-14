@@ -9,7 +9,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
 import { Ticket } from '../../../dtos/ticket';
-import { Performance } from '../../../dtos/performance';
+import { PerformanceDto } from '../../../dtos/performanceDto';
 import { EventDto } from '../../../dtos/event';
 import { Hall } from '../../../dtos/hall';
 import { Venue } from '../../../dtos/venue';
@@ -45,7 +45,7 @@ export class TicketCartItemComponent implements OnChanges {
   eventTitle: string | null = null;
   eventImageUrl: SafeUrl | null = null;
 
-  performance: Performance | null = null;
+  performance: PerformanceDto | null = null;
   hall: Hall | null = null;
   venue: Venue | null = null;
 
@@ -138,10 +138,10 @@ export class TicketCartItemComponent implements OnChanges {
       catchError(() => of(null))
     ).subscribe({
       next: () => {
- this.loading = false; 
+ this.loading = false;
 },
       error: () => {
- this.loading = false; 
+ this.loading = false;
 }
     });
   }

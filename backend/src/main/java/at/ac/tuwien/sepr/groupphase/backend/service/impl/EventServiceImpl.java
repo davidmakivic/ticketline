@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.EventMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
@@ -13,6 +14,7 @@ import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -161,5 +164,13 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventAutocompleteDto> findEventAutocomplete(String title, int limit) {
         return this.eventRepository.findEventAutocompleteDto(title, PageRequest.of(0, limit));
+    }
+
+    @Override
+    public List<EventTop10Dto> getTop10ForCurrentMonth(EventType type) {
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+        Pageable top10 = PageRequest.of(0, 10);
+        return eventRepository.findTopEventsOfMonth(startOfMonth, endOfMonth, type, type == null, top10);
     }
 }

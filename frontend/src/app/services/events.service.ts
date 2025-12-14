@@ -3,7 +3,7 @@ import {Globals} from '../global/globals';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {AuthService} from "./auth.service";
 import {Observable} from "rxjs";
-import {EventAutocompleteDto, EventDto, EventTypeDto} from "../dtos/event";
+import {EventAutocompleteDto, EventDto, EventTop10Dto, EventTypeDto} from "../dtos/event";
 import {ArtistDataDto} from "../dtos/artist";
 
 @Injectable({providedIn: "root"})
@@ -70,12 +70,22 @@ export class EventsService {
     return `${year}-${month}-${day}`;
   }
 
-  getArtistAutoCompleteByName(title:string, limit:number): Observable<EventAutocompleteDto[]>{
+  getEventAutocompleteByTitle(title:string, limit:number): Observable<EventAutocompleteDto[]>{
     const params = new HttpParams()
       .set("title", title)
       .set("limit", limit);
 
     return this.httpClient.get<EventAutocompleteDto[]>(`${this.eventsBaseUri}/autocomplete`, {params});
+  }
+
+  getTop10Events(eventType: EventTypeDto | null): Observable<EventTop10Dto[]> {
+    if (eventType === null) {
+      return this.httpClient.get<EventTop10Dto[]>(`${this.eventsBaseUri}/top10`);
+    }
+    const params = new HttpParams()
+      .set("eventType", eventType);
+    return this.httpClient.get<EventTop10Dto[]>(`${this.eventsBaseUri}/top10`, {params});
+
   }
 
   getEventById(id: number): Observable<EventDto> {
@@ -86,11 +96,19 @@ export class EventsService {
     return this.httpClient.get(`${this.eventsBaseUri}/${id}/image`, { responseType: 'blob' });
   }
 
-  createEvent(event: EventDto): Observable<EventDto> {
+  createEvent(event: EventDto, image?: File): Observable<EventDto> {
     if (this.authService.getUserRole() !== 'ADMIN') {
       throw new Error('Nur Administratoren können Events erstellen');
     }
-    return this.httpClient.post<EventDto>(this.eventsBaseUri, event);
+    const formData = new FormData();
+    formData.append('title', event.title);
+    formData.append('description', event.description);
+    formData.append('category', event.category);
+    formData.append('durationMinutes', event.durationMinutes.toString());
+    if (image) {
+      formData.append('image', image);
+    }
+    return this.httpClient.post<EventDto>(this.eventsBaseUri, formData);
   }
 
   updateEvent(id: number, event: EventDto): Observable<EventDto> {

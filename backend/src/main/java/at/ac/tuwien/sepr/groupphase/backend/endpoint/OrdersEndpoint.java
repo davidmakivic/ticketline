@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderUpdateDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,7 @@ public class OrdersEndpoint {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping
-    public OrderDto createOrder(@RequestBody OrderCreateDto createDto) {
+    public OrderDto createOrder(@RequestBody OrderCreateDto createDto) throws ValidationException, ConflictException {
         LOGGER.info("Creating order");
         LOGGER.debug("Request payload: {}", createDto);
         return orderService.createOrder(createDto);

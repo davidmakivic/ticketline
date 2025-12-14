@@ -7,11 +7,14 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.OrderMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.OrderService;
+import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -107,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDto createOrder(OrderCreateDto createDto) {
+    public OrderDto createOrder(OrderCreateDto createDto) throws ValidationException, ConflictException {
 
         LOGGER.info("Creating order");
         LOGGER.debug("Payload: {}", createDto);
@@ -119,7 +122,31 @@ public class OrderServiceImpl implements OrderService {
             throw new NotFoundException("User not found");
         }
 
-        List<Ticket> tickets = ticketRepository.findAllById(createDto.getTicketIds());
+        List<Long> ids = createDto.getTicketIds();
+        if (ids == null || ids.isEmpty()) {
+            throw new ValidationException("No tickets provided", List.of("ticketIds must not be empty"));
+        }
+
+        List<Ticket> tickets = ticketRepository.findAllById(ids);
+        if (tickets.size() != ids.size()) {
+            throw new NotFoundException("One or more tickets not found");
+        }
+
+        long total = 0;
+        for (Ticket t : tickets) {
+            if (t.getStatus() != TicketStatus.RESERVED) {
+                throw new ConflictException(
+                    "Ticket not reserved",
+                    List.of("Ticket " + t.getId() + " is " + t.getStatus())
+                );
+            }
+            total += (t.getPriceFinalCents() == null ? 0 : t.getPriceFinalCents());
+        }
+
+        for (Ticket t : tickets) {
+            t.setStatus(TicketStatus.PURCHASED);
+        }
+        ticketRepository.saveAll(tickets);
 
         Order order = new Order(user,
             tickets.stream().mapToLong(Ticket::getPriceFinalCents).sum());
