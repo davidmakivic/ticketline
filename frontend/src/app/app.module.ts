@@ -22,6 +22,8 @@ import {MatDivider} from "@angular/material/divider";
 import {Top10Component} from "./components/home/top10/top10.component";
 import {NewsListComponent} from "./components/home/news-list/news-list.component";
 import {NgOptimizedImage} from "@angular/common";
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 
 
 @NgModule({
@@ -36,6 +38,7 @@ import {NgOptimizedImage} from "@angular/common";
   imports: [BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    MatTooltipModule,
     NgbModule,
     FormsModule,
     MatButton,

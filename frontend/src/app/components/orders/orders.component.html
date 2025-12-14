@@ -1,21 +1,76 @@
-<div class="container">
-  <h2>Orders</h2>
+<div class="orders-page">
 
-  <div *ngIf="loading">Loading...</div>
+  <div class="orders-header">
+    <div>
+      <h1 class="orders-title">Bestellübersicht</h1>
+      <p class="orders-subtitle">
+        Hier siehst du deine Bestellungen. Du kannst gekaufte Tickets stornieren.
+      </p>
+    </div>
 
-  <div *ngIf="error" class="error">
+    <button class="btn-outline" (click)="load()" [disabled]="loading">
+      Neu laden
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="state state-loading">
+    Loading...
+  </div>
+
+  <div *ngIf="error" class="state state-error">
     {{ error }}
   </div>
 
-  <div *ngIf="orders.length === 0 && !loading">
-    No orders available.
+  <div *ngIf="orders.length === 0 && !loading && !error" class="state state-empty">
+    Keine Bestellungen vorhanden.
   </div>
 
-  <div *ngFor="let o of orders" class="order-card">
-    <div>ID: {{ o.id }}</div>
-    <div>User: {{ o.userId }}</div>
-    <div>Total: {{ toEuro(o.totalPriceCents) }}</div>
-    <div>Created: {{ o.createdAt | date: 'medium' }}</div>
-    <div>Tickets: {{ o.ticketIds.length }}</div>
+  <div class="orders-grid" *ngIf="orders.length > 0 && !loading">
+
+    <div class="order-card" *ngFor="let o of orders">
+      <div class="order-top">
+        <div class="order-id">
+          Bestellung <span class="mono">#{{ o.id }}</span>
+        </div>
+
+        <div class="order-total">
+          {{ toEuro(o.totalPriceCents) }}
+        </div>
+      </div>
+
+      <div class="order-meta">
+        <div class="meta-item">
+          <span class="meta-label">Datum</span>
+          <span class="meta-value">{{ o.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+          <div class="order-sub" *ngIf="eventTitleByOrderId[o.id]">
+            {{ eventTitleByOrderId[o.id] }}
+          </div>
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Tickets</span>
+          <span class="meta-value">{{ o.ticketIds.length }}</span>
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Status</span>
+          <span class="badge badge-ok">Gekauft</span>
+        </div>
+      </div>
+
+      <div class="tickets" *ngIf="o.ticketIds?.length">
+        <div class="tickets-title">Ticket-IDs</div>
+        <div class="tickets-chips">
+          <span class="chip" *ngFor="let tid of o.ticketIds">#{{ tid }}</span>
+        </div>
+      </div>
+
+      <div class="order-actions">
+        <button class="btn-danger" (click)="cancelOrder(o)" [disabled]="o.ticketIds.length === 0">
+          Stornieren
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
