@@ -1,9 +1,9 @@
 import {Component} from '@angular/core';
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 import {FormsModule} from "@angular/forms";
-import {EventDto, EventTop10Dto, EventType} from "../../../dtos/event";
+import {EventTop10Dto, EventTypeDto} from "../../../dtos/event";
 import {EventsService} from "../../../services/events.service";
-import {forkJoin, map, Observable, of, switchMap} from "rxjs";
+import {Observable} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {RouterLink} from "@angular/router";
 
@@ -24,15 +24,12 @@ export class Top10Component {
   constructor(
     private eventsService: EventsService,
     private sanitizer: DomSanitizer
-
   ) {
   }
 
   selectedCategory = "ALL";
 
   top10Events: EventTop10Dto[];
-
-
 
 
   ngOnInit() {
@@ -44,10 +41,13 @@ export class Top10Component {
 
     switch (this.selectedCategory) {
       case "CONCERT":
-        eventsObservable = this.eventsService.getTop10Events(EventType.CONCERT);
+        eventsObservable = this.eventsService.getTop10Events(EventTypeDto.CONCERT);
         break;
       case "FESTIVAL":
-        eventsObservable = this.eventsService.getTop10Events(EventType.FESTIVAL);
+        eventsObservable = this.eventsService.getTop10Events(EventTypeDto.FESTIVAL);
+        break;
+      case "MUSICAL":
+        eventsObservable = this.eventsService.getTop10Events(EventTypeDto.MUSICAL);
         break;
       default:
         eventsObservable = this.eventsService.getTop10Events(null);
@@ -55,7 +55,7 @@ export class Top10Component {
 
     eventsObservable.subscribe({
       next: value => {
-        this.top10Events = value.slice().sort((a,b)=> b.soldTickets - a.soldTickets)
+        this.top10Events = value.slice().sort((a, b) => b.soldTickets - a.soldTickets)
         this.loadEventImages();
       },
       error: err => {
@@ -88,10 +88,10 @@ export class Top10Component {
   get maxTickets(): number {
     return Math.max(...this.top10Events.map(e => e.soldTickets));
   }
+
   getBarWidth(event: EventTop10Dto): number {
     return (event.soldTickets / this.maxTickets) * 100;
   }
-
 
 
 }

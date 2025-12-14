@@ -1,42 +1,61 @@
 <div class="events-container">
-  <div class="search-section">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Nach Titel suchen</mat-label>
-      <input
-        matInput
-        [(ngModel)]="searchTitle"
-        (keyup)="search()"
-        placeholder="Event-Titel eingeben">
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="search()"
-        [attr.aria-label]="'Suchen'">
-        <mat-icon>search</mat-icon>
-      </button>
-    </mat-form-field>
+  <div class="search-filters">
+    <div class="filter-row">
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Event Titel</mat-label>
+        <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Künstler</mat-label>
+        <input matInput [(ngModel)]="searchArtist" (keyup.enter)="onSearch()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Ort</mat-label>
+        <input matInput [(ngModel)]="searchLocation" (keyup.enter)="onSearch()">
+      </mat-form-field>
+    </div>
+
+    <div class="filter-row">
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Event Typ</mat-label>
+        <mat-select [(ngModel)]="selectedEventType" (selectionChange)="onSearch()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (type of eventTypes; track type) {
+            <mat-option [value]="type">{{ type }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Datum</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (change)="onSearch()">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Dauer (Minuten)</mat-label>
+        <input matInput type="number" [(ngModel)]="selectedDuration" (keyup.enter)="onSearch()">
+      </mat-form-field>
+    </div>
+
+    <div class="filter-actions">
+      <button mat-raised-button color="primary" (click)="onSearch()">Suchen</button>
+      <button mat-stroked-button (click)="resetFilters()">Zurücksetzen</button>
+    </div>
   </div>
 
-  @if (loading) {
-    <div class="spinner">
-      <mat-spinner></mat-spinner>
-    </div>
-  }
-
-  @if (!loading && events.length > 0) {
+  @if (isLoading) {
+    <mat-spinner></mat-spinner>
+  } @else if (events.length > 0) {
     <div class="events-list">
       @for (event of events; track event.id) {
-        <mat-card
-          class="event-card"
-          [routerLink]="['/events', event.id]"
-          [attr.aria-label]="'Event: ' + event.title">
+        <mat-card class="event-card" [routerLink]="['/events', event.id]">
           <div class="card-content">
-            @if (event.imageUrl) {
-              <img
-                [src]="event.imageUrl"
-                alt="Event-Bild: {{ event.title }}"
-                class="event-image"
-                loading="lazy">
+            @if (getEventImage(event.id!)) {
+              <img [src]="getEventImage(event.id!)" alt="Event-Bild: {{ event.title }}" class="event-image" loading="lazy">
             }
             <div class="event-info">
               <mat-card-header>
@@ -51,9 +70,7 @@
         </mat-card>
       }
     </div>
-  }
-
-  @if (!loading && events.length === 0) {
+  } @else {
     <p class="no-events">Keine Events gefunden</p>
   }
 </div>

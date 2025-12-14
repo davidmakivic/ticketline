@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketStatusUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
+import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -65,6 +66,20 @@ public class TicketEndpoint {
         return ticketService.update(id, dto);
     }
 
+    @PermitAll
+    @PutMapping("/{id}/reserve")
+    public TicketDto reserve(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
+        return ticketService.updateStatus(id, TicketStatus.RESERVED, dto.getVersion());
+    }
+
+    @PermitAll
+    @PutMapping("/{id}/release")
+    @Operation(summary = "Release reserved ticket", security = @SecurityRequirement(name = "apiKey"))
+    public TicketDto release(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
+        LOGGER.info("Releasing ticket id={}", id);
+        return ticketService.updateStatus(id, TicketStatus.AVAILABLE, dto.getVersion());
+    }
+
     @Secured("ROLE_USER")
     @PutMapping("/{id}/status")
     @Operation(summary = "Update ticket status", security = @SecurityRequirement(name = "apiKey"))
@@ -80,6 +95,14 @@ public class TicketEndpoint {
     public List<TicketDto> getByPerformanceId(@PathVariable Long performanceId) {
         LOGGER.info("Fetching tickets for performanceId={}", performanceId);
         return ticketService.findByPerformanceId(performanceId);
+    }
+
+    @PermitAll
+    @GetMapping
+    @Operation(summary = "Get all tickets", security = @SecurityRequirement(name = "apiKey"))
+    public List<TicketDto> getAll() {
+        LOGGER.info("Fetching all tickets");
+        return ticketService.findAll();
     }
 
 }

@@ -7,6 +7,7 @@
       <mat-button-toggle value="ALL">Alle Events</mat-button-toggle>
       <mat-button-toggle value="CONCERT">Konzert</mat-button-toggle>
       <mat-button-toggle value="FESTIVAL">Festival</mat-button-toggle>
+      <mat-button-toggle value="MUSICAL">Musical</mat-button-toggle>
     </mat-button-toggle-group>
   </div>
 
@@ -25,8 +26,8 @@
         <!-- Balken -->
         <div class="bar-container d-flex justify-content-start">
           <div class="bar d-flex justify-content-end"
-            [style.width.%]="getBarWidth(event)"
-            [class.small]="getBarWidth(event) < 20">
+               [style.width.%]="getBarWidth(event)"
+               [class.small]="getBarWidth(event) < 20">
 
             <span class="tickets me-2">
               {{ event.soldTickets }}

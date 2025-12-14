@@ -1,0 +1,40 @@
+<mat-card class="ticket-card">
+  <mat-card-content>
+    <div class="ticket-info">
+
+      <div class="ticket-left">
+        <div class="ticket-id">
+          Ticket #{{ ticket.id }}
+        </div>
+
+        <div class="ticket-meta">
+          <div class="ticket-row">
+            <strong>Preis:</strong>
+            {{ priceEuro() | currency : 'EUR' }}
+          </div>
+
+          <div class="ticket-row">
+            <strong>Performance:</strong>
+            {{ ticket.performanceId }}
+          </div>
+
+          <div class="ticket-row">
+            <strong>Sitzplatz:</strong>
+            @if (ticket.seatId !== null) {
+            {{ ticket.seatId }}
+            } @else {
+            —
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-right">
+        <span class="status-badge" [ngClass]="statusClass()">
+          {{ statusLabel() }}
+        </span>
+      </div>
+
+    </div>
+  </mat-card-content>
+</mat-card>

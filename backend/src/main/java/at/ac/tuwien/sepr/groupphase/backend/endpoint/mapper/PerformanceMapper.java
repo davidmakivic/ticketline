@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses =  {HallMapper.class})
 public interface PerformanceMapper {
 
     @Mapping(source = "event.id",  target = "eventId")

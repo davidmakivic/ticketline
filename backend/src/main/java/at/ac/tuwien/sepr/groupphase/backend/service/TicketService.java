@@ -57,4 +57,6 @@ public interface TicketService {
      */
     List<TicketDto> findByPerformanceId(Long performanceId);
 
+    List<TicketDto> findAll();
+
 }

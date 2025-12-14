@@ -6,7 +6,7 @@ export interface EventDto {
   id: number;
   title: string;
   description: string;
-  category: EventType;
+  category: EventTypeDto;
   durationMinutes: number;
   artists: Artist[];
   performances: Performance[];
@@ -26,9 +26,10 @@ export interface EventTop10Dto {
 }
 
 
-export enum EventType {
+export enum EventTypeDto {
   CONCERT = 'CONCERT',
   FESTIVAL = 'FESTIVAL',
+  MUSICAL = 'MUSICAL',
   }
 export interface TopEvent {
   title: string,
