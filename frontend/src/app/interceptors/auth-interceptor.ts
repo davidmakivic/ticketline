@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {AuthService} from '../services/auth.service';
 import {Observable} from 'rxjs';
 import {Globals} from '../global/globals';
@@ -15,6 +15,11 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // Do not intercept authentication requests
     if (req.url === authUri) {
+      return next.handle(req);
+    }
+
+    const token = this.authService.getToken();
+    if (!token) {
       return next.handle(req);
     }
 
