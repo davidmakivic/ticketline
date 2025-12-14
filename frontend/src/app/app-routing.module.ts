@@ -85,6 +85,19 @@ const routes: Routes = [
   },
 
   {
+    path: 'reserve/confirm',
+    loadComponent: () =>
+      import('./components/reservations/reservation-confirm.component')
+        .then(m => m.ReservationConfirmComponent)
+  },
+  {
+    path: 'reserve/success',
+    loadComponent: () =>
+      import('./components/reservations/reservation-success.component')
+        .then(m => m.ReservationSuccessComponent)
+  },
+
+  {
     path: '**',
     redirectTo: ''
   }

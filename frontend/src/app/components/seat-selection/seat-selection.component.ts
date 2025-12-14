@@ -11,6 +11,8 @@ import { TicketsService } from '../../services/tickets.service';
 import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 
+import { AuthService } from '../../services/auth.service';
+import { PendingReservationService } from '../../services/pending-reservation.service';
 
 import { PerformanceDto } from '../../dtos/performanceDto';
 import { Hall, LayoutElement, LayoutMetadata, SectorIndexEntry } from '../../dtos/hall';
@@ -72,8 +74,10 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     private venuesService: VenuesService,
     private seatsService: SeatsService,
     private ticketsService: TicketsService,
-     private cart: CartService,
-      private router: Router
+    private cart: CartService,
+    private router: Router,
+    private authService: AuthService,
+    private pendingReservation: PendingReservationService,
   ) {
     this.init();
   }
@@ -393,41 +397,25 @@ addSelectedToCart() {
     return result;
   }
 
-  // ---- reserve selection (sets tickets to RESERVED) ----
   reserveSelected() {
-    const toReserve: Ticket[] = [];
+    const ids: number[] = [];
 
     for (const seatId of this.selectedSeatIds) {
       const t = this.ticketBySeatId.get(seatId);
       if (!t) continue;
       if (t.status !== TicketStatus.AVAILABLE) continue;
-      toReserve.push(t);
+      ids.push(t.id);
     }
 
-    if (toReserve.length === 0) return;
+    if (ids.length === 0) return;
 
-    this.loading = true;
-    this.error = null;
+    this.pendingReservation.setTicketIds(ids);
 
-    forkJoin(
-      toReserve.map(t =>
-        this.ticketsService.updateStatus(t.id, { status: TicketStatus.RESERVED, version: t.version })
-      )
-    ).subscribe({
-      next: (updatedTickets) => {
-        // update local state
-        for (const t of updatedTickets) {
-          if (t.seatId == null) continue;
-          this.ticketBySeatId.set(t.seatId, t);
-        }
-        this.clearSelection();
-        this.loading = false;
-      },
-      error: (e) => {
-        console.error(e);
-        this.error = 'Reservierung fehlgeschlagen (evtl. wurde ein Platz gerade vergeben).';
-        this.loading = false;
-      }
-    });
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { redirect: '/reserve/confirm' } });
+      return;
+    }
+
+    this.router.navigate(['/reserve/confirm']);
   }
 }

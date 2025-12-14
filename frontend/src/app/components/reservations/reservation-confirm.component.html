@@ -1,0 +1,49 @@
+<div class="reservation-page">
+  <mat-card class="card">
+    <mat-card-content>
+
+      <h1>Reservierung</h1>
+
+      @if (loading) {
+      <div class="spinner"><mat-spinner></mat-spinner></div>
+      }
+
+      @if (!loading && error) {
+      <p class="error">{{ error }}</p>
+      }
+
+      @if (!loading && !error) {
+
+      <p class="hint">
+        Hinweis: Bitte holen Sie Ihre Tickets spätestens <strong>30 Minuten vor Beginn</strong> der Aufführung ab,
+        sonst verfällt die Reservierung.
+      </p>
+
+      <div class="ticket-list">
+        @for (t of tickets; track t.id) {
+        <app-ticket-card [ticket]="t"></app-ticket-card>
+        }
+      </div>
+
+
+      <div class="footer">
+        <div class="total">
+          <span>Gesamt</span>
+          <strong>{{ toEuro(totalCents) }}</strong>
+        </div>
+
+        <div class="actions">
+          <button mat-stroked-button (click)="cancel()" [disabled]="saving">Abbrechen</button>
+          <button mat-raised-button color="primary"
+                  (click)="confirmReservation()"
+                  [disabled]="saving || tickets.length === 0">
+            @if (saving) { Reserviere… } @else { Reservierung bestätigen }
+          </button>
+        </div>
+      </div>
+
+      }
+
+    </mat-card-content>
+  </mat-card>
+</div>
