@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import jakarta.annotation.security.PermitAll;
@@ -109,6 +110,13 @@ public class EventEndpoint {
         LOGGER.info("Fetching artists by name={}", title);
         return eventService.findEventAutocomplete(title, limit);
     }
+
+    @PermitAll
+    @GetMapping("/top10")
+    public List<EventTop10Dto> getTop10ByCategory(@RequestParam(value = "eventType", required = false) EventType eventType) {
+        return eventService.getTop10ForCurrentMonth(eventType);
+    }
+
 
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/{id}")

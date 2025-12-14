@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,4 +30,6 @@ public interface EventService {
     void delete(Long id);
 
     List<EventAutocompleteDto> findEventAutocomplete(String title, int limit);
+
+    List<EventTop10Dto> getTop10ForCurrentMonth(EventType type);
 }
