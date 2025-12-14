@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
-import { AuthRequest } from '../../dtos/auth-request';
+import {Component, OnInit} from '@angular/core';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {AuthService} from '../../services/auth.service';
+import {AuthRequest} from '../../dtos/auth-request';
 
 @Component({
   selector: 'app-login',
@@ -60,7 +60,7 @@ export class LoginComponent implements OnInit {
         console.log('Successfully logged in user: ' + authRequest.email);
 
         const redirect = this.route.snapshot.queryParamMap.get('redirect');
-        this.router.navigate([redirect ?? '/']);
+        this.router.navigate([redirect ?? '/news']);
       },
       error: error => {
         console.log('Could not log in due to:');
