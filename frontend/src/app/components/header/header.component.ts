@@ -54,7 +54,7 @@ export class HeaderComponent implements OnInit {
         }
       });
 
-    this.eventsService.getArtistAutoCompleteByName(this.searchTerm, 5)
+    this.eventsService.getEventAutocompleteByTitle(this.searchTerm, 5)
       .subscribe({
         next: data => {
           this.events = data;

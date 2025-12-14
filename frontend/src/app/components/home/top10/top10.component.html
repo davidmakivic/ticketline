@@ -1,9 +1,50 @@
-<div class="top10 d-flex flex-column pt-5 align-items-center" >
+<div class="top10 d-flex flex-column pt-5 align-items-center">
   <h1 class="title">Top Events</h1>
 
-    <mat-button-toggle-group name="top10-categories" [(ngModel)]="selectedCategory" class="mt-4">
+  <div class="mb-5">
+    <mat-button-toggle-group name="top10-categories" [(ngModel)]="selectedCategory" (change)="onCategoryChange()"
+                             class="mt-4">
       <mat-button-toggle value="ALL">Alle Events</mat-button-toggle>
       <mat-button-toggle value="CONCERT">Konzert</mat-button-toggle>
       <mat-button-toggle value="FESTIVAL">Festival</mat-button-toggle>
+      <mat-button-toggle value="MUSICAL">Musical</mat-button-toggle>
     </mat-button-toggle-group>
+  </div>
+
+
+  <div class="chart mb-5">
+
+    @for (event of top10Events; track event.eventId) {
+
+      <div class="row" [routerLink]="['events',event.eventId]">
+
+        <!-- Eventname -->
+        <div class="label">
+          {{ event.title }}
+        </div>
+
+        <!-- Balken -->
+        <div class="bar-container d-flex justify-content-start">
+          <div class="bar d-flex justify-content-end"
+               [style.width.%]="getBarWidth(event)"
+               [class.small]="getBarWidth(event) < 20">
+
+            <span class="tickets me-2">
+              {{ event.soldTickets }}
+            </span>
+            <img
+              class="event-image"
+              [src]="event.imageUrl"
+              alt=""
+            />
+          </div>
+
+        </div>
+
+
+      </div>
+
+    }
+
+  </div>
 </div>
