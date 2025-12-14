@@ -20,6 +20,9 @@ import { Venue } from '../../dtos/venue';
 import { Seat } from '../../dtos/seat';
 import { Ticket, TicketStatus } from '../../dtos/ticket';
 
+import { EventsService   } from "../../services/events.service";
+import { EventDto } from "../../dtos/event";
+
 type StageEl = Extract<LayoutElement, { type: 'stage' }>;
 type StandingEl = Extract<LayoutElement, { type: 'standingArea' }>;
 type SeatBlockEl = Extract<LayoutElement, { type: 'seatBlock' }>;
@@ -42,16 +45,20 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   performance!: PerformanceDto;
   hall!: Hall;
   venue!: Venue;
+  event?: EventDto;
 
   layout!: LayoutMetadata;
 
   // seatId -> sectorKey (für sectorSummary)
   sectorKeyBySeatId = new Map<number, string>();
 
+  // sectorKey -> alle seatIds in dem sector
+  seatIdsBySectorKey = new Map<string, number[]>();
+
   // container size for responsive svg
   @ViewChild('planWrap', { static: false }) planWrap?: ElementRef<HTMLDivElement>;
   cw = 800;
-  ch = 520;
+  ch = 700;
   private ro?: ResizeObserver;
 
   // Lookups
@@ -76,6 +83,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     private ticketsService: TicketsService,
     private cart: CartService,
     private router: Router,
+    private eventsService: EventsService,
     private authService: AuthService,
     private pendingReservation: PendingReservationService,
   ) {
@@ -115,13 +123,14 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
         this.performance = perf;
         return forkJoin({
           hall: this.hallsService.getById(perf.hallId),
-          tickets: this.ticketsService.getTicketsByPerformance(perf.id)
+          tickets: this.ticketsService.getTicketsByPerformance(perf.id),
+          event: this.eventsService.getEventById(perf.eventId)
         });
       }),
-      switchMap(({ hall, tickets }) => {
+      switchMap(({ hall, tickets, event }) => {
         this.hall = hall;
         this.layout = hall.layoutMetadata ?? { elements: [], version: 1 };
-
+        this.event = event;
         // sector index mappings
         this.sectorByKey.clear();
         this.sectorKeyBySectorId.clear();
@@ -157,6 +166,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
         // build seat mappings
         this.seatIdByKey.clear();
         this.sectorKeyBySeatId.clear();
+        this.seatIdsBySectorKey.clear();
 
         for (const seat of allSeats) {
           const sectorKey = this.sectorKeyBySectorId.get(seat.sectorId);
@@ -164,6 +174,10 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
 
           this.seatIdByKey.set(this.seatKey(sectorKey, seat.rowNumber, seat.seatNumber), seat.id);
           this.sectorKeyBySeatId.set(seat.id, sectorKey);
+
+          const arr = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+          arr.push(seat.id);
+          this.seatIdsBySectorKey.set(sectorKey, arr);
         }
 
         // Optional: wenn bisher selektierte seats plötzlich nicht mehr existieren (z.B. reload),
@@ -304,6 +318,79 @@ addSelectedToCart() {
     else this.selectedSeatIds.add(seatId);
   }
 
+  // ---- standing seat state mapping
+
+  standingAvailableCount(sectorKey: string): number {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+    let c = 0;
+
+    for (const seatId of seatIds) {
+      const t = this.ticketBySeatId.get(seatId);
+      if (t && t.status === TicketStatus.AVAILABLE && !this.selectedSeatIds.has(seatId)) c++;
+    }
+    return c;
+  }
+
+  standingSelectedCount(sectorKey: string): number {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+    let c = 0;
+    for (const seatId of seatIds) {
+      if (this.selectedSeatIds.has(seatId)) c++;
+    }
+    return c;
+  }
+
+  standingStatus(sectorKey: string): 'free' | 'reserved' | 'selected' {
+    if (this.standingSelectedCount(sectorKey) > 0) return 'selected';
+    return this.standingAvailableCount(sectorKey) > 0 ? 'free' : 'reserved';
+  }
+
+  standingAvailabilityLabel(sectorKey: string): string {
+    const n = this.standingAvailableCount(sectorKey);
+    return n > 0 ? `${n} verfügbar` : 'Ausverkauft';
+  }
+
+  private selectOneStanding(sectorKey: string) {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+
+    // pick first AVAILABLE + not already selected
+    for (const seatId of seatIds) {
+      const t = this.ticketBySeatId.get(seatId);
+      if (!t) continue;
+      if (t.status !== TicketStatus.AVAILABLE) continue;
+      if (this.selectedSeatIds.has(seatId)) continue;
+
+      this.selectedSeatIds.add(seatId);
+      return;
+    }
+  }
+
+  private deselectOneStanding(sectorKey: string) {
+    const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
+
+    for (let i = seatIds.length - 1; i >= 0; i--) {
+      const seatId = seatIds[i];
+      if (this.selectedSeatIds.has(seatId)) {
+        this.selectedSeatIds.delete(seatId);
+        return;
+      }
+    }
+  }
+
+  onStandingClick(ev: PointerEvent, sectorKey: string) {
+    // Right click OR Shift-click => remove one
+    const remove = ev.button === 2 || ev.shiftKey;
+
+    // Prevent text selection / context menu quirks
+    ev.preventDefault();
+
+    if (remove) {
+      this.deselectOneStanding(sectorKey);
+    } else {
+      this.selectOneStanding(sectorKey);
+    }
+  }
+
   // ---- header formatting ----
   private formatDate(iso?: string): string {
     if (!iso) return '';
@@ -320,6 +407,10 @@ addSelectedToCart() {
   }
   get city(): string {
     return this.venue?.city ?? '';
+  }
+
+  get title(): string {
+    return this.event?.title ?? '';
   }
 
   get doorsOpenLabel(): string {
@@ -365,7 +456,7 @@ addSelectedToCart() {
   }
 
   // ---- summary: selected tickets grouped by sectorKey ----
-  sectorSummary(): Array<{ sectorKey: string; count: number; priceLabel: string }> {
+  sectorSummary(): Array<{ sectorKey: string; name: string; count: number; priceLabel: string }> {
     const bySector = new Map<string, number[]>();
 
     for (const seatId of this.selectedSeatIds) {
@@ -380,7 +471,7 @@ addSelectedToCart() {
       bySector.set(sectorKey, arr);
     }
 
-    const result: Array<{ sectorKey: string; count: number; priceLabel: string }> = [];
+    const result: Array<{ sectorKey: string; name: string; count: number; priceLabel: string }> = [];
 
     for (const [sectorKey, prices] of bySector.entries()) {
       const unique = Array.from(new Set(prices)).sort((a, b) => a - b);
@@ -389,10 +480,11 @@ addSelectedToCart() {
           ? `Preis pro Ticket: ${this.euro(unique[0] ?? 0)}`
           : `Preis pro Ticket: ${this.euro(unique[0])} – ${this.euro(unique[unique.length - 1])}`;
 
-      result.push({ sectorKey, count: prices.length, priceLabel });
+      const name = this.sectorByKey.get(sectorKey)?.name ?? `Sektor ${sectorKey}`;
+
+      result.push({ sectorKey, name, count: prices.length, priceLabel });
     }
 
-    // nicer ordering if sectorKey numeric
     result.sort((a, b) => Number(a.sectorKey) - Number(b.sectorKey));
     return result;
   }
