@@ -67,10 +67,10 @@
       <h5 class="modal-title">Neues Event erstellen</h5>
       <button type="button" (click)="modal.dismiss('close')" class="close">×</button>
     </div>
-    <div class="modal-body">
-      <div *ngIf="error" class="alert alert-danger">{{ errorMessage }}</div>
+    <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal)">
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger">{{ errorMessage }}</div>
 
-      <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal)">
         <!-- Event-Titel -->
         <div class="form-group">
           <label>Titel *</label>
@@ -131,43 +131,41 @@
 
         <!-- Performance-HallId -->
         <div class="form-group">
-          <label>Halle ID *</label>
-          <input type="number" class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId" required min="1"
+          <label>Halle ID</label>
+          <input type="number" class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId" min="1"
                  #hallId="ngModel">
-          <div class="error" *ngIf="(hallId.touched || performanceSubmitted) && hallId.invalid">
-            <small *ngIf="hallId.errors?.['required']">HallId ist erforderlich</small>
+          <div class="error" *ngIf="hallId.touched && hallId.invalid">
             <small *ngIf="hallId.errors?.['min']">HallId muss größer als 0 sein</small>
           </div>
         </div>
 
         <!-- Startzeit -->
         <div class="form-group">
-          <label>Startzeit *</label>
-          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime" required
+          <label>Startzeit</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime"
                  #startTime="ngModel">
-          <div class="error" *ngIf="(startTime.touched || performanceSubmitted) && startTime.invalid">
+          <div class="error" *ngIf="startTime.touched && startTime.invalid">
             <small *ngIf="startTime.errors?.['required']">Startzeit ist erforderlich</small>
           </div>
         </div>
 
         <!-- Endzeit -->
         <div class="form-group">
-          <label>Endzeit *</label>
-          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime" required
+          <label>Endzeit</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime"
                  #endTime="ngModel">
-          <div class="error" *ngIf="(endTime.touched || performanceSubmitted) && (endTime.invalid || newPerformance.endTime <= newPerformance.startTime)">
+          <div class="error" *ngIf="endTime.touched && (endTime.invalid || (newPerformance.endTime && newPerformance.startTime && newPerformance.endTime <= newPerformance.startTime))">
             <small *ngIf="endTime.errors?.['required']">Endzeit ist erforderlich</small>
-            <small *ngIf="newPerformance.endTime <= newPerformance.startTime">Endzeit muss nach Startzeit liegen</small>
+            <small *ngIf="newPerformance.endTime && newPerformance.startTime && newPerformance.endTime <= newPerformance.startTime">Endzeit muss nach Startzeit liegen</small>
           </div>
         </div>
 
         <!-- Basispreis -->
         <div class="form-group">
-          <label>Basispreis (Cents) *</label>
+          <label>Basispreis (Cents)</label>
           <input type="number" class="form-control" [(ngModel)]="newPerformance.basePriceCents" name="basePrice"
-                 required min="0" #basePrice="ngModel">
-          <div class="error" *ngIf="(basePrice.touched || performanceSubmitted) && basePrice.invalid">
-            <small *ngIf="basePrice.errors?.['required']">Basispreis ist erforderlich</small>
+                 min="0" #basePrice="ngModel">
+          <div class="error" *ngIf="basePrice.touched && basePrice.invalid">
             <small *ngIf="basePrice.errors?.['min']">Basispreis darf nicht negativ sein</small>
           </div>
         </div>
@@ -187,16 +185,16 @@
             <button type="button" class="remove-btn" (click)="removePerformance(i)">Entfernen</button>
           </div>
         </div>
-      </form>
-    </div>
+      </div>
 
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="modal.dismiss('close')">Abbrechen</button>
-      <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-        <span *ngIf="isLoading">Wird gespeichert...</span>
-        <span *ngIf="!isLoading">Speichern</span>
-      </button>
-    </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss('close')">Abbrechen</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          <span *ngIf="isLoading">Wird gespeichert...</span>
+          <span *ngIf="!isLoading">Speichern</span>
+        </button>
+      </div>
+    </form>
   </ng-template>
 
 
