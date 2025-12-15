@@ -87,10 +87,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> getOrdersByUser(Long userId) {
+        LOGGER.info("Fetching all orders for user {}", userId);
+
+        List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId);
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.UNAUTHORIZED, "Not authenticated");
+            return orderMapper.orderListToOrderDtoList(orders);
         }
 
         String email = auth.getName();
@@ -98,18 +101,17 @@ public class OrderServiceImpl implements OrderService {
         boolean isAdmin = auth.getAuthorities().stream()
             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (!isAdmin) {
-            ApplicationUser me = userRepository.findUserByEmail(email);
-            if (me == null || !me.getUserId().equals(userId)) {
-                throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN, "Not allowed");
-            }
+        boolean isOwner = !orders.isEmpty()
+            && orders.get(0).getUser().getEmail().equals(email);
+
+        if (!isAdmin && !isOwner) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Not allowed");
         }
 
-        List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId);
+
         return orderMapper.orderListToOrderDtoList(orders);
     }
-
 
     @Override
     public OrderDto createOrder(OrderCreateDto createDto) throws ValidationException, ConflictException {
@@ -258,24 +260,5 @@ public class OrderServiceImpl implements OrderService {
 
         return new CancellationResultDto(order.getId(), cancelled, refund, Instant.now());
     }
-
-    @Override
-    public List<OrderDto> getMyOrders() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.UNAUTHORIZED, "Not authenticated");
-        }
-
-        String email = auth.getName();
-        ApplicationUser user = userRepository.findUserByEmail(email);
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
-
-        List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId());
-        return orderMapper.orderListToOrderDtoList(orders);
-    }
-
 
 }

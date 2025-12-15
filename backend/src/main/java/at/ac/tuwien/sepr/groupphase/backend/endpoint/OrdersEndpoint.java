@@ -34,7 +34,7 @@ public class OrdersEndpoint {
     }
 
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public List<OrderDto> getAllOrders() {
         LOGGER.info("Fetching all orders");
@@ -42,12 +42,6 @@ public class OrdersEndpoint {
         return orderService.getAllOrders();
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping("/me")
-    public List<OrderDto> getMyOrders() {
-        LOGGER.info("Fetching my orders");
-        return orderService.getMyOrders();
-    }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
