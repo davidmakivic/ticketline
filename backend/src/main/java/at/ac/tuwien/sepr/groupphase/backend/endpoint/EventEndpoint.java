@@ -5,6 +5,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,7 @@ public class EventEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Create a new event", security = @SecurityRequirement(name = "apiKey"))
     public EventDto create(
         @RequestParam("title") String title,
         @RequestParam("description") String description,
@@ -58,6 +61,7 @@ public class EventEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update an existing event", security = @SecurityRequirement(name = "apiKey"))
     public EventDto update(
         @PathVariable Long id,
         @RequestParam("title") String title,
@@ -74,6 +78,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/{id}")
+    @Operation(summary = "Get detailed information about a specific event", security = @SecurityRequirement(name = "apiKey"))
     public EventDto getById(@PathVariable Long id) {
         LOGGER.info("Fetching event with id={}", id);
         return eventService.findById(id);
@@ -81,6 +86,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/{id}/image")
+    @Operation(summary = "Get image for a specific event", security = @SecurityRequirement(name = "apiKey"))
     public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
         LOGGER.info("Fetching event image for id={}", id);
         return eventService.getEventImage(id);
@@ -88,6 +94,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/query")
+    @Operation(summary = "Search events by advanced filters", security = @SecurityRequirement(name = "apiKey"))
     public List<EventDto> searchByAdvancedFilters(
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String artist,
@@ -102,6 +109,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping
+    @Operation(summary = "Get list of all events", security = @SecurityRequirement(name = "apiKey"))
     public List<EventDto> getAll() {
         LOGGER.info("Fetching all events");
         LOGGER.debug("Event list requested");
@@ -112,6 +120,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/autocomplete")
+    @Operation(summary = "Get events by title for autocomplete", security = @SecurityRequirement(name = "apiKey"))
     public List<EventAutocompleteDto> getAutocompleteByTitle(
         @RequestParam("title") String title,
         @RequestParam("limit") int limit) {
@@ -121,6 +130,7 @@ public class EventEndpoint {
 
     @PermitAll
     @GetMapping("/top10")
+    @Operation(summary = "Get top 10 events by category for current month", security = @SecurityRequirement(name = "apiKey"))
     public List<EventTop10Dto> getTop10ByCategory(@RequestParam(value = "eventType", required = false) EventType eventType) {
         return eventService.getTop10ForCurrentMonth(eventType);
     }
@@ -129,6 +139,7 @@ public class EventEndpoint {
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete an event", security = @SecurityRequirement(name = "apiKey"))
     public void delete(@PathVariable Long id) {
         LOGGER.info("Deleting event with id={}", id);
         eventService.delete(id);
