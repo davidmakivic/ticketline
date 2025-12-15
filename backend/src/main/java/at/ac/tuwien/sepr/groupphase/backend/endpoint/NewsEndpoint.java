@@ -43,7 +43,7 @@ public class NewsEndpoint {
         this.newsMapper = newsMapper;
     }
 
-    @Secured("ROLE_USER")
+    @PermitAll
     @GetMapping
     @Operation(summary = "Get list of news without details", security = @SecurityRequirement(name = "apiKey"))
     public List<SimpleNewsDto> findAll() {
@@ -51,7 +51,7 @@ public class NewsEndpoint {
         return newsMapper.newsToSimpleNewsDto(newsService.findAll());
     }
 
-    @Secured("ROLE_USER")
+    @PermitAll
     @GetMapping(value = "/{id}")
     @Operation(summary = "Get detailed information about a specific news post", security = @SecurityRequirement(name = "apiKey"))
     public DetailedNewsDto find(@PathVariable(name = "id") Long id) {
