@@ -80,7 +80,12 @@ public class UserServiceImpl implements UserService {
                 grantedAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
             }
 
-            return new User(applicationUser.getEmail(), applicationUser.getPasswordHash(), grantedAuthorities);
+            return User.builder()
+                .username(applicationUser.getEmail())
+                .password(applicationUser.getPasswordHash())
+                .authorities(grantedAuthorities)
+                .accountLocked(applicationUser.getFailedLoginAttempts() >= 5)
+                .build();
         } catch (NotFoundException e) {
             throw new UsernameNotFoundException(e.getMessage(), e);
         }
@@ -124,19 +129,34 @@ public class UserServiceImpl implements UserService {
     public String login(UserLoginDto userLoginDto) {
         LOGGER.info("Attempting login for {}", userLoginDto.getEmail());
         UserDetails userDetails = loadUserByUsername(userLoginDto.getEmail());
-        if (userDetails != null
-            && userDetails.isAccountNonExpired()
-            && userDetails.isAccountNonLocked()
-            && userDetails.isCredentialsNonExpired()
-            && passwordEncoder.matches(userLoginDto.getPassword(), userDetails.getPassword())
+        if (userDetails == null
+            || !userDetails.isAccountNonExpired()
+            || !userDetails.isAccountNonLocked()
+            || !userDetails.isCredentialsNonExpired()
         ) {
-            List<String> roles = userDetails.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-            return jwtTokenizer.getAuthToken(userDetails.getUsername(), roles);
+            LOGGER.debug("accounts not found {}", userDetails == null);
+            LOGGER.debug("account expired {}", !userDetails.isAccountNonExpired());
+            LOGGER.debug("account locked {}", !userDetails.isAccountNonLocked());
+            LOGGER.debug("account credentials expired {}", !userDetails.isCredentialsNonExpired());
+            throw new BadCredentialsException("Username or password is incorrect or account is locked");
         }
-        throw new BadCredentialsException("Username or password is incorrect or account is locked");
+        if (!passwordEncoder.matches(userLoginDto.getPassword(), userDetails.getPassword())) {
+
+            boolean isAdmin = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
+
+            if (!isAdmin) {
+                userRepository.incrementFailedLoginAttempts(userLoginDto.getEmail());
+            }
+            throw new BadCredentialsException("Username or password is incorrect or account is locked");
+        }
+        List<String> roles = userDetails.getAuthorities()
+            .stream()
+            .map(GrantedAuthority::getAuthority)
+            .toList();
+        userRepository.setFailedLoginAttemptsToZero(userLoginDto.getEmail());
+        return jwtTokenizer.getAuthToken(userDetails.getUsername(), roles);
     }
 
     @Override
@@ -175,6 +195,7 @@ public class UserServiceImpl implements UserService {
             //Logged in user can change their own password
             ApplicationUser user = userRepository.findUserByEmail(email);
             user.setPasswordHash(passwordEncoder.encode(dto.password()));
+            user.setFailedLoginAttempts(0);
             userRepository.save(user);
             return;
         }
@@ -189,6 +210,7 @@ public class UserServiceImpl implements UserService {
         }
         ApplicationUser user = token.getUser();
         user.setPasswordHash(passwordEncoder.encode(dto.password()));
+        user.setFailedLoginAttempts(0);
         userRepository.save(user);
         passwordTokenRepository.removeByUser(user);
     }
