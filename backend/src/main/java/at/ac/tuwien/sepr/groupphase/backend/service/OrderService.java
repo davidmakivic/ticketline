@@ -62,4 +62,13 @@ public interface OrderService {
      */
     CancellationResultDto cancelTickets(long orderId, List<Long> ticketIds);
 
+
+    /**
+     * Retrieves all orders of the currently authenticated user.
+     *
+     * @return a list of orders belonging to the logged-in user,
+     *         sorted by creation date in descending order
+     */
+    List<OrderDto> getMyOrders();
+
 }
