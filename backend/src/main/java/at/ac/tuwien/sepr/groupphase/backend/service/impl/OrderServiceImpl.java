@@ -88,30 +88,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDto> getOrdersByUser(Long userId) {
         LOGGER.info("Fetching all orders for user {}", userId);
-
-        List<Order> orders = orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            return orderMapper.orderListToOrderDtoList(orders);
-        }
-
-        String email = auth.getName();
-
-        boolean isAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        boolean isOwner = !orders.isEmpty()
-            && orders.get(0).getUser().getEmail().equals(email);
-
-        if (!isAdmin && !isOwner) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.FORBIDDEN, "Not allowed");
-        }
-
-
-        return orderMapper.orderListToOrderDtoList(orders);
+        return orderMapper.orderListToOrderDtoList(
+            orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
+        );
     }
+
 
     @Override
     public OrderDto createOrder(OrderCreateDto createDto) throws ValidationException, ConflictException {
