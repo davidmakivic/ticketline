@@ -196,10 +196,7 @@ export class EventsListComponent implements OnInit {
   }
 
   addPerformanceToList(): void {
-    this.performanceSubmitted = true; // für die Fehlermeldungen
-
     const p = this.newPerformance;
-
     // Validierung
     if (
       !p.startTime ||
@@ -210,16 +207,17 @@ export class EventsListComponent implements OnInit {
       p.basePriceCents < 0 ||
       new Date(p.endTime) <= new Date(p.startTime)
     ) {
-      return; // ungültige Eingaben -> nicht hinzufügen
+      this.performanceSubmitted = true;
+      return;
     }
 
     this.performances.push({
       ...p,
-      id: Date.now() // temporäre ID für Frontend
+      id: Date.now()
     } as PerformanceDto);
 
     this.newPerformance = {};
-    this.performanceSubmitted = false; // reset für nächste Eingabe
+    this.performanceSubmitted = false;
   }
 
   removePerformance(index: number): void {
