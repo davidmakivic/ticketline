@@ -1,9 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {
-  FormControl, FormGroup, FormGroupDirective, NgForm,
+  FormControl,
+  FormGroup,
+  FormGroupDirective,
+  NgForm,
   ReactiveFormsModule,
   UntypedFormBuilder,
-  UntypedFormGroup, ValidationErrors, ValidatorFn,
+  UntypedFormGroup,
+  ValidationErrors,
+  ValidatorFn,
   Validators
 } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
@@ -11,7 +16,7 @@ import {ErrorStateMatcher, MatOption} from "@angular/material/core";
 import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {MatButton} from "@angular/material/button";
 import {count} from "rxjs";
-import { EUROPEAN_COUNTRIES } from './european-countries';
+import {EUROPEAN_COUNTRIES} from './european-countries';
 import {MatSelectModule} from '@angular/material/select';
 import {UserService} from "../../services/user.service";
 
@@ -29,7 +34,6 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
   }
 }
-
 
 
 @Component({
@@ -67,6 +71,8 @@ export class RegisterComponent implements OnInit {
 
   europeanCountries = EUROPEAN_COUNTRIES;
 
+  registerErrors: string[] = [];
+
 
   constructor(
     private formBuilder: UntypedFormBuilder,
@@ -83,10 +89,11 @@ export class RegisterComponent implements OnInit {
       email: this.email,
       password: this.password,
       confirmPassword: this.confirmPassword
-    }, { validators: passwordMatchValidator });
+    }, {validators: passwordMatchValidator});
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
   onPasswordInput() {
     if (this.registerForm.hasError('passwordMissmatch')) {
@@ -95,7 +102,6 @@ export class RegisterComponent implements OnInit {
       this.confirmPassword.setErrors(null);
     }
   }
-
 
 
   registerUser() {
@@ -118,10 +124,13 @@ export class RegisterComponent implements OnInit {
 
     this.userService.createUser(payload).subscribe({
       next: () => {
+        console.log("Hi")
         this.router.navigate(['/login']);
       },
       error: (error) => {
         console.log('Registration failed', error);
+        this.registerErrors = error.error.errors;
+        console.log(error.error.errors);
       }
     })
   }
@@ -131,4 +140,5 @@ export class RegisterComponent implements OnInit {
   }
 
   protected readonly count = count;
+  protected readonly name = name;
 }
