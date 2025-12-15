@@ -44,6 +44,27 @@ export class CartComponent {
   }
 
   clear() {
+    const ids = this.cart.getCartItems().map(i => i.ticketId);
+    if (ids.length === 0) return;
+
+    this.loading = false;
+
+    forkJoin(
+      ids.map(id => this.cart.removeTicketAndRelease(id).pipe(
+        catchError(err => {
+          console.error('Release failed for ticket', id, err);
+          return of(null);
+        })
+      ))
+    ).subscribe({
+      next: () => {
+        this.loading = false;
+      },
+      error: (e) => {
+        console.error(e);
+        this.loading = false;
+      }
+    });
     this.cart.clear();
   }
 
