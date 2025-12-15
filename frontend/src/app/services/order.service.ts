@@ -23,7 +23,7 @@ export class OrdersService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<OrderDto[]> {
-    return this.http.get<OrderDto[]>(this.baseUrl);
+    return this.http.get<OrderDto[]>(`${this.baseUrl}/me`);
   }
 
   createFromCart(items: CartItem[]): Observable<OrderDto> {
