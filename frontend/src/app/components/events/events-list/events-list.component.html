@@ -65,7 +65,6 @@
   <ng-template #eventAddModal let-modal>
     <div class="modal-header">
       <h5 class="modal-title">Neues Event erstellen</h5>
-      <button type="button" (click)="modal.dismiss('close')" class="close">×</button>
     </div>
     <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal)">
       <div class="modal-body">
@@ -87,7 +86,7 @@
         <div class="form-group">
           <label>Beschreibung *</label>
           <textarea class="form-control" [(ngModel)]="currentEvent.description" name="description" rows="4"
-                    required minlength="10" maxlength="1000" #description="ngModel"></textarea>
+                    required maxlength="1000" #description="ngModel"></textarea>
           <div class="error" *ngIf="(description.touched || eventForm.submitted) && description.invalid">
             <small *ngIf="description.errors?.['required']">Beschreibung ist erforderlich</small>
             <small *ngIf="description.errors?.['minlength']">Mindestens 10 Zeichen</small>
