@@ -5,6 +5,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ public class ArtistEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Create a new artist", security = @SecurityRequirement(name = "apiKey"))
     public ArtistDto create(
         @RequestParam("firstName") String firstName,
         @RequestParam("lastName") String lastName,
@@ -54,6 +57,7 @@ public class ArtistEndpoint {
 
     @Secured("ROLE_ADMIN")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update an existing artist", security = @SecurityRequirement(name = "apiKey"))
     public ArtistDto update(@PathVariable Long id,
                             @RequestParam("firstName") String firstName,
                             @RequestParam("lastName") String lastName,
@@ -68,6 +72,7 @@ public class ArtistEndpoint {
 
     @PermitAll
     @GetMapping("/{id}")
+    @Operation(summary = "Get detailed information about a specific artist", security = @SecurityRequirement(name = "apiKey"))
     public ArtistDto getById(@PathVariable Long id) {
         LOGGER.info("Fetching artist with id={}", id);
         return artistService.findById(id);
@@ -75,6 +80,7 @@ public class ArtistEndpoint {
 
     @PermitAll
     @GetMapping("/{id}/image")
+    @Operation(summary = "Get image for a specific artist", security = @SecurityRequirement(name = "apiKey"))
     public ResponseEntity<byte[]> getArtistImage(@PathVariable Long id) {
         LOGGER.info("Fetching image for artist id={}", id);
         return artistService.getArtistImage(id);
@@ -82,6 +88,7 @@ public class ArtistEndpoint {
 
     @PermitAll
     @GetMapping("/{id}/events")
+    @Operation(summary = "Get all events for a specific artist", security = @SecurityRequirement(name = "apiKey"))
     public List<EventDto> getEventsByArtistId(@PathVariable Long id) {
         LOGGER.info("Fetching events for artist id={}", id);
         return artistService.findEventsByArtistId(id);
@@ -89,6 +96,7 @@ public class ArtistEndpoint {
 
     @PermitAll
     @GetMapping
+    @Operation(summary = "Get list of all artists", security = @SecurityRequirement(name = "apiKey"))
     public List<ArtistDto> getAll() {
         LOGGER.info("Fetching all artists");
         return artistService.findAll()
@@ -99,6 +107,7 @@ public class ArtistEndpoint {
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete an artist", security = @SecurityRequirement(name = "apiKey"))
     public void delete(@PathVariable Long id) {
         LOGGER.info("Deleting artist with id={}", id);
         artistService.delete(id);
@@ -107,6 +116,7 @@ public class ArtistEndpoint {
 
     @PermitAll
     @GetMapping("/autocomplete")
+    @Operation(summary = "Get artists by name for autocomplete", security = @SecurityRequirement(name = "apiKey"))
     public List<ArtistAutocompleteDto> getByName(
         @RequestParam("name") String name,
         @RequestParam("limit") int limit) {
