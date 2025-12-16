@@ -11,8 +11,8 @@ Cypress.Commands.add('loginAdmin', () => {
 
 Cypress.Commands.add('createMessage', (msg) => {
     cy.fixture('settings').then(settings => {
-        cy.contains('button', 'Add message').should('exist');
-        cy.contains('button', 'Add message').click();
+        cy.contains('button', 'News erstellen').should('exist');
+        cy.contains('button', 'News erstellen').click();
         cy.get('input[name="title"]', { timeout: 5000 }).should('be.visible').type('title' + msg);
         cy.get('textarea[name="summary"]').should('be.visible').type('summary' + msg);
         cy.get('textarea[name="text"]').should('be.visible').type('text' + msg);
