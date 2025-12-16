@@ -1,6 +1,6 @@
 @if (error) {
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <strong>Error! </strong> {{ errorMessage }}
+    <strong>Fehler! </strong> {{ errorMessage }}
     <button type="button" (click)="vanishError()" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -12,30 +12,33 @@
 
   <div class="row p-2 mb-4">
     @if (isAdmin()) {
-      <button type="button" class="btn btn-secondary btn-sm mr-4" (click)="openAddModal(messageAddModal)">Add message</button>
+      <button type="button" class="btn btn-secondary btn-sm mr-4" (click)="openAddModal(messageAddModal)">News
+        erstellen
+      </button>
     }
 
     <ng-template #messageAddModal let-modal>
       <div class="modal-header">
-        <h5 class="modal-title">{{ isEditMode ? 'News Details' : 'Add News' }}</h5>
+        <h5 class="modal-title">{{ isEditMode ? 'News Details' : 'News erstellen' }}</h5>
       </div>
       <div class="modal-body">
         @if (isEditMode) {
           <!-- Edit Mode: Nur Anzeige -->
           @if (currentMessage.imageUrl) {
-            <img [src]="currentMessage.imageUrl" alt="News Bild" style="width: 100%; max-height: 300px; object-fit: cover; margin-bottom: 16px; border-radius: 4px;">
+            <img [src]="currentMessage.imageUrl" alt="News Bild"
+                 style="width: 100%; max-height: 300px; object-fit: cover; margin-bottom: 16px; border-radius: 4px;">
           }
           <h6>{{ currentMessage.title }}</h6>
-          <p class="text-muted">{{ currentMessage.publishedAt | date }}</p>
+          <p class="date-italic">{{ currentMessage.publishedAt | date:'d. MMMM yyyy' }}</p>
           <p><strong>{{ currentMessage.summary }}</strong></p>
           <p>{{ currentMessage.text }}</p>
         } @else {
           <!-- Create Mode: Formular -->
           <form (ngSubmit)="addMessage(messageForm)" #messageForm="ngForm">
             <div class="form-group">
-              <label for="inputTitle">Title</label>
+              <label for="inputTitle">Titel</label>
               <input type="text" name="title" class="form-control" id="inputTitle" required
-                     aria-describedby="titleHelp" placeholder="Enter title" [(ngModel)]="currentMessage.title">
+                     aria-describedby="titleHelp" placeholder="Titel einfügen" [(ngModel)]="currentMessage.title">
               @if (submitted && messageForm.controls.title.errors) {
                 <div class="error">
                   @if (messageForm.controls.title.errors.required) {
@@ -46,9 +49,10 @@
             </div>
 
             <div class="form-group">
-              <label for="inputSummary">Summary</label>
+              <label for="inputSummary">Zusammenfassung</label>
               <textarea rows="3" name="summary" class="form-control" id="inputSummary" required
-                        aria-describedby="summaryHelp" placeholder="Enter summary" [(ngModel)]="currentMessage.summary"></textarea>
+                        aria-describedby="summaryHelp" placeholder="Zusammenfassung einfügen"
+                        [(ngModel)]="currentMessage.summary"></textarea>
               @if (submitted && messageForm.controls.summary.errors) {
                 <div class="error">
                   @if (messageForm.controls.summary.errors.required) {
@@ -61,7 +65,8 @@
             <div class="form-group">
               <label for="inputText">Text</label>
               <textarea rows="6" name="text" class="form-control" id="inputText" required
-                        aria-describedby="textHelp" placeholder="Enter text" [(ngModel)]="currentMessage.text"></textarea>
+                        aria-describedby="textHelp" placeholder="Text einfügen"
+                        [(ngModel)]="currentMessage.text"></textarea>
               @if (submitted && messageForm.controls.text.errors) {
                 <div class="error">
                   @if (messageForm.controls.text.errors.required) {
@@ -83,16 +88,21 @@
 
             @if (currentMessage.imageUrl) {
               <div class="mt-3">
-                <img [src]="currentMessage.imageUrl" alt="News Bild" class="img-thumbnail" style="max-width: 100%; height: auto;">
+                <img [src]="currentMessage.imageUrl" alt="News Bild" class="img-thumbnail"
+                     style="max-width: 100%; height: auto;">
               </div>
             }
 
-            <button type="button" (click)="addMessage(messageForm)" id="add-msg" class="btn btn-success float-right">Add News</button>
+            <button type="button" (click)="addMessage(messageForm)" id="add-msg" class="btn btn-success float-right">
+              News erstellen
+            </button>
           </form>
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="close-modal-btn" (click)="modal.dismiss('close')">Close</button>
+        <button type="button" class="btn btn-secondary" id="close-modal-btn" (click)="modal.dismiss('close')">
+          Schließen
+        </button>
       </div>
     </ng-template>
   </div>
@@ -107,39 +117,17 @@
             <img [src]="message.imageUrl" alt="News Bild: {{ message.title }}" class="card-img-top">
           }
           <div class="card-body">
-            <h5 class="card-title">{{message.title}}</h5>
-            <h6 class="card-subtitle mb-2">{{message.publishedAt | date}}</h6>
-            <p class="card-text">{{message.summary}}</p>
-            <button (click)="openExistingMessageModal(message.id, messageAddModal)" type="button" class="btn btn-primary">
+            <h5 class="card-title">{{ message.title }}</h5>
+            <h6 class="card-subtitle mb-2">{{ message.publishedAt | date:'d. MMMM yyyy' }}</h6>
+            <p class="card-text">{{ message.summary }}</p>
+            <button (click)="openExistingMessageModal(message.id, messageAddModal)" type="button"
+                    class="btn btn-primary">
               Details
             </button>
-          </div>
-          <div [ngClass]="['modal', 'fade', 'message-modal-'+message.id]" tabindex="-1" role="dialog"
-            aria-labelledby="Message details modal"
-            aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">{{message.title}}</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  <p class="lead"><span class="font-italic">{{message.publishedAt | date}}</span> {{message.summary}}</p>
-                  <p class="mt-2"> {{message.text}} </p>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     }
-
   </div>
-
 </div>
 
