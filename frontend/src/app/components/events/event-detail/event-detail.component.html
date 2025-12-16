@@ -1,0 +1,59 @@
+<div class="event-detail-container">
+  <button
+    mat-icon-button
+    class="back-button"
+    [routerLink]="['/events']"
+    [attr.aria-label]="'Zurück zur Übersicht'">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  @if (loading) {
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!loading && event) {
+    <div class="event-detail">
+      <h1 class="event-title">{{ event.title }}</h1>
+
+      @if (event.imageUrl) {
+        <div class="image-container">
+          <img
+            [src]="event.imageUrl"
+            alt="Event-Bild: {{ event.title }}"
+            class="event-image"
+            loading="lazy">
+        </div>
+      }
+
+      <div class="event-info-section">
+        <h2 class="section-title">Beschreibung</h2>
+        <p class="event-description">{{ event.description }}</p>
+        <div class="event-metadata">
+          <span class="event-category">{{ event.category }}</span>
+          <span class="event-duration">{{ event.durationMinutes }} Minuten</span>
+        </div>
+      </div>
+
+      @if (event.performances && event.performances.length > 0) {
+        <div class="performances-section">
+          <h2>Aufführungen</h2>
+          <div class="performances-list">
+            @for (performance of event.performances; track performance.id) {
+              <app-performance-card [performance]="performance"></app-performance-card>
+            }
+          </div>
+        </div>
+      }
+
+      @if (!event.performances || event.performances.length === 0) {
+        <p class="no-performances">Keine Aufführungen verfügbar</p>
+      }
+    </div>
+  }
+
+  @if (!loading && !event) {
+    <p class="error-message">Event nicht gefunden</p>
+  }
+</div>

@@ -69,5 +69,16 @@ spring:
       on-cloud-platform: kubernetes
   lifecycle:
     timeout-per-shutdown-phase: 30s
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ticketlineee@gmail.com
+    password: swba xfne xidx iofa
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 server:
   shutdown: graceful

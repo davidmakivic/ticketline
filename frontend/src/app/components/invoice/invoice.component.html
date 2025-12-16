@@ -1,0 +1,83 @@
+<div class="page" *ngIf="order; else missing">
+  <div class="sheet">
+
+    <div class="header">
+      <div class="brand">Ticketline</div>
+      <h1 class="title">RECHNUNG</h1>
+      <p class="subtitle">
+        Vielen Dank für Ihren Einkauf – wir wünschen Ihnen viel Freude bei der Veranstaltung!
+      </p>
+      <button class="btn no-print" (click)="print()">PDF drucken</button>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <h3>Rechnungsinformationen</h3>
+        <div><strong>Rechnungsnummer:</strong> {{ invoiceNo }}</div>
+        <div><strong>Rechnungsdatum:</strong> {{ invoiceDateStr }}</div>
+      </div>
+
+      <div class="info-box">
+        <h3>Zahlung</h3>
+        <div><strong>Zahlungsart:</strong> {{ paymentLabel() }}</div>
+        <div class="muted">Preise inkl. Steuern & Gebühren</div>
+      </div>
+    </div>
+
+    <div class="content-box">
+      <h2>Ihre Tickets</h2>
+
+      <table class="table">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Ticket / Veranstaltung</th>
+          <th>Informationen</th>
+          <th class="right">Menge</th>
+          <th class="right">Einzelpreis</th>
+          <th class="right">Gesamt</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let it of items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><strong>{{ itemTitle(it) }}</strong></td>
+          <td class="muted">{{ itemDetails(it) }}</td>
+          <td class="right">{{ itemQuantity(it) }}</td>
+          <td class="right">{{ toEuro(itemUnitPriceCents(it)) }}</td>
+          <td class="right">{{ toEuro(itemTotalCents(it)) }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="summary-grid">
+      <div class="content-box">
+        <h3>Ticketnummern</h3>
+        <div *ngFor="let tid of order.ticketIds">
+          Ticket-Nr. {{ tid }}
+        </div>
+      </div>
+
+      <div class="content-box total-box">
+        <div class="total-row">
+          <span>Gesamtbetrag </span>
+          <strong>{{ toEuro(order.totalPriceCents) }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Diese Rechnung wurde elektronisch erstellt.</p>
+      <button class="btn secondary no-print" (click)="backToHome()">Zurück zur Startseite</button>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #missing>
+  <div class="sheet">
+    <h1>Rechnung</h1>
+    <p>Rechnungsdaten nicht verfügbar.</p>
+  </div>
+</ng-template>

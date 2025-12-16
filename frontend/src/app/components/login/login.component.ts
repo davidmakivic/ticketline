@@ -1,15 +1,14 @@
 import {Component, OnInit} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
 import {AuthRequest} from '../../dtos/auth-request';
 
-
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.component.html',
-    styleUrls: ['./login.component.scss'],
-    standalone: false
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
+  standalone: false
 })
 export class LoginComponent implements OnInit {
 
@@ -20,7 +19,12 @@ export class LoginComponent implements OnInit {
   error = false;
   errorMessage = '';
 
-  constructor(private formBuilder: UntypedFormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private formBuilder: UntypedFormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.loginForm = this.formBuilder.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8)]]
@@ -33,7 +37,11 @@ export class LoginComponent implements OnInit {
   loginUser() {
     this.submitted = true;
     if (this.loginForm.valid) {
-      const authRequest: AuthRequest = new AuthRequest(this.loginForm.controls.username.value, this.loginForm.controls.password.value);
+      const authRequest: AuthRequest =
+        new AuthRequest(
+          this.loginForm.controls.username.value,
+          this.loginForm.controls.password.value
+        );
       this.authenticateUser(authRequest);
     } else {
       console.log('Invalid input');
@@ -50,7 +58,9 @@ export class LoginComponent implements OnInit {
     this.authService.loginUser(authRequest).subscribe({
       next: () => {
         console.log('Successfully logged in user: ' + authRequest.email);
-        this.router.navigate(['/message']);
+
+        const redirect = this.route.snapshot.queryParamMap.get('redirect');
+        this.router.navigate([redirect ?? '/news']);
       },
       error: error => {
         console.log('Could not log in due to:');
@@ -75,4 +85,8 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
   }
 
+  protected cancel() {
+    const redirect = this.route.snapshot.queryParamMap.get('redirect');
+    this.router.navigate([redirect ?? '/']);
+  }
 }

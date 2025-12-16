@@ -1,0 +1,50 @@
+<div class="page" *ngIf="cancellation; else missing">
+  <div class="sheet">
+
+    <div class="header">
+      <div class="brand">Ticketline</div>
+      <h1 class="title">STORNORECHNUNG</h1>
+
+      <button class="btn no-print" (click)="print()">PDF drucken</button>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <h3>Storno-Information</h3>
+        <div><strong>Storno-Nummer:</strong> {{ stornoNo }}</div>
+        <div><strong>Datum:</strong> {{ stornoDateStr }}</div>
+        <div *ngIf="originalInvoiceNo">
+          <strong>Referenz Rechnung:</strong> {{ originalInvoiceNo }}
+        </div>
+      </div>
+    </div>
+
+    <div class="content-box">
+      <h2>Stornierte Tickets</h2>
+
+      <div *ngFor="let tid of cancellation.cancelledTicketIds">
+        Ticket-Nr. {{ tid }}
+      </div>
+    </div>
+
+    <div class="content-box total-box">
+      <div class="total-row">
+        <span>Gutschrift </span>
+        <strong>{{ refundEuro() }}</strong>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Diese Stornorechnung wurde elektronisch erstellt.</p>
+      <button class="btn secondary no-print" (click)="back()">Zurück</button>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #missing>
+  <div class="sheet">
+    <h1>Stornorechnung</h1>
+    <p>Stornodaten nicht verfügbar.</p>
+  </div>
+</ng-template>

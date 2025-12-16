@@ -1,0 +1,48 @@
+<div class="cart-page">
+  <div class="cart-header">
+    <h1 class="cart-title">Warenkorb</h1>
+
+    @if (loading) {
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+    }
+
+    @if (!loading && tickets.length === 0) {
+    <p class="empty">Dein Warenkorb ist leer.</p>
+    }
+  </div>
+
+  @if (!loading && tickets.length > 0) {
+  <div class="cart-content">
+    <div class="cart-list">
+      @for (t of tickets; track t.id) {
+      <app-ticket-cart-item
+        [ticket]="t"
+        (remove)="removeTicket($event)">
+      </app-ticket-cart-item>
+      }
+    </div>
+  </div>
+
+  <div class="cart-footer">
+    <button mat-stroked-button (click)="clear()">Leeren</button>
+
+    <div class="summary">
+      <div class="total">
+        <span class="label">Gesamt</span>
+        <span class="value">{{ totalPriceCents / 100 | currency:'EUR' }}</span>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onBuy()"
+        [disabled]="loading || tickets.length === 0">
+        Kaufen
+      </button>
+    </div>
+  </div>
+  }
+</div>
+

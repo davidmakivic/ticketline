@@ -1,19 +1,28 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.exceptionhandler;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ErrorListRestDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,14 +47,57 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
+    @ExceptionHandler(value = {BadCredentialsException.class})
+    protected ResponseEntity<Object> handleBadCredentials(RuntimeException ex, WebRequest request) {
+        LOGGER.warn(ex.getMessage());
+        return handleExceptionInternal(ex, "E-Mail-Adresse oder Passwort ist falsch.", new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+
+    @ExceptionHandler(value = {ValidationException.class})
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseBody
+    protected ErrorListRestDto handleValidation(ValidationException ex, WebRequest request) {
+        LOGGER.warn(ex.getMessage());
+        return new ErrorListRestDto(ex.getMessage(), ex.errors());
+    }
+
+    @ExceptionHandler(value = {ConflictException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    protected ErrorListRestDto handleConflict(ConflictException ex, WebRequest request) {
+        LOGGER.warn(ex.getMessage());
+        return new ErrorListRestDto(ex.getMessage(), ex.errors());
+    }
+
+    @ExceptionHandler(value = {ForbiddenException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    protected ErrorListRestDto handleConflict(ForbiddenException ex, WebRequest request) {
+        LOGGER.warn(ex.getMessage());
+        return new ErrorListRestDto("Forbidden Request", Collections.singletonList(ex.getMessage()));
+    }
+
+    @ExceptionHandler(value = {ObjectOptimisticLockingFailureException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    protected ErrorListRestDto handleOptimisticLocking(ObjectOptimisticLockingFailureException ex, WebRequest request) {
+        LOGGER.warn("Optimistic locking failure: {}", ex.getMessage());
+        return new ErrorListRestDto(
+            "Ticket was modified by another transaction. Please reload and try again.",
+            Collections.singletonList(ex.getMessage())
+        );
+    }
+
+
     /**
      * Override methods from ResponseEntityExceptionHandler to send a customized HTTP response for a know exception
      * from e.g. Spring
      */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-        HttpHeaders headers,
-        HttpStatusCode status, WebRequest request) {
+                                                                  HttpHeaders headers,
+                                                                  HttpStatusCode status, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
         //Get all errors
         List<String> errors = ex.getBindingResult()

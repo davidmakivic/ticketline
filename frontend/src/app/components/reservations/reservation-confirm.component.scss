@@ -1,0 +1,66 @@
+.reservation-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+
+  h1{
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.card {
+  background-color: var(--mat-sys-surface);
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.hint {
+  color: var(--mat-sys-on-surface-variant);
+  margin: 12px 0 20px;
+}
+
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--mat-sys-surface-container);
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+.price {
+  font-weight: 700;
+}
+
+.footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  color: var(--mat-sys-on-surface);
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.error {
+  color: var(--mat-sys-error);
+}

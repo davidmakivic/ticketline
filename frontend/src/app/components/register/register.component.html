@@ -1,0 +1,165 @@
+<div class="register-container mt-5">
+  <div class="login-title-wrapper d-flex justify-content-between">
+    <h1 class="title">Register</h1>
+
+    <div class="login-action gap-2 d-flex align-items-center">
+      <span class="login-hint">Schon ein Konto?</span>
+      <button
+        mat-button
+        routerLink="/login">
+        Login
+      </button>
+    </div>
+  </div>
+  <div class="register-error-container">
+    @for (error of registerErrors; track error) {
+      <p class="register-error-message">{{ error }}</p>
+    }
+  </div>
+
+  <form [formGroup]="registerForm" (ngSubmit)="registerUser()" class="mt-4">
+
+    <div class="row g-3">
+
+      <div class="col-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Vorname</mat-label>
+          <input matInput [formControl]="firstName">
+          @if (firstName.hasError('required')) {
+            <mat-error>Vorname ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Nachname</mat-label>
+          <input matInput [formControl]="lastName">
+          @if (lastName.hasError('required')) {
+            <mat-error>Nachname ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [formControl]="email" [errorStateMatcher]="matcher">
+          @if (email.hasError('email') && !email.hasError('required')) {
+            <mat-error>Ungültige Email</mat-error>
+          }
+          @if (email.hasError('required')) {
+            <mat-error>Email ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Land</mat-label>
+
+          <input type="text"
+                 aria-label="Number"
+                 matInput
+                 [formControl]="country"
+                 [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete">
+            @for (country of filteredCountries | async; track country) {
+              <mat-option [value]="country">
+                {{ country }}
+              </mat-option>
+            }
+          </mat-autocomplete>
+          @if (country.hasError('required')) {
+            <mat-error>Land ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+
+      <div class="col-3">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>PLZ</mat-label>
+          <input matInput [formControl]="zip">
+          @if (zip.hasError('required')) {
+            <mat-error>PLZ ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-9">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Ort</mat-label>
+          <input matInput [formControl]="city">
+          @if (city.hasError('required')) {
+            <mat-error>Ort ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-9">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Straße</mat-label>
+          <input matInput [formControl]="street">
+          @if (street.hasError('required')) {
+            <mat-error>Straße ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-3">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Hausnummer</mat-label>
+          <input matInput [formControl]="houseNumber">
+          @if (houseNumber.hasError('required')) {
+            <mat-error>Nummer ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Passwort</mat-label>
+          <input matInput type="password" [formControl]="password">
+          @if (password.hasError('required')) {
+            <mat-error>Passwort ist erforderlich</mat-error>
+          }
+          @if (password.hasError('minlength')) {
+            <mat-error>Mind. 8 Zeichen</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="col-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Passwort wiederholen</mat-label>
+          <input
+            matInput
+            type="password"
+            [formControl]="confirmPassword">
+
+          @if (confirmPassword.hasError('passwordMismatch')) {
+            <mat-error>Passwörter stimmen nicht überein</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-6 d-flex justify-content-start">
+        <button mat-stroked-button type="button" (click)="cancel()">
+          Abbrechen
+        </button>
+      </div>
+
+
+      <div class="col-6 d-flex justify-content-end">
+        <button mat-flat-button type="submit" [disabled]="registerForm.invalid">
+          Registrieren
+        </button>
+      </div>
+
+    </div>
+
+  </form>
+
+</div>

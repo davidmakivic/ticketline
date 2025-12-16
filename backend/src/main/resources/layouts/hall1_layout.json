@@ -1,0 +1,72 @@
+{
+    "version": 1,
+    "name": "HALL NAME 1 layout",
+    "aspect": { "w": 3, "h": 2 },
+    "elements": [
+        {
+            "type": "stage",
+            "id": "stage",
+            "label": "Bühne",
+            "rectN": { "x": 0.1722, "y": -0.020, "w": 0.7, "h": 0.1333 }
+        },
+
+        {
+            "type": "seatBlock",
+            "id": "A1",
+            "label": "A1",
+            "sectorKey": "1",
+            "originN": { "x": 0.1, "y": 0.8333 },
+            "rows": 5,
+            "seatsPerRow": 10,
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
+        },
+        {
+            "type": "seatBlock",
+            "id": "A2",
+            "label": "A2",
+            "sectorKey": "2",
+            "originN": { "x": 0.5778, "y": 0.8333 },
+            "rows": 5,
+            "seatsPerRow": 10,
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
+        },
+
+        {
+            "type": "seatBlock",
+            "id": "B1",
+            "label": "B1 (VIP)",
+            "sectorKey": "3",
+            "originN": { "x": 0.1, "y": 0.5000 },
+            "rows": 5,
+            "seatsPerRow": 10,
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
+        },
+        {
+            "type": "seatBlock",
+            "id": "B2",
+            "label": "B2 (VIP)",
+            "sectorKey": "4",
+            "originN": { "x": 0.5778, "y": 0.5000 },
+            "rows": 5,
+            "seatsPerRow": 10,
+            "spacingN": { "dx": 0.04, "dy": 0.056 }
+        },
+
+        {
+            "type": "standingArea",
+            "id": "C1",
+            "label": "C1 (Steh)",
+            "sectorKey": "5",
+            "rectN": { "x": 0.1333, "y": 0.2667, "w": 0.3333, "h": 0.1500 },
+            "capacity": 100
+        },
+        {
+            "type": "standingArea",
+            "id": "C2",
+            "label": "C2 (Steh)",
+            "sectorKey": "6",
+            "rectN": { "x": 0.5778, "y": 0.2667, "w": 0.3333, "h": 0.1500 },
+            "capacity": 100
+        }
+    ]
+}

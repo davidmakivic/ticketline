@@ -3,12 +3,114 @@ import {mapToCanActivate, RouterModule, Routes} from '@angular/router';
 import {HomeComponent} from './components/home/home.component';
 import {LoginComponent} from './components/login/login.component';
 import {AuthGuard} from './guards/auth.guard';
-import {MessageComponent} from './components/message/message.component';
+import {NewsComponent} from './components/news/news.component';
+import {EventsListComponent} from './components/events/events-list/events-list.component';
+import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
+import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
+import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
+import {RegisterComponent} from './components/register/register.component';
+
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'message', canActivate: mapToCanActivate([AuthGuard]), component: MessageComponent}
+  {path: 'register', component: RegisterComponent},
+  {
+    path: 'news',
+    component: NewsComponent
+  },
+
+  {
+    path: 'cart',
+    loadComponent: () =>
+      import('./components/cart/cart.component')
+        .then(m => m.CartComponent)
+  },
+
+  {
+    path: 'storno-invoice/:id',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/storno-invoice/storno-invoice.component')
+        .then(m => m.StornoInvoiceComponent)
+  },
+
+
+  {
+    path: 'checkout',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/checkout/checkout.component')
+        .then(m => m.CheckoutComponent)
+  },
+
+  {
+    path: 'orders',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/orders/orders.component')
+        .then(m => m.OrdersComponent)
+  },
+
+  {
+    path: 'events',
+    component: EventsListComponent
+  },
+
+  {
+    path: 'events/:id',
+    component: EventDetailComponent
+  },
+
+  {
+    path: 'artists',
+    component: ArtistsListComponent
+  },
+
+  {
+    path: 'artists/:id',
+    component: ArtistDetailComponent
+  },
+
+  {
+    path: 'performances/:performanceId/seats',
+    loadComponent: () =>
+      import('./components/seat-selection/seat-selection.component')
+        .then(m => m.SeatSelectionComponent)
+  },
+
+  {
+    path: 'tickets',
+    loadComponent: () =>
+      import('./components/tickets/tickets.component')
+        .then(m => m.TicketsComponent)
+  },
+
+  {
+    path: 'invoice/:id',
+    canActivate: mapToCanActivate([AuthGuard]),
+    loadComponent: () =>
+      import('./components/invoice/invoice.component')
+        .then(m => m.InvoiceComponent)
+  },
+
+  {
+    path: 'reserve/confirm',
+    loadComponent: () =>
+      import('./components/reservations/reservation-confirm.component')
+        .then(m => m.ReservationConfirmComponent)
+  },
+  {
+    path: 'reserve/success',
+    loadComponent: () =>
+      import('./components/reservations/reservation-success.component')
+        .then(m => m.ReservationSuccessComponent)
+  },
+
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];
 
 @NgModule({
@@ -17,3 +119,4 @@ const routes: Routes = [
 })
 export class AppRoutingModule {
 }
+

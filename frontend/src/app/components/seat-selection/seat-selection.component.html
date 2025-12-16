@@ -1,0 +1,173 @@
+<div class="seat-page">
+  <div *ngIf="loading" class="state">Lade Sitzplan…</div>
+  <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="title">
+      <h1>Ticketauswahl</h1>
+
+      <div class="subtitle">
+        <div class="date">{{ dateLabel }}</div>
+        <div class="city">{{ city }}</div>
+        <div class="event-title">{{ title }}</div>
+      </div>
+
+      <div class="meta">
+        <div class="left">
+          <div class="line"><strong>{{ doorsOpenLabel }}</strong></div>
+          <div class="line"><strong>{{ beginLabel }}</strong></div>
+          <div class="line"><strong>{{ endLabel }}</strong></div>
+        </div>
+        <div class="right">
+          <div class="line"><strong>{{ venueLine }}</strong></div>
+          <div class="line"><strong>{{ addressLine }}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div #planWrap class="plan-wrap">
+      <svg class="plan-svg" [attr.width]="cw" [attr.height]="ch">
+
+        <ng-container *ngFor="let el of elements()">
+          <!-- STAGE -->
+          <g *ngIf="isStage(el)">
+            <ng-container *ngIf="el.rectN as r">
+              <rect
+                [attr.x]="x(r.x)"
+                [attr.y]="y(r.y)"
+                [attr.width]="w(r.w)"
+                [attr.height]="h(r.h)"
+                rx="12"
+                class="stage"
+              />
+              <text
+                [attr.x]="x(r.x) + w(r.w)/2"
+                [attr.y]="y(r.y) + h(r.h)/2"
+                text-anchor="middle"
+                dominant-baseline="middle"
+                class="stage-text"
+              >
+                {{ el.label || 'Bühne' }}
+              </text>
+            </ng-container>
+          </g>
+
+          <!-- STANDING -->
+          <g *ngIf="isStanding(el)">
+            <ng-container *ngIf="el.rectN as r">
+              <rect
+                [attr.x]="x(r.x)"
+                [attr.y]="y(r.y)"
+                [attr.width]="w(r.w)"
+                [attr.height]="h(r.h)"
+                rx="14"
+                class="standing"
+                [ngClass]="standingStatus(el.sectorKey)"
+                (pointerdown)="onStandingClick($event, el.sectorKey)"
+                (contextmenu)="$event.preventDefault()"
+              />
+              <text
+                [attr.x]="x(r.x) + 10"
+                [attr.y]="y(r.y) + 22"
+                class="standing-text"
+                style="pointer-events:none;"
+              >
+                {{ el.label }}
+              </text>
+
+              <text
+                [attr.x]="x(r.x) + 10"
+                [attr.y]="y(r.y) + 42"
+                class="standing-subtext"
+                style="pointer-events:none;"
+              >
+                {{ standingAvailabilityLabel(el.sectorKey) }}
+                <tspan *ngIf="standingSelectedCount(el.sectorKey) > 0">
+                  · {{ standingSelectedCount(el.sectorKey) }} ausgewählt
+                </tspan>
+              </text>
+
+              <text
+                [attr.x]="x(r.x)"
+                [attr.y]="y(r.y) + 62"
+                class="standing-subtext"
+                style="pointer-events:none;"
+              >
+                <tspan dx="6" *ngIf="standingAvailabilityLabel(el.sectorKey) !== 'Ausverkauft'">
+                  (Links-Klick +1, Rechts-Klick −1)
+                </tspan>
+              </text>
+            </ng-container>
+          </g>
+
+          <!-- SEAT BLOCK -->
+          <g *ngIf="isSeatBlock(el)">
+            <ng-container *ngIf="el.originN as o">
+              <ng-container *ngIf="el.spacingN as sp">
+
+                <text
+                  [attr.x]="x(o.x)"
+                  [attr.y]="y(o.y) - 20"
+                  class="block-label"
+                >
+                  {{ el.label }}
+                </text>
+
+                <ng-container *ngFor="let i of range(el.rows)">
+                  <ng-container *ngFor="let j of range(el.seatsPerRow)">
+                    <circle
+                      [attr.cx]="x(o.x) + dx(sp.dx) * j"
+                      [attr.cy]="y(o.y) + dy(sp.dy) * i"
+                      [attr.r]="seatR"
+                      class="seat"
+                      [ngClass]="seatStatus(el.sectorKey, (el.rows - i), (j + 1))"
+                      (pointerdown)="onSeatClick(el.sectorKey, (el.rows - i), (j + 1))"
+                    />
+                  </ng-container>
+                </ng-container>
+
+              </ng-container>
+            </ng-container>
+          </g>
+
+        </ng-container>
+
+      </svg>
+    </div>
+
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="leg-item"><span class="dot free"></span> Freie Sitzplätze</div>
+      <div class="leg-item"><span class="dot reserved"></span> Vergebene Sitzplätze</div>
+      <div class="leg-item"><span class="dot selected"></span> Ausgewählte Sitzplätze</div>
+    </div>
+
+    <div class="summary">
+      <div class="sum-row" *ngFor="let s of sectorSummary()">
+        <div>Sektor {{ s.name }}: {{ s.count }} Ticket(s)</div>
+        <div class="muted">{{ s.priceLabel }}</div>
+      </div>
+
+      <div class="sum-total">
+        <div><strong>Gesamtpreis</strong></div>
+        <div><strong>{{ euro(totalCents) }}</strong></div>
+      </div>
+
+      <div class="actions">
+        <button
+          class="btn primary"
+          type="button"
+          (click)="addSelectedToCart()"
+          [disabled]="selectedSeatIds.size === 0"
+        >
+          In den Einkaufswagen
+        </button>
+        <button class="btn secondary" type="button" (click)="reserveSelected()" [disabled]="selectedSeatIds.size === 0">
+          Reservieren
+        </button>
+        <button class="btn outline" type="button" (click)="clearSelection()">Auswahl leeren</button>
+      </div>
+    </div>
+  </ng-container>
+</div>

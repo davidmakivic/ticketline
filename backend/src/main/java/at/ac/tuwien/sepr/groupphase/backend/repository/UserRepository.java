@@ -1,32 +1,46 @@
 package at.ac.tuwien.sepr.groupphase.backend.repository;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-//TODO: replace this class with a correct ApplicationUser JPARepository implementation
+import java.util.List;
+
 @Repository
-public class UserRepository {
+public interface UserRepository extends JpaRepository<ApplicationUser, Long> {
 
-    private final ApplicationUser user;
-    private final ApplicationUser admin;
+    ApplicationUser findUserByEmail(String email);
 
-    @Autowired
-    public UserRepository(PasswordEncoder passwordEncoder) {
-        user = new ApplicationUser("user@email.com", passwordEncoder.encode("password"), false);
-        admin = new ApplicationUser("admin@email.com", passwordEncoder.encode("password"), true);
-    }
+    boolean existsByEmail(String email);
 
-    public ApplicationUser findUserByEmail(String email) {
-        if (email.equals(user.getEmail())) {
-            return user;
-        }
-        if (email.equals(admin.getEmail())) {
-            return admin;
-        }
-        return null; // In this case null is returned to fake Repository behavior
-    }
+    ApplicationUser findUserByUserId(Long userId);
 
+    List<ApplicationUser> findAllByUserStatus(UserStatus userStatus);
+
+    List<ApplicationUser> findAllByUserStatusNot(UserStatus userStatus);
+
+    @Transactional
+    @Modifying
+    @Query("""
+            UPDATE ApplicationUser u
+            SET u.failedLoginAttempts = u.failedLoginAttempts + 1
+            WHERE u.email = :email
+        """)
+    void incrementFailedLoginAttempts(@Param("email") String email);
+
+
+    @Transactional
+    @Modifying
+    @Query("""
+            UPDATE ApplicationUser u
+            SET u.failedLoginAttempts = 0
+            WHERE u.email = :email
+        """)
+    void setFailedLoginAttemptsToZero(@Param("email") String email);
 
 }

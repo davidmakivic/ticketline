@@ -1,0 +1,70 @@
+<div class="artist-detail-container">
+  <button
+    mat-icon-button
+    class="back-button"
+    [routerLink]="['/artists']"
+    [attr.aria-label]="'Zurück zur Übersicht'">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  @if (loading) {
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!loading && artist) {
+    <div class="artist-detail">
+      <h1 class="artist-title">{{ artist.stageName }}</h1>
+
+      <div class="artist-names">
+        <p><strong>Name:</strong> {{ artist.firstName }} {{ artist.lastName }}</p>
+      </div>
+
+      @if (artist.imageUrl) {
+        <div class="image-container">
+          <img
+            [src]="artist.imageUrl"
+            alt="Artist-Bild: {{ artist.stageName }}"
+            class="artist-image"
+            loading="lazy">
+        </div>
+      }
+
+      <div class="artist-info-section">
+        <h2 class="section-title">Informationen</h2>
+        <div class="artist-metadata">
+          <span class="artist-type">{{ artist.artistType }}</span>
+        </div>
+      </div>
+
+      @if (events && events.length > 0) {
+        <div class="events-section">
+          <h2 class="section-title">Events mit diesem Artist</h2>
+          <div class="events-list">
+            @for (event of events; track event.id) {
+              <mat-card class="event-card" [routerLink]="['/events', event.id]">
+                <mat-card-header>
+                  <mat-card-title>{{ event.title }}</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <p>{{ event.description }}</p>
+                  <span class="event-category">{{ event.category }}</span>
+                  <span class="event-duration">{{ event.durationMinutes }} min</span>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        </div>
+      }
+
+      @if (!events || events.length === 0) {
+        <p class="no-events">Keine Events mit diesem Artist verfügbar</p>
+      }
+    </div>
+  }
+
+  @if (!loading && !artist) {
+    <p class="error-message">Artist nicht gefunden</p>
+  }
+</div>
