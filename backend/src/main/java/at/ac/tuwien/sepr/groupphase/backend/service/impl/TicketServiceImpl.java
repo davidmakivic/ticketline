@@ -99,9 +99,14 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Ticket with id " + id + " not found"));
 
-        ticket.setVersion(version);
-        ticket.setStatus(status);
+        if (status == TicketStatus.RESERVED && ticket.getStatus() == TicketStatus.RESERVED) {
+            throw new ObjectOptimisticLockingFailureException(
+                "Ticket is already reserved.",
+                List.of("Ticket " + id + " is already RESERVED")
+            );
+        }
 
+        ticket.setStatus(status);
         Ticket saved = ticketRepository.saveAndFlush(ticket);
         return ticketMapper.ticketToTicketDto(saved);
 
