@@ -2,6 +2,14 @@
   max-width: 700px;
   margin: 0 auto;
   padding: 20px;
+
+  h1 {
+    color: var(--mat-sys-on-surface);
+  }
+
+  p {
+    color: var(--mat-sys-on-surface);
+  }
 }
 
 .number {
