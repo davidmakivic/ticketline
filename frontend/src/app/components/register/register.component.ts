@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {
+  AbstractControl,
   FormControl,
-  FormGroup,
   FormGroupDirective,
   NgForm,
   ReactiveFormsModule,
@@ -12,21 +12,39 @@ import {
   Validators
 } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
-import {ErrorStateMatcher, MatOption} from "@angular/material/core";
+import {ErrorStateMatcher} from "@angular/material/core";
 import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {MatButton} from "@angular/material/button";
-import {count} from "rxjs";
+import {count, Observable, startWith} from "rxjs";
 import {EUROPEAN_COUNTRIES} from './european-countries';
 import {MatSelectModule} from '@angular/material/select';
 import {UserService} from "../../services/user.service";
+import {MatAutocompleteModule, MatAutocompleteTrigger} from "@angular/material/autocomplete";
+import {map} from "rxjs/operators";
+import {AsyncPipe} from "@angular/common";
 
 
-export const passwordMatchValidator: ValidatorFn = (formGroup: FormGroup): ValidationErrors | null => {
-  if (formGroup.get('password').value === formGroup.get('confirmPassword').value)
+export const passwordMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const password = group.get('password');
+  const confirmPassword = group.get('confirmPassword');
+
+  if (!password || !confirmPassword) {
     return null;
-  else
-    return {passwordMismatch: true};
+  }
+
+  if (confirmPassword.errors && !confirmPassword.errors['passwordMismatch']) {
+    return null;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    confirmPassword.setErrors({passwordMismatch: true});
+  } else {
+    confirmPassword.setErrors(null);
+  }
+
+  return null;
 };
+
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -48,8 +66,11 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MatFormField,
     MatError,
     MatSelectModule,
-    MatOption,
     RouterLink,
+    MatAutocompleteModule,
+    MatAutocompleteTrigger,
+    AsyncPipe,
+
   ],
   standalone: true
 })
@@ -69,7 +90,8 @@ export class RegisterComponent implements OnInit {
   password = new FormControl('', [Validators.required, Validators.minLength(8)]);
   confirmPassword = new FormControl('', [Validators.required]);
 
-  europeanCountries = EUROPEAN_COUNTRIES;
+  countries = EUROPEAN_COUNTRIES;
+  filteredCountries: Observable<string[]>;
 
   registerErrors: string[] = [];
 
@@ -93,14 +115,10 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit() {
-  }
-
-  onPasswordInput() {
-    if (this.registerForm.hasError('passwordMissmatch')) {
-      this.confirmPassword.setErrors([{'passwordMismatch': true}]);
-    } else {
-      this.confirmPassword.setErrors(null);
-    }
+    this.filteredCountries = this.country.valueChanges.pipe(
+      startWith(''),
+      map(value => this.filterCountries(value))
+    );
   }
 
 
@@ -135,10 +153,20 @@ export class RegisterComponent implements OnInit {
     })
   }
 
+  private filterCountries(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.countries.filter(country =>
+      country.toLowerCase().includes(filterValue)
+    );
+  }
+
   protected cancel() {
     this.router.navigate(['/']);
   }
 
   protected readonly count = count;
   protected readonly name = name;
+  protected readonly confirm = confirm;
 }
+
+export default RegisterComponent

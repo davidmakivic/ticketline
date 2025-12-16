@@ -57,14 +57,19 @@
       <div class="col-12">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Land</mat-label>
-          <mat-select [formControl]="country">
-            @for (c of europeanCountries; track c.name) {
-              <mat-option [value]="c.code">
-                {{ c.name }}
+
+          <input type="text"
+                 aria-label="Number"
+                 matInput
+                 [formControl]="country"
+                 [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete">
+            @for (country of filteredCountries | async; track country) {
+              <mat-option [value]="country">
+                {{ country }}
               </mat-option>
             }
-          </mat-select>
-
+          </mat-autocomplete>
           @if (country.hasError('required')) {
             <mat-error>Land ist erforderlich</mat-error>
           }
@@ -131,10 +136,9 @@
           <input
             matInput
             type="password"
-            [formControl]="confirmPassword"
-            (input)="onPasswordInput()">
+            [formControl]="confirmPassword">
 
-          @if (registerForm.hasError('passwordMismatch')) {
+          @if (confirmPassword.hasError('passwordMismatch')) {
             <mat-error>Passwörter stimmen nicht überein</mat-error>
           }
         </mat-form-field>
