@@ -3,7 +3,7 @@
     @if (isAdmin()) {
       <div class="admin-actions" style="margin-bottom: 20px;">
         <button mat-raised-button color="primary" (click)="openAddEventModal(eventAddModal)">
-          <mat-icon>add</mat-icon> Neues Event
+          <mat-icon>add</mat-icon> Neue Veranstaltung
         </button>
       </div>
     }
@@ -17,7 +17,7 @@
 
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
-        <mat-label>Event Titel</mat-label>
+        <mat-label>Veranstaltungstitel</mat-label>
         <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()">
       </mat-form-field>
 
@@ -34,7 +34,7 @@
 
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
-        <mat-label>Event Typ</mat-label>
+        <mat-label>Veranstaltungstyp</mat-label>
         <mat-select [(ngModel)]="selectedEventType" (selectionChange)="onSearch()">
           <mat-option [value]="null">Alle</mat-option>
           @for (type of eventTypes; track type) {
@@ -64,7 +64,7 @@
 
   <ng-template #eventAddModal let-modal>
     <div class="modal-header">
-      <h5 class="modal-title">Neues Event erstellen</h5>
+      <h5 class="modal-title">Neue Veranstaltung erstellen</h5>
     </div>
     <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal, eventForm)">
       <div class="modal-body">
@@ -156,7 +156,7 @@
         </div>
 
         <hr>
-        <h6>Performances hinzufügen</h6>
+        <h6>Aufführungen hinzufügen</h6>
 
         <!-- Performance-HallId -->
         <div class="form-group">
@@ -215,7 +215,7 @@
         <!-- Performance-Liste -->
         @if (performances.length > 0) {
           <div class="performance-list">
-            <h6>Performances</h6>
+            <h6>Veranstaltungen</h6>
             @for (perf of performances; track perf.id || $index) {
               <div class="performance-item">
                 <div class="performance-info">
@@ -268,6 +268,6 @@
       }
     </div>
   } @else {
-    <p class="no-events">Keine Events gefunden</p>
+    <p class="no-events">Keine Veranstaltungen gefunden</p>
   }
 </div>
