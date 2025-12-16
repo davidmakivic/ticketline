@@ -4,7 +4,7 @@ import {HttpClient, HttpParams} from "@angular/common/http";
 import {AuthService} from "./auth.service";
 import {Observable} from "rxjs";
 import {EventAutocompleteDto, EventDto, EventTop10Dto, EventTypeDto} from "../dtos/event";
-import {ArtistDataDto} from "../dtos/artist";
+import {PerformanceDto} from "../dtos/performanceDto";
 
 @Injectable({providedIn: "root"})
 export class EventsService {
@@ -14,21 +14,6 @@ export class EventsService {
 
   getEvents(): Observable<EventDto[]> {
     return this.httpClient.get<EventDto[]>(this.eventsBaseUri);
-  }
-
-  searchEventsByTitle(title: string): Observable<EventDto[]> {
-    const params = new HttpParams().set('title', title);
-    return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, { params });
-  }
-
-  searchEventsByFilters(title: string, artist: string, location: string): Observable<EventDto[]> {
-    return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, {
-      params: {
-        title: title || '',
-        artist: artist || '',
-        location: location || ''
-      }
-    });
   }
 
   searchAdvanced(filters: {
@@ -110,6 +95,75 @@ export class EventsService {
     }
     return this.httpClient.post<EventDto>(this.eventsBaseUri, formData);
   }
+
+  validateEvent(event: EventDto): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    // Titel validieren
+    if (!event.title || event.title.trim().length === 0) {
+      errors.push('Titel ist erforderlich');
+    } else if (event.title.length < 3) {
+      errors.push('Titel muss mindestens 3 Zeichen lang sein');
+    } else if (event.title.length > 100) {
+      errors.push('Titel darf maximal 100 Zeichen lang sein');
+    }
+
+    // Beschreibung validieren
+    if (!event.description || event.description.trim().length === 0) {
+      errors.push('Beschreibung ist erforderlich');
+    } else if (event.description.length < 10) {
+      errors.push('Beschreibung muss mindestens 10 Zeichen lang sein');
+    } else if (event.description.length > 1000) {
+      errors.push('Beschreibung darf maximal 1000 Zeichen lang sein');
+    }
+
+    // Kategorie validieren
+    if (!event.category || !Object.values(EventTypeDto).includes(event.category)) {
+      errors.push('Kategorie ist erforderlich und muss gültig sein');
+    }
+
+    // Dauer validieren
+    if (!event.durationMinutes || event.durationMinutes < 1) {
+      errors.push('Dauer muss mindestens 1 Minute sein');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+
+  validatePerformance(performance: Partial<PerformanceDto>): { valid: boolean; fieldErrors: { [key: string]: string } } {
+    const fieldErrors: { [key: string]: string } = {};
+
+    if (!performance.hallId || performance.hallId <= 0) {
+      fieldErrors['hallId'] = 'Halle ID muss größer als 0 sein';
+    }
+
+    if (!performance.startTime) {
+      fieldErrors['startTime'] = 'Startzeit ist erforderlich';
+    }
+
+    if (!performance.endTime) {
+      fieldErrors['endTime'] = 'Endzeit ist erforderlich';
+    }
+
+    if (performance.startTime && performance.endTime) {
+      if (new Date(performance.endTime) <= new Date(performance.startTime)) {
+        fieldErrors['endTime'] = 'Endzeit muss nach Startzeit liegen';
+      }
+    }
+
+    if (performance.basePriceCents === undefined || performance.basePriceCents < 0) {
+      fieldErrors['basePrice'] = 'Basispreis darf nicht negativ sein';
+    }
+
+    return {
+      valid: Object.keys(fieldErrors).length === 0,
+      fieldErrors
+    };
+  }
+
 
   updateEvent(id: number, event: EventDto): Observable<EventDto> {
     if (this.authService.getUserRole() !== 'ADMIN') {

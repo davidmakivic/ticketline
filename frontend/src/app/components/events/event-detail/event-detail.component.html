@@ -31,7 +31,7 @@
         <h2 class="section-title">Beschreibung</h2>
         <p class="event-description">{{ event.description }}</p>
         <div class="event-metadata">
-          <span class="event-category">{{ event.category }}</span>
+          <span class="event-category">{{ getEventTypeLabel(event.category) }}</span>
           <span class="event-duration">{{ event.durationMinutes }} Minuten</span>
         </div>
       </div>

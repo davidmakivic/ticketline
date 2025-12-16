@@ -38,7 +38,7 @@
         <mat-select [(ngModel)]="selectedEventType" (selectionChange)="onSearch()">
           <mat-option [value]="null">Alle</mat-option>
           @for (type of eventTypes; track type) {
-            <mat-option [value]="type">{{ type }}</mat-option>
+            <mat-option [value]="type">{{ getEventTypeLabel(type) }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -66,32 +66,50 @@
     <div class="modal-header">
       <h5 class="modal-title">Neues Event erstellen</h5>
     </div>
-    <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal)">
+    <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal, eventForm)">
       <div class="modal-body">
-        <div *ngIf="error" class="alert alert-danger">{{ errorMessage }}</div>
+        @if (error) {
+          <div class="alert alert-danger">{{ errorMessage }}</div>
+        }
 
         <!-- Event-Titel -->
         <div class="form-group">
           <label>Titel *</label>
           <input type="text" class="form-control" [(ngModel)]="currentEvent.title" name="title"
                  required minlength="3" maxlength="100" #title="ngModel">
-          <div class="error" *ngIf="(title.touched || eventForm.submitted) && title.invalid">
-            <small *ngIf="title.errors?.['required']">Titel ist erforderlich</small>
-            <small *ngIf="title.errors?.['minlength']">Mindestens 3 Zeichen</small>
-            <small *ngIf="title.errors?.['maxlength']">Maximal 100 Zeichen</small>
-          </div>
+          @if ((title.touched || eventForm.submitted) && title.invalid) {
+            <div class="error">
+              @if (title.errors?.['required']) {
+                <small>Titel ist erforderlich</small>
+              }
+              @if (title.errors?.['minlength']) {
+                <small>Mindestens 3 Zeichen</small>
+              }
+              @if (title.errors?.['maxlength']) {
+                <small>Maximal 100 Zeichen</small>
+              }
+            </div>
+          }
         </div>
 
         <!-- Event-Beschreibung -->
         <div class="form-group">
           <label>Beschreibung *</label>
           <textarea class="form-control" [(ngModel)]="currentEvent.description" name="description" rows="4"
-                    required maxlength="1000" #description="ngModel"></textarea>
-          <div class="error" *ngIf="(description.touched || eventForm.submitted) && description.invalid">
-            <small *ngIf="description.errors?.['required']">Beschreibung ist erforderlich</small>
-            <small *ngIf="description.errors?.['minlength']">Mindestens 10 Zeichen</small>
-            <small *ngIf="description.errors?.['maxlength']">Maximal 1000 Zeichen</small>
-          </div>
+                    required minlength="10" maxlength="1000" #description="ngModel"></textarea>
+          @if ((description.touched || eventForm.submitted) && description.invalid) {
+            <div class="error">
+              @if (description.errors?.['required']) {
+                <small>Beschreibung ist erforderlich</small>
+              }
+              @if (description.errors?.['minlength']) {
+                <small>Mindestens 10 Zeichen</small>
+              }
+              @if (description.errors?.['maxlength']) {
+                <small>Maximal 1000 Zeichen</small>
+              }
+            </div>
+          }
         </div>
 
         <!-- Kategorie -->
@@ -99,11 +117,17 @@
           <label>Kategorie *</label>
           <select class="form-control" [(ngModel)]="currentEvent.category" name="category" required #category="ngModel">
             <option [ngValue]="null">Bitte wählen</option>
-            <option *ngFor="let type of eventTypes" [ngValue]="type">{{ type }}</option>
+            @for (type of eventTypes; track type) {
+              <option [ngValue]="type">{{ getEventTypeLabel(type) }}</option>
+            }
           </select>
-          <div class="error" *ngIf="(category.touched || eventForm.submitted) && category.invalid">
-            <small *ngIf="category.errors?.['required']">Kategorie ist erforderlich</small>
-          </div>
+          @if ((category.touched || eventForm.submitted) && category.invalid) {
+            <div class="error">
+              @if (category.errors?.['required']) {
+                <small>Kategorie ist erforderlich</small>
+              }
+            </div>
+          }
         </div>
 
         <!-- Dauer -->
@@ -111,10 +135,16 @@
           <label>Dauer (Minuten) *</label>
           <input type="number" class="form-control" [(ngModel)]="currentEvent.durationMinutes" name="duration"
                  required min="1" #duration="ngModel">
-          <div class="error" *ngIf="(duration.touched || eventForm.submitted) && duration.invalid">
-            <small *ngIf="duration.errors?.['required']">Dauer ist erforderlich</small>
-            <small *ngIf="duration.errors?.['min']">Dauer muss mindestens 1 Minute sein</small>
-          </div>
+          @if ((duration.touched || eventForm.submitted) && duration.invalid) {
+            <div class="error">
+              @if (duration.errors?.['required']) {
+                <small>Dauer ist erforderlich</small>
+              }
+              @if (duration.errors?.['min']) {
+                <small>Dauer muss mindestens 1 Minute sein</small>
+              }
+            </div>
+          }
         </div>
 
         <!-- Bild (optional) -->
@@ -130,73 +160,89 @@
 
         <!-- Performance-HallId -->
         <div class="form-group">
-          <label>Halle ID</label>
-          <input type="number" class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId" min="1"
-                 #hallId="ngModel">
-          <div class="error" *ngIf="hallId.touched && hallId.invalid">
-            <small *ngIf="hallId.errors?.['min']">HallId muss größer als 0 sein</small>
-          </div>
+          <label>Halle</label>
+          <select class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId">
+            <option [ngValue]="null">Bitte wählen</option>
+            @for (item of hallsWithVenues; track item.hall.id) {
+              <option [ngValue]="item.hall.id">
+                {{ item.venueName ? item.venueName + ' - ' : '' }}{{ item.hall.name }}
+              </option>
+            }
+          </select>
+          @if (performanceErrors['hallId']) {
+            <div class="error">
+              <small>{{ performanceErrors['hallId'] }}</small>
+            </div>
+          }
         </div>
 
-        <!-- Startzeit -->
         <div class="form-group">
           <label>Startzeit</label>
           <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime"
                  #startTime="ngModel">
-          <div class="error" *ngIf="startTime.touched && startTime.invalid">
-            <small *ngIf="startTime.errors?.['required']">Startzeit ist erforderlich</small>
-          </div>
+          @if (performanceErrors['startTime']) {
+            <div class="error">
+              <small>{{ performanceErrors['startTime'] }}</small>
+            </div>
+          }
         </div>
 
-        <!-- Endzeit -->
         <div class="form-group">
           <label>Endzeit</label>
           <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime"
                  #endTime="ngModel">
-          <div class="error" *ngIf="endTime.touched && (endTime.invalid || (newPerformance.endTime && newPerformance.startTime && newPerformance.endTime <= newPerformance.startTime))">
-            <small *ngIf="endTime.errors?.['required']">Endzeit ist erforderlich</small>
-            <small *ngIf="newPerformance.endTime && newPerformance.startTime && newPerformance.endTime <= newPerformance.startTime">Endzeit muss nach Startzeit liegen</small>
-          </div>
+          @if (performanceErrors['endTime']) {
+            <div class="error">
+              <small>{{ performanceErrors['endTime'] }}</small>
+            </div>
+          }
         </div>
 
-        <!-- Basispreis -->
         <div class="form-group">
           <label>Basispreis (Cents)</label>
           <input type="number" class="form-control" [(ngModel)]="newPerformance.basePriceCents" name="basePrice"
                  min="0" #basePrice="ngModel">
-          <div class="error" *ngIf="basePrice.touched && basePrice.invalid">
-            <small *ngIf="basePrice.errors?.['min']">Basispreis darf nicht negativ sein</small>
-          </div>
+          @if (performanceErrors['basePrice']) {
+            <div class="error">
+              <small>{{ performanceErrors['basePrice'] }}</small>
+            </div>
+          }
         </div>
+
 
         <button type="button" class="btn btn-secondary" (click)="addPerformanceToList()">Performance hinzufügen</button>
 
         <!-- Performance-Liste -->
-        <div class="performance-list" *ngIf="performances.length > 0">
-          <h6>Performances</h6>
-          <div *ngFor="let perf of performances; let i = index" class="performance-item">
-            <div class="performance-info">
-              <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
-              <p><strong>Ende:</strong> {{ perf.endTime | date:'short' }}</p>
-              <p><strong>Hall:</strong> {{ perf.hallId }}</p>
-              <p><strong>Preis:</strong> €{{ perf.basePriceCents / 100 }}</p>
-            </div>
-            <button type="button" class="remove-btn" (click)="removePerformance(i)">Entfernen</button>
+        @if (performances.length > 0) {
+          <div class="performance-list">
+            <h6>Performances</h6>
+            @for (perf of performances; track perf.id || $index) {
+              <div class="performance-item">
+                <div class="performance-info">
+                  <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
+                  <p><strong>Ende:</strong> {{ perf.endTime | date:'short' }}</p>
+                  <p><strong>Hall:</strong> {{ perf.hallId }}</p>
+                  <p><strong>Preis:</strong> €{{ perf.basePriceCents / 100 }}</p>
+                </div>
+                <button type="button" class="remove-btn" (click)="removePerformance($index)">Entfernen</button>
+              </div>
+            }
           </div>
-        </div>
+        }
       </div>
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="modal.dismiss('close')">Abbrechen</button>
-        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-          <span *ngIf="isLoading">Wird gespeichert...</span>
-          <span *ngIf="!isLoading">Speichern</span>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading || eventForm.invalid">
+          @if (isLoading) {
+            <span>Wird gespeichert...</span>
+          } @else {
+            <span>Speichern</span>
+          }
         </button>
       </div>
     </form>
   </ng-template>
-
-
 
   @if (isLoading) {
     <mat-spinner></mat-spinner>
@@ -214,7 +260,7 @@
               </mat-card-header>
               <mat-card-content>
                 <p>{{ event.description }}</p>
-                <span class="event-category">{{ event.category }}</span>
+                <span class="event-category">{{ getEventTypeLabel(event.category) }}</span>
               </mat-card-content>
             </div>
           </div>

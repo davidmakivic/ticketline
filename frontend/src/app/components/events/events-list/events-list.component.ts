@@ -1,29 +1,32 @@
 import {Component, OnInit, TemplateRef} from '@angular/core';
-import { EventsService } from '../../../services/events.service';
-import { EventDto, EventTypeDto } from '../../../dtos/event';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import {EventsService} from '../../../services/events.service';
+import {EventDto, EventTypeDto} from '../../../dtos/event';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
-import { MatSelect } from '@angular/material/select';
-import { MatOption } from '@angular/material/core';
+import {MatInput} from '@angular/material/input';
+import {MatSelect} from '@angular/material/select';
+import {MatOption} from '@angular/material/core';
 import {
   MatDatepicker,
   MatDatepickerInput,
   MatDatepickerModule,
   MatDatepickerToggle
 } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import {MatNativeDateModule} from '@angular/material/core';
 import {FormsModule, NgForm} from '@angular/forms';
-import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatButton } from '@angular/material/button';
-import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from '@angular/material/card';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {MatButton} from '@angular/material/button';
+import {RouterLink} from '@angular/router';
+import {CommonModule} from '@angular/common';
 import {MatIconModule} from "@angular/material/icon";
 import {PerformanceDto} from "../../../dtos/performanceDto";
 import {PerformancesService} from "../../../services/performances.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {AuthService} from "../../../services/auth.service";
+import {Hall} from "../../../dtos/hall";
+import {HallsService} from "../../../services/halls.service";
+import {VenuesService} from "../../../services/venues.service";
 
 @Component({
   selector: 'app-events-list',
@@ -57,6 +60,9 @@ import {AuthService} from "../../../services/auth.service";
 export class EventsListComponent implements OnInit {
   events: EventDto[] = [];
   eventImages: Map<number, SafeUrl> = new Map();
+  halls: Hall[] = [];
+  hallsWithVenues: { hall: Hall; venueName?: string }[] = [];
+
 
   searchTitle: string = '';
   searchArtist: string = '';
@@ -67,7 +73,6 @@ export class EventsListComponent implements OnInit {
 
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
-  performanceSubmitted: boolean = false;
 
   // Admin-Eigenschaften
   currentEvent: EventDto | null = null;
@@ -83,12 +88,15 @@ export class EventsListComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private performanceService: PerformancesService,
     private modalService: NgbModal,
-    private authService: AuthService
-
-  ) {}
+    private authService: AuthService,
+    private hallsService: HallsService,
+    private venuesService: VenuesService
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadEvents();
+    this.loadHalls();
   }
 
   isAdmin(): boolean {
@@ -185,7 +193,7 @@ export class EventsListComponent implements OnInit {
     this.performances = [];
     this.newPerformance = {};
     this.error = false;
-    this.modalService.open(eventAddModal, { size: 'lg' });
+    this.modalService.open(eventAddModal, {size: 'lg'});
   }
 
   onFileSelected(event: any): void {
@@ -195,39 +203,74 @@ export class EventsListComponent implements OnInit {
     }
   }
 
+  performanceErrors: { [key: string]: string } = {};
+
   addPerformanceToList(): void {
-    const p = this.newPerformance;
-    // Validierung
-    if (
-      !p.startTime ||
-      !p.endTime ||
-      !p.hallId ||
-      p.hallId <= 0 ||
-      p.basePriceCents === undefined ||
-      p.basePriceCents < 0 ||
-      new Date(p.endTime) <= new Date(p.startTime)
-    ) {
-      this.performanceSubmitted = true;
+    const validation = this.eventsService.validatePerformance(this.newPerformance);
+    if (!validation.valid) {
+      this.performanceErrors = validation.fieldErrors;
       return;
     }
 
     this.performances.push({
-      ...p,
+      ...this.newPerformance,
       id: Date.now()
     } as PerformanceDto);
 
     this.newPerformance = {};
-    this.performanceSubmitted = false;
+    this.performanceErrors = {};
+    this.error = false;
   }
+
 
   removePerformance(index: number): void {
     this.performances.splice(index, 1);
   }
 
-  saveEvent(eventAddModal: any): void {
-    if (!this.currentEvent || !this.currentEvent.title || !this.currentEvent.description) {
+  private loadHalls(): void {
+    this.hallsService.getAll().subscribe({
+      next: (halls) => {
+        this.hallsWithVenues = halls.map(hall => ({ hall }));
+        this.loadVenuesForHalls();
+      },
+      error: (error) => {
+        console.error('Fehler beim Laden der Hallen:', error);
+      }
+    });
+  }
+
+  private loadVenuesForHalls(): void {
+    this.hallsWithVenues.forEach(item => {
+      if (item.hall.venueId) {
+        this.venuesService.getById(item.hall.venueId).subscribe({
+          next: (venue) => {
+            item.venueName = venue.name;
+          },
+          error: () => {
+            console.warn(`Venue für Hall ${item.hall.id} konnte nicht geladen werden`);
+          }
+        });
+      }
+    });
+  }
+
+  saveEvent(modal: any, eventForm: NgForm): void {
+    if (!eventForm.valid) {
+      eventForm.form.markAllAsTouched();
+      return;
+    }
+
+    if (!this.currentEvent) {
       this.error = true;
-      this.errorMessage = 'Titel und Beschreibung sind erforderlich!';
+      this.errorMessage = 'Event-Daten fehlen';
+      return;
+    }
+
+    // Service-Validierung durchführen
+    const validation = this.eventsService.validateEvent(this.currentEvent);
+    if (!validation.valid) {
+      this.error = true;
+      this.errorMessage = validation.errors.join(', ');
       return;
     }
 
@@ -236,7 +279,7 @@ export class EventsListComponent implements OnInit {
       next: (createdEvent) => {
         this.createPerformances(createdEvent.id);
         this.loadEvents();
-        eventAddModal.dismiss();
+        modal.dismiss();
         this.isLoading = false;
       },
       error: (error) => {
@@ -245,6 +288,16 @@ export class EventsListComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  eventTypeLabels: { [key: string]: string } = {
+    'CONCERT': 'KONZERT',
+    'FESTIVAL': 'FESTIVAL',
+    'MUSICAL': 'MUSICAL'
+  };
+
+  getEventTypeLabel(type: EventTypeDto | string): string {
+    return this.eventTypeLabels[type] || type;
   }
 
   private createPerformances(eventId: number): void {
