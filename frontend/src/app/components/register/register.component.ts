@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {
+  AbstractControl,
   FormControl,
-  FormGroup,
   FormGroupDirective,
   NgForm,
   ReactiveFormsModule,
@@ -24,12 +24,27 @@ import {map} from "rxjs/operators";
 import {AsyncPipe} from "@angular/common";
 
 
-export const passwordMatchValidator: ValidatorFn = (formGroup: FormGroup): ValidationErrors | null => {
-  if (formGroup.get('password').value === formGroup.get('confirmPassword').value)
+export const passwordMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const password = group.get('password');
+  const confirmPassword = group.get('confirmPassword');
+
+  if (!password || !confirmPassword) {
     return null;
-  else
-    return {passwordMismatch: true};
+  }
+
+  if (confirmPassword.errors && !confirmPassword.errors['passwordMismatch']) {
+    return null;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    confirmPassword.setErrors({passwordMismatch: true});
+  } else {
+    confirmPassword.setErrors(null);
+  }
+
+  return null;
 };
+
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -107,15 +122,6 @@ export class RegisterComponent implements OnInit {
   }
 
 
-  onPasswordInput() {
-    if (this.registerForm.hasError('passwordMissmatch')) {
-      this.confirmPassword.setErrors([{'passwordMismatch': true}]);
-    } else {
-      this.confirmPassword.setErrors(null);
-    }
-  }
-
-
   registerUser() {
     if (this.registerForm.invalid) {
       console.log("Invalid input");
@@ -160,6 +166,7 @@ export class RegisterComponent implements OnInit {
 
   protected readonly count = count;
   protected readonly name = name;
+  protected readonly confirm = confirm;
 }
 
 export default RegisterComponent
