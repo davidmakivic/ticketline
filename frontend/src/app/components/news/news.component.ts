@@ -1,4 +1,12 @@
-import {ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild, ViewChildren} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  ViewChildren,
+  ViewEncapsulation
+} from '@angular/core';
 import {NewsService} from '../../services/news.service';
 import {News} from '../../dtos/news';
 import {NgbModal, NgbPaginationConfig} from '@ng-bootstrap/ng-bootstrap';
@@ -14,7 +22,9 @@ interface NewsWithImage extends News {
     selector: 'app-message',
     templateUrl: './news.component.html',
     styleUrls: ['./news.component.scss'],
-    standalone: false
+    standalone: false,
+  encapsulation: ViewEncapsulation.None
+
 })
 export class NewsComponent implements OnInit {
 
