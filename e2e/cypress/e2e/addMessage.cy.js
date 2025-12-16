@@ -1,4 +1,4 @@
-context('add message', () => {
+context('News erstellen', () => {
     let msgText = 'msg' + new Date().getTime();
     
     it('create message', () => {
