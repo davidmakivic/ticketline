@@ -27,9 +27,7 @@
 
       <mat-autocomplete #auto="matAutocomplete">
 
-        <div class="group-header" routerLink="artists">
-          Künstler ansehen →
-        </div>
+
         @if (artists.length > 0) {
         <mat-optgroup label="Künstler">
           @for (artist of artists; track artist) {
@@ -49,9 +47,7 @@
         }
         }
 
-        <div class="group-header" routerLink="events">
-          Events ansehen →
-        </div>
+
         @if (events.length > 0) {
         <mat-optgroup label="Events">
           @for (event of events; track event.id) {
