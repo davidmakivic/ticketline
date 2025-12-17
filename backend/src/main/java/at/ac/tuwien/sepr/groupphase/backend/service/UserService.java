@@ -11,6 +11,7 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import jakarta.mail.MessagingException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -57,8 +58,9 @@ public interface UserService extends UserDetailsService {
      * @param userLoginDto login credentials
      * @return the JWT, if successful
      * @throws org.springframework.security.authentication.BadCredentialsException if credentials are bad
+     * @throws UnauthorizedException                                               if the account is locked
      */
-    String login(UserLoginDto userLoginDto);
+    String login(UserLoginDto userLoginDto) throws UnauthorizedException;
 
     /**
      * Sends an email to reset the password to {@code email}.
