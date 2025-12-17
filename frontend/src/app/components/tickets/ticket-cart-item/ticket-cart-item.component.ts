@@ -52,6 +52,7 @@ export class TicketCartItemComponent implements OnChanges {
   fullAddress: string | null = null;
 
   sectorName: string | null = null;
+  sectorType: string | null = null;
   rowNumber: number | null = null;
   seatNumber: number | null = null;
 
@@ -149,6 +150,7 @@ export class TicketCartItemComponent implements OnChanges {
   private loadSeatAndSector(hall: Hall | null) {
     if (!this.ticket.seatId) {
       this.sectorName = null;
+      this.sectorType = null;
       this.rowNumber = null;
       this.seatNumber = null;
       return of(null);
@@ -161,6 +163,7 @@ export class TicketCartItemComponent implements OnChanges {
           this.sectorName = null;
           this.rowNumber = null;
           this.seatNumber = null;
+          this.sectorType = null;
           return of(null);
         }
 
@@ -169,6 +172,7 @@ export class TicketCartItemComponent implements OnChanges {
 
         const sectorEntry = hall?.sectorIndex?.find(s => s.id === seat.sectorId);
         this.sectorName = sectorEntry?.name ?? null;
+        this.sectorType = sectorEntry.type ?? null;
 
         return of(null);
       })

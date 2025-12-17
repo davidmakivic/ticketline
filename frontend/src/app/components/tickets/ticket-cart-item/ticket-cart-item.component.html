@@ -47,10 +47,10 @@
           <strong>Sektor:</strong> {{ sectorName ?? '—' }}
         </div>
         <div class="seat-row">
-          <strong>Reihe:</strong> {{ rowNumber ?? '—' }}
+          <strong>Reihe:</strong> {{ sectorType !== 'STANDING' ? (rowNumber ?? '—') : '—' }}
         </div>
         <div class="seat-row">
-          <strong>Sitz:</strong> {{ seatNumber ?? '—' }}
+          <strong>Sitz:</strong> {{ sectorType !== 'STANDING' ? (seatNumber ?? '—') : '—' }}
         </div>
       </div>
 
