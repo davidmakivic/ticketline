@@ -142,13 +142,17 @@ export class RegisterComponent implements OnInit {
 
     this.userService.createUser(payload).subscribe({
       next: () => {
-        console.log("Hi")
+        this.registerErrors = [];
         this.router.navigate(['/login']);
       },
-      error: (error) => {
-        console.log('Registration failed', error);
-        this.registerErrors = error.error.errors;
-        console.log(error.error.errors);
+      error: error => {
+        console.log('Could not log in due to:');
+        console.log(error);
+        if (typeof error.error === 'object') {
+          this.registerErrors = error.error.errors;
+        } else {
+          this.registerErrors = error.errors;
+        }
       }
     })
   }
