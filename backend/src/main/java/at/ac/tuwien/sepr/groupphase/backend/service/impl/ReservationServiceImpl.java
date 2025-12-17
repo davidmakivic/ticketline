@@ -94,4 +94,20 @@ public class ReservationServiceImpl implements ReservationService {
     private String generateReservationNumber() {
         return "R-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReservationDto> getAllForUser(String email) {
+        LOGGER.info("Loading reservations for user {}", email);
+
+        ApplicationUser user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        return reservationRepository.findAllByUserEmail(email).stream()
+            .map(reservationMapper::reservationToReservationDto)
+            .toList();
+    }
+
 }

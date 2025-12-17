@@ -11,12 +11,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.lang.invoke.MethodHandles;
+import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reservations")
@@ -37,5 +40,13 @@ public class ReservationEndpoint {
     public ReservationDto create(@RequestBody ReservationCreateDto dto) throws ValidationException, ConflictException {
         LOGGER.info("POST /reservations");
         return reservationService.create(dto);
+    }
+
+    @Secured("ROLE_USER")
+    @GetMapping
+    @Operation(summary = "Get my reservations", security = @SecurityRequirement(name = "apiKey"))
+    public List<ReservationDto> getMyReservations(Principal principal) {
+        LOGGER.info("GET /api/v1/reservations");
+        return reservationService.getAllForUser(principal.getName());
     }
 }
