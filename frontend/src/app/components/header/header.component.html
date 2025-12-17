@@ -6,7 +6,7 @@
     <nav class="d-flex gap-2 me-5">
       <button mat-button routerLink="/artists">Künstler</button>
       <button mat-button routerLink="/events">Veranstaltungen</button>
-      <button mat-button routerLink="/performances">Auftritte</button>
+      <button mat-button routerLink="/performances">Aufführungen</button>
       <button mat-button routerLink="/news">Neuigkeiten</button>
       <button mat-button routerLink="/shop">Shop</button>
     </nav>
@@ -27,9 +27,7 @@
 
       <mat-autocomplete #auto="matAutocomplete">
 
-        <div class="group-header" routerLink="artists">
-          Künstler ansehen →
-        </div>
+
         @if (artists.length > 0) {
         <mat-optgroup label="Künstler">
           @for (artist of artists; track artist) {
@@ -49,11 +47,9 @@
         }
         }
 
-        <div class="group-header" routerLink="events">
-          Events ansehen →
-        </div>
+
         @if (events.length > 0) {
-        <mat-optgroup label="Events">
+        <mat-optgroup label="Veranstaltungen">
           @for (event of events; track event.id) {
           <mat-option
             [value]="event.title"
