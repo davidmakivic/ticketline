@@ -7,6 +7,11 @@ public class TicketDto {
     private Long id;
     private Long performanceId;
     private Long seatId;
+
+    private Integer seatRow;
+    private Integer seatNumber;
+    private String sectorName;
+
     private Long priceFinalCents;
     private TicketStatus status;
     private Long version;
@@ -14,10 +19,14 @@ public class TicketDto {
     public TicketDto() {
     }
 
-    public TicketDto(Long id, Long performanceId, Long seatId, Long priceFinalCents, TicketStatus status, Long version) {
+    public TicketDto(Long id, Long performanceId, Long seatId, Integer seatRow, Integer seatNumber, String sectorName,
+                     Long priceFinalCents, TicketStatus status, Long version) {
         this.id = id;
         this.performanceId = performanceId;
         this.seatId = seatId;
+        this.seatRow = seatRow;
+        this.seatNumber = seatNumber;
+        this.sectorName = sectorName;
         this.priceFinalCents = priceFinalCents;
         this.status = status;
         this.version = version;
@@ -45,6 +54,30 @@ public class TicketDto {
 
     public void setSeatId(Long seatId) {
         this.seatId = seatId;
+    }
+
+    public Integer getSeatRow() {
+        return seatRow;
+    }
+
+    public void setSeatRow(Integer seatRow) {
+        this.seatRow = seatRow;
+    }
+
+    public Integer getSeatNumber() {
+        return seatNumber;
+    }
+
+    public void setSeatNumber(Integer seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+
+    public String getSectorName() {
+        return sectorName;
+    }
+
+    public void setSectorName(String sectorName) {
+        this.sectorName = sectorName;
     }
 
     public Long getPriceFinalCents() {

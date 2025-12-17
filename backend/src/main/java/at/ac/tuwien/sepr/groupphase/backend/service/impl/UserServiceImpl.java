@@ -13,6 +13,7 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PasswordTokenRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
@@ -126,19 +127,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(UserLoginDto userLoginDto) {
+    public String login(UserLoginDto userLoginDto) throws UnauthorizedException {
         LOGGER.info("Attempting login for {}", userLoginDto.getEmail());
         UserDetails userDetails = loadUserByUsername(userLoginDto.getEmail());
         if (userDetails == null
             || !userDetails.isAccountNonExpired()
-            || !userDetails.isAccountNonLocked()
             || !userDetails.isCredentialsNonExpired()
         ) {
             LOGGER.debug("accounts not found {}", userDetails == null);
-            LOGGER.debug("account expired {}", !userDetails.isAccountNonExpired());
-            LOGGER.debug("account locked {}", !userDetails.isAccountNonLocked());
             LOGGER.debug("account credentials expired {}", !userDetails.isCredentialsNonExpired());
             throw new BadCredentialsException("Username or password is incorrect or account is locked");
+        }
+        if (!userDetails.isAccountNonLocked()) {
+            throw new UnauthorizedException("Dieser Account wurde gesperrt.");
         }
         if (!passwordEncoder.matches(userLoginDto.getPassword(), userDetails.getPassword())) {
 

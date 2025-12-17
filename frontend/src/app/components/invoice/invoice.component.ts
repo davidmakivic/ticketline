@@ -34,6 +34,8 @@ export class InvoiceComponent implements OnDestroy {
   invoiceDateStr = '';
   serviceDateStr = '';
   customerName = 'Kunde';
+  tickets: Ticket[] = [];
+  eventTitle = '';
 
   private ticketPriceById = new Map<number, number>();
 
@@ -55,6 +57,18 @@ export class InvoiceComponent implements OnDestroy {
 
     this.order = state.order;
     this.items = state.items ?? [];
+
+    const itemsAny = this.items as any[];
+    const firstWithTitle =
+      itemsAny.find(x => x?.eventTitle || x?.performanceTitle || x?.title || x?.name);
+
+    this.eventTitle =
+      firstWithTitle?.eventTitle ??
+      firstWithTitle?.performanceTitle ??
+      firstWithTitle?.title ??
+      firstWithTitle?.name ??
+      '';
+
     this.payment = state.payment;
     this.customerName = state.customerName ?? 'Kunde';
 
@@ -75,6 +89,22 @@ export class InvoiceComponent implements OnDestroy {
       ).pipe(
         map(list => list.filter((t): t is Ticket => t !== null))
       ).subscribe(tickets => {
+        this.tickets = tickets;
+
+        // Fallback: Eventtitel aus Ticket-Daten, falls aus Items nichts kam
+        if (!this.eventTitle && tickets.length) {
+          const t: any = tickets[0];
+          this.eventTitle =
+            t?.performanceTitle ??
+            t?.eventTitle ??
+            t?.performance?.title ??
+            t?.performance?.eventTitle ??
+            t?.performance?.event?.title ??
+            t?.event?.title ??
+            t?.title ??
+            'Unbekannte Veranstaltung';
+        }
+
         tickets.forEach(t =>
           this.ticketPriceById.set(t.id, t.priceFinalCents ?? 0)
         );
@@ -87,8 +117,6 @@ export class InvoiceComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.renderer.removeClass(document.body, 'invoice-print');
   }
-
-
 
   print(): void {
     window.print();
@@ -109,7 +137,7 @@ export class InvoiceComponent implements OnDestroy {
   }
 
   itemTitle(item: any): string {
-    return item.title ?? item.name ?? item.performanceTitle ?? item.eventTitle ?? 'Ticket';
+    return item.title ?? item.name ?? item.performanceTitle ?? item.eventTitle ?? this.eventTitle ?? 'Ticket';
   }
 
   itemDetails(item: any): string {
@@ -141,7 +169,6 @@ export class InvoiceComponent implements OnDestroy {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
   }
 
-
   private buildInvoiceNumber(orderId: number, date: Date): string {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -157,4 +184,20 @@ export class InvoiceComponent implements OnDestroy {
     const mi = String(d.getMinutes()).padStart(2, '0');
     return `${dd}.${mm}.${yyyy} ${hh}:${mi}`;
   }
+
+  ticketSeatLabel(t: any): string {
+    const sector = t?.sectorName ?? t?.seat?.sector?.name ?? null;
+
+    const row = t?.seatRow ?? t?.seat?.row ?? t?.row ?? null;
+    const number = t?.seatNumber ?? t?.seat?.number ?? t?.number ?? null;
+
+    const seat = (row != null && number != null)
+      ? `Reihe ${row}, Sitz ${number}`
+      : (t?.seatId != null ? `Sitz #${t.seatId}` : null);
+
+    if (sector && seat) return `${sector} • ${seat}`;
+    if (seat) return seat;
+    return 'Freie Platzwahl';
+  }
+
 }

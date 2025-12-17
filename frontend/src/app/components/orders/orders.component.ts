@@ -3,15 +3,22 @@ import { CommonModule } from '@angular/common';
 import { OrdersService } from '../../services/order.service';
 import { OrderDto } from '../../dtos/order.dto';
 import { Router } from '@angular/router';
+
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { TicketsService } from '../../services/tickets.service';
 import { PerformancesService } from '../../services/performances.service';
+import { EventsService } from '../../services/events.service';
 
+import { ReservationsService } from '../../services/reservations.service';
+import { ReservationDto } from '../../dtos/reservation.dto';
 
-
-
+type OrderMetaCache = {
+  eventTitle: string;
+  seats: string[];
+  savedAt: string;
+};
 
 @Component({
   selector: 'app-orders',
@@ -21,13 +28,34 @@ import { PerformancesService } from '../../services/performances.service';
   styleUrls: ['./orders.component.css']
 })
 export class OrdersComponent {
+
   eventTitleByOrderId: Record<number, string> = {};
+  seatsByOrderId: Record<number, string[]> = {};
+  ticketCountByOrderId: Record<number, number> = {};
+
+  reservations: ReservationDto[] = [];
+  showReservations = true;
+
+  reservationSeatsById: Record<number, string[]> = {};
+  reservationTicketCountById: Record<number, number> = {};
+
+  eventTitleByReservationId: Record<number, string> = {};
+
   loading = false;
   error: string | null = null;
   orders: OrderDto[] = [];
 
-constructor(private orderService: OrdersService, private router: Router,   private ticketsService: TicketsService,
-  private performancesService: PerformancesService) {
+  confirmOpen = false;
+  confirmOrder: OrderDto | null = null;
+
+  constructor(
+    private orderService: OrdersService,
+    private router: Router,
+    private ticketsService: TicketsService,
+    private performancesService: PerformancesService,
+    private eventsService: EventsService,
+    private reservationsService: ReservationsService
+  ) {
     this.load();
   }
 
@@ -37,8 +65,13 @@ constructor(private orderService: OrdersService, private router: Router,   priva
 
     this.orderService.getAll().subscribe({
       next: data => {
-        this.orders = data;
-        this.loadEventTitles(data);
+        this.orders = data ?? [];
+
+        this.loadEventTitles(this.orders);
+        this.loadSeatsForOrders(this.orders);
+
+        this.applyCachedMeta(this.orders);
+
         this.loading = false;
       },
       error: () => {
@@ -46,83 +79,436 @@ constructor(private orderService: OrdersService, private router: Router,   priva
         this.loading = false;
       }
     });
+
+    this.reservationsService.getAll().subscribe({
+      next: res => {
+        this.reservations = res ?? [];
+        this.loadEventTitlesForReservations(this.reservations);
+        this.loadSeatsForReservations(this.reservations);
+      },
+      error: () => {
+        this.reservations = [];
+      }
+    });
   }
 
-cancelOrder(o: OrderDto) {
-  if (!o.ticketIds || o.ticketIds.length === 0) {
-    alert('Keine Tickets zum Stornieren');
-    return;
+  isCancelled(o: OrderDto): boolean {
+    return (o.ticketIds?.length ?? 0) === 0 || (o.totalPriceCents ?? 0) === 0;
   }
 
-  if (!confirm(`Bestellung #${o.id} wirklich stornieren?`)) return;
+  statusLabel(o: OrderDto): string {
+    return this.isCancelled(o) ? 'Storniert' : 'Gekauft';
+  }
 
-  this.orderService.cancelTickets(o.id, o.ticketIds).subscribe({
-    next: (cancellation) => {
-      this.router.navigate(['/storno-invoice', o.id], {
-        state: {
-          cancellation,
-          customerName: 'Kunde',
-        }
-      });
-    },
-    error: (e) => {
-      console.error(e);
-      alert('Stornierung fehlgeschlagen');
+  cancelOrder(o: OrderDto) {
+    this.openCancelConfirm(o);
+  }
+
+  openCancelConfirm(o: OrderDto) {
+    if (!o.ticketIds || o.ticketIds.length === 0) {
+      alert('Keine Tickets zum Stornieren');
+      return;
     }
-  });
-}
-  toEuro(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    this.confirmOrder = o;
+    this.confirmOpen = true;
   }
 
-private loadEventTitles(orders: OrderDto[]) {
-  this.eventTitleByOrderId = {};
+  closeCancelConfirm() {
+    this.confirmOpen = false;
+    this.confirmOrder = null;
+  }
 
-  const pairs: { orderId: number; ticketId: number }[] = [];
-  for (const o of orders) {
-    for (const tid of (o.ticketIds ?? [])) {
-      pairs.push({ orderId: o.id, ticketId: tid });
+  orderTitle(o: OrderDto): string {
+    return this.eventTitleByOrderId[o.id]
+      ?? this.loadOrderMeta(o.id)?.eventTitle
+      ?? 'Unbekannte Veranstaltung';
+  }
+
+  orderSeats(o: OrderDto): string[] {
+    const direct = this.seatsByOrderId[o.id];
+    if (direct && direct.length) return direct;
+
+    const cached = this.loadOrderMeta(o.id)?.seats ?? [];
+    return cached;
+  }
+
+  doCancelConfirmed() {
+    const o = this.confirmOrder;
+    if (!o) return;
+
+    const ticketIds = o.ticketIds ?? [];
+    if (ticketIds.length === 0) {
+      alert('Keine Tickets zum Stornieren');
+      return;
     }
-  }
-  if (pairs.length === 0) return;
 
-  forkJoin(
-    pairs.map(p =>
-      this.ticketsService.getTicketById(p.ticketId).pipe(
-        map(t => ({ orderId: p.orderId, performanceId: t.performanceId })),
-        catchError(() => of(null))
-      )
-    )
-  ).pipe(
-    map(list => list.filter((x): x is { orderId: number; performanceId: number } => x !== null))
-  ).subscribe(orderPerfList => {
-    const perfIds = Array.from(new Set(orderPerfList.map(x => x.performanceId)));
-    if (perfIds.length === 0) return;
+    this.closeCancelConfirm();
 
     forkJoin(
-      perfIds.map(id =>
-        this.performancesService.getById(id).pipe(
-          map(p => ({
-            id,
-            title: (p as any)?.title ?? (p as any)?.eventTitle ?? (p as any)?.name ?? `Performance #${id}`
-          })),
-          catchError(() => of({ id, title: `Performance #${id}` }))
+      ticketIds.map(id =>
+        this.ticketsService.getTicketById(id).pipe(
+          catchError(() => of(null))
         )
       )
-    ).subscribe(perfs => {
-      const titleByPerf = new Map<number, string>();
-      perfs.forEach(p => titleByPerf.set(p.id, p.title));
+    ).pipe(
+      map(list => list.filter((t): t is any => t !== null))
+    ).subscribe(preTickets => {
 
-      const byOrder: Record<number, string[]> = {};
-      orderPerfList.forEach(x => {
-        const title = titleByPerf.get(x.performanceId) ?? `Performance #${x.performanceId}`;
-        (byOrder[x.orderId] ||= []).push(title);
-      });
+      const seats = Array.from(new Set(preTickets.map(t => this.ticketSeatLabel(t))));
 
-      Object.entries(byOrder).forEach(([oid, titles]) => {
-        this.eventTitleByOrderId[Number(oid)] = Array.from(new Set(titles)).join(' • ');
+      const first: any = preTickets[0] ?? null;
+      const eventTitle =
+        this.eventTitleByOrderId[o.id] ??
+        first?.performanceTitle ??
+        first?.eventTitle ??
+        first?.performance?.title ??
+        first?.performance?.event?.title ??
+        first?.event?.title ??
+        first?.title ??
+        'Unbekannte Veranstaltung';
+
+      this.saveOrderMeta(o.id, eventTitle, seats);
+
+      this.orderService.cancelTickets(o.id, ticketIds).subscribe({
+        next: (cancellation) => {
+          o.ticketIds = [];
+          o.totalPriceCents = 0;
+          this.ticketCountByOrderId[o.id] = 0;
+          this.seatsByOrderId[o.id] = [];
+
+          this.router.navigate(['/storno-invoice', o.id], {
+            state: {
+              cancellation,
+              customerName: 'Kunde',
+              eventTitle,
+              seats
+            }
+          });
+        },
+        error: (e) => {
+          console.error(e);
+          alert('Stornierung fehlgeschlagen');
+        }
       });
     });
-  });
-}
+  }
+
+  toEuro(cents: number): string {
+    return (cents / 100).toFixed(2).replace('.', ',') + ' €';
+  }
+
+
+  private cacheKey(orderId: number): string {
+    return `order-meta-${orderId}`;
+  }
+
+  private saveOrderMeta(orderId: number, eventTitle: string, seats: string[]) {
+    const payload: OrderMetaCache = {
+      eventTitle: eventTitle || 'Unbekannte Veranstaltung',
+      seats: seats ?? [],
+      savedAt: new Date().toISOString()
+    };
+    try {
+      localStorage.setItem(this.cacheKey(orderId), JSON.stringify(payload));
+    } catch {
+    }
+  }
+
+  private loadOrderMeta(orderId: number): OrderMetaCache | null {
+    try {
+      const raw = localStorage.getItem(this.cacheKey(orderId));
+      if (!raw) return null;
+      return JSON.parse(raw) as OrderMetaCache;
+    } catch {
+      return null;
+    }
+  }
+
+  private applyCachedMeta(orders: OrderDto[]) {
+    for (const o of orders) {
+      const meta = this.loadOrderMeta(o.id);
+      if (!meta) continue;
+
+      if (!this.eventTitleByOrderId[o.id]) {
+        this.eventTitleByOrderId[o.id] = meta.eventTitle;
+      }
+
+      const seatsNow = this.seatsByOrderId[o.id];
+      if (!seatsNow || seatsNow.length === 0) {
+        this.seatsByOrderId[o.id] = meta.seats;
+      }
+    }
+  }
+
+
+  private loadEventTitles(orders: OrderDto[]) {
+    this.eventTitleByOrderId = {};
+
+    const pairs: { orderId: number; ticketId: number }[] = [];
+    for (const o of orders) {
+      for (const tid of (o.ticketIds ?? [])) {
+        pairs.push({ orderId: o.id, ticketId: tid });
+      }
+    }
+    if (pairs.length === 0) return;
+
+    forkJoin(
+      pairs.map(p =>
+        this.ticketsService.getTicketById(p.ticketId).pipe(
+          map(t => ({ orderId: p.orderId, performanceId: (t as any)?.performanceId })),
+          catchError(() => of(null))
+        )
+      )
+    ).pipe(
+      map(list => list.filter((x): x is { orderId: number; performanceId: number } => x !== null && x.performanceId != null))
+    ).subscribe(orderPerfList => {
+      const perfIds = Array.from(new Set(orderPerfList.map(x => x.performanceId)));
+      if (perfIds.length === 0) return;
+
+      forkJoin(
+        perfIds.map(id =>
+          this.performancesService.getById(id).pipe(
+            map(p => ({
+              perfId: id,
+              eventId: (p as any)?.eventId ?? (p as any)?.event?.id ?? null,
+              title:
+                (p as any)?.title ??
+                (p as any)?.eventTitle ??
+                (p as any)?.event?.title ??
+                (p as any)?.event?.name ??
+                (p as any)?.name ??
+                null
+            })),
+            catchError(() => of({ perfId: id, eventId: null, title: null }))
+          )
+        )
+      ).subscribe(perfs => {
+
+        const titleByPerf = new Map<number, string>();
+        const perfToEvent = new Map<number, number>();
+
+        for (const p of perfs) {
+          if (p.eventId != null) perfToEvent.set(p.perfId, p.eventId);
+          if (p.title) titleByPerf.set(p.perfId, p.title);
+        }
+
+        const missingPerfIds = perfIds.filter(pid => !titleByPerf.has(pid) && perfToEvent.has(pid));
+        const eventIds = Array.from(new Set(missingPerfIds.map(pid => perfToEvent.get(pid)!).filter(Boolean)));
+
+        const buildOrderTitles = () => {
+          const byOrder: Record<number, string[]> = {};
+          for (const x of orderPerfList) {
+            const title = titleByPerf.get(x.performanceId) ?? 'Unbekannte Veranstaltung';
+            (byOrder[x.orderId] ||= []).push(title);
+          }
+          for (const [oid, titles] of Object.entries(byOrder)) {
+            this.eventTitleByOrderId[Number(oid)] = Array.from(new Set(titles)).join(' • ');
+          }
+        };
+
+        if (eventIds.length === 0) {
+          buildOrderTitles();
+          return;
+        }
+
+        forkJoin(
+          eventIds.map(eid =>
+            this.eventsService.getEventById(eid).pipe(
+              map(e => ({ id: eid, title: (e as any)?.title ?? (e as any)?.name ?? null })),
+              catchError(() => of({ id: eid, title: null }))
+            )
+          )
+        ).subscribe(events => {
+          const titleByEvent = new Map<number, string>();
+          for (const e of events) {
+            if (e.title) titleByEvent.set(e.id, e.title);
+          }
+
+          for (const pid of missingPerfIds) {
+            const eid = perfToEvent.get(pid);
+            const t = eid != null ? titleByEvent.get(eid) : null;
+            if (t) titleByPerf.set(pid, t);
+          }
+
+          buildOrderTitles();
+        });
+      });
+    });
+  }
+
+  private loadEventTitlesForReservations(reservations: ReservationDto[]) {
+    this.eventTitleByReservationId = {};
+
+    const pairs: { rid: number; ticketId: number }[] = [];
+    for (const r of reservations) {
+      for (const tid of (r.ticketIds ?? [])) {
+        pairs.push({ rid: r.id, ticketId: tid });
+      }
+    }
+    if (pairs.length === 0) return;
+
+    forkJoin(
+      pairs.map(p =>
+        this.ticketsService.getTicketById(p.ticketId).pipe(
+          map(t => ({ rid: p.rid, performanceId: (t as any)?.performanceId ?? (t as any)?.performance?.id ?? null })),
+          catchError(() => of(null))
+        )
+      )
+    ).pipe(
+      map(list => list.filter((x): x is { rid: number; performanceId: number } => x !== null && x.performanceId != null))
+    ).subscribe(resPerfList => {
+      const perfIds = Array.from(new Set(resPerfList.map(x => x.performanceId)));
+      if (perfIds.length === 0) return;
+
+      forkJoin(
+        perfIds.map(id =>
+          this.performancesService.getById(id).pipe(
+            map(p => ({
+              perfId: id,
+              eventId: (p as any)?.eventId ?? (p as any)?.event?.id ?? null,
+              title:
+                (p as any)?.title ??
+                (p as any)?.eventTitle ??
+                (p as any)?.event?.title ??
+                (p as any)?.event?.name ??
+                (p as any)?.name ??
+                null
+            })),
+            catchError(() => of({ perfId: id, eventId: null, title: null }))
+          )
+        )
+      ).subscribe(perfs => {
+
+        const titleByPerf = new Map<number, string>();
+        const perfToEvent = new Map<number, number>();
+
+        for (const p of perfs) {
+          if (p.eventId != null) perfToEvent.set(p.perfId, p.eventId);
+          if (p.title) titleByPerf.set(p.perfId, p.title);
+        }
+
+        const missingPerfIds = perfIds.filter(pid => !titleByPerf.has(pid) && perfToEvent.has(pid));
+        const eventIds = Array.from(new Set(missingPerfIds.map(pid => perfToEvent.get(pid)!).filter(Boolean)));
+
+        const buildReservationTitles = () => {
+          const byRes: Record<number, string[]> = {};
+          for (const x of resPerfList) {
+            const title = titleByPerf.get(x.performanceId) ?? 'Unbekannte Veranstaltung';
+            (byRes[x.rid] ||= []).push(title);
+          }
+          for (const [rid, titles] of Object.entries(byRes)) {
+            this.eventTitleByReservationId[Number(rid)] = Array.from(new Set(titles)).join(' • ');
+          }
+        };
+
+        if (eventIds.length === 0) {
+          buildReservationTitles();
+          return;
+        }
+
+        forkJoin(
+          eventIds.map(eid =>
+            this.eventsService.getEventById(eid).pipe(
+              map(e => ({ id: eid, title: (e as any)?.title ?? (e as any)?.name ?? null })),
+              catchError(() => of({ id: eid, title: null }))
+            )
+          )
+        ).subscribe(events => {
+          const titleByEvent = new Map<number, string>();
+          for (const e of events) {
+            if (e.title) titleByEvent.set(e.id, e.title);
+          }
+
+          for (const pid of missingPerfIds) {
+            const eid = perfToEvent.get(pid);
+            const t = eid != null ? titleByEvent.get(eid) : null;
+            if (t) titleByPerf.set(pid, t);
+          }
+
+          buildReservationTitles();
+        });
+      });
+    });
+  }
+
+  private loadSeatsForOrders(orders: OrderDto[]) {
+    this.seatsByOrderId = {};
+    this.ticketCountByOrderId = {};
+
+    const pairs: { orderId: number; ticketId: number }[] = [];
+
+    for (const o of orders) {
+      const ids = (o.ticketIds ?? []);
+      this.ticketCountByOrderId[o.id] = ids.length;
+
+      for (const tid of ids) {
+        pairs.push({ orderId: o.id, ticketId: tid });
+      }
+    }
+
+    if (pairs.length === 0) return;
+
+    forkJoin(
+      pairs.map(p =>
+        this.ticketsService.getTicketById(p.ticketId).pipe(
+          map(t => ({ orderId: p.orderId, ticket: t })),
+          catchError(() => of(null))
+        )
+      )
+    ).pipe(
+      map(list => list.filter((x): x is { orderId: number; ticket: any } => x !== null))
+    ).subscribe(list => {
+      for (const x of list) {
+        const seat = this.ticketSeatLabel(x.ticket);
+        const arr = (this.seatsByOrderId[x.orderId] ||= []);
+        if (!arr.includes(seat)) arr.push(seat);
+      }
+    });
+  }
+
+  private loadSeatsForReservations(reservations: ReservationDto[]) {
+    this.reservationSeatsById = {};
+    this.reservationTicketCountById = {};
+
+    const pairs: { rid: number; ticketId: number }[] = [];
+    for (const r of reservations) {
+      for (const tid of (r.ticketIds ?? [])) {
+        pairs.push({ rid: r.id, ticketId: tid });
+      }
+      this.reservationTicketCountById[r.id] = (r.ticketIds ?? []).length;
+    }
+    if (pairs.length === 0) return;
+
+    forkJoin(
+      pairs.map(p =>
+        this.ticketsService.getTicketById(p.ticketId).pipe(
+          map(t => ({ rid: p.rid, ticket: t })),
+          catchError(() => of(null))
+        )
+      )
+    ).pipe(
+      map(list => list.filter((x): x is { rid: number; ticket: any } => x !== null))
+    ).subscribe(list => {
+      for (const x of list) {
+        const seat = this.ticketSeatLabel(x.ticket);
+        const arr = (this.reservationSeatsById[x.rid] ||= []);
+        if (!arr.includes(seat)) arr.push(seat);
+      }
+    });
+  }
+
+  ticketSeatLabel(t: any): string {
+    const sector = t?.sectorName ?? t?.seat?.sector?.name ?? null;
+
+    const row = t?.seatRow ?? t?.seat?.row ?? t?.row ?? null;
+    const number = t?.seatNumber ?? t?.seat?.number ?? t?.number ?? null;
+
+    const seat = (row != null && number != null)
+      ? `Reihe ${row}, Sitz ${number}`
+      : (t?.seatId != null ? `Sitz #${t.seatId}` : null);
+
+    if (sector && seat) return `${sector} • ${seat}`;
+    if (seat) return seat;
+    return 'Freie Platzwahl';
+  }
 }
