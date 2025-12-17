@@ -13,6 +13,7 @@
         <h3>Storno-Information</h3>
         <div><strong>Storno-Nummer:</strong> {{ stornoNo }}</div>
         <div><strong>Datum:</strong> {{ stornoDateStr }}</div>
+        <div><strong>Veranstaltung:</strong> {{ eventTitle || 'Unbekannte Veranstaltung' }}</div>
         <div *ngIf="originalInvoiceNo">
           <strong>Referenz Rechnung:</strong> {{ originalInvoiceNo }}
         </div>
@@ -22,9 +23,17 @@
     <div class="content-box">
       <h2>Stornierte Tickets</h2>
 
-      <div *ngFor="let tid of cancellation.cancelledTicketIds">
-        Ticket-Nr. {{ tid }}
-      </div>
+      <ng-container *ngIf="tickets.length > 0; else seatFallback">
+        <div *ngFor="let t of tickets">
+          {{ ticketSeatLabel(t) }}
+        </div>
+      </ng-container>
+
+      <ng-template #seatFallback>
+        <div *ngFor="let s of seatLabels">
+          {{ s }}
+        </div>
+      </ng-template>
     </div>
 
     <div class="content-box total-box">

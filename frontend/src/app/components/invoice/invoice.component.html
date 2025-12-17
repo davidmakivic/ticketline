@@ -41,7 +41,6 @@
         <tbody>
         <tr *ngFor="let it of items; let i = index">
           <td>{{ i + 1 }}</td>
-          <td><strong>{{ itemTitle(it) }}</strong></td>
           <td class="muted">{{ itemDetails(it) }}</td>
           <td class="right">{{ itemQuantity(it) }}</td>
           <td class="right">{{ toEuro(itemUnitPriceCents(it)) }}</td>
@@ -53,9 +52,9 @@
 
     <div class="summary-grid">
       <div class="content-box">
-        <h3>Ticketnummern</h3>
-        <div *ngFor="let tid of order.ticketIds">
-          Ticket-Nr. {{ tid }}
+        <h3>Plätze</h3>
+        <div *ngFor="let t of tickets">
+          {{ ticketSeatLabel(t) }}
         </div>
       </div>
 
