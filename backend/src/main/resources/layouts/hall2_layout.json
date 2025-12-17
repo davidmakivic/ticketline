@@ -15,7 +15,7 @@
             "id": "D1",
             "label": "D1",
             "sectorKey": "7",
-            "originN": { "x": 0.16, "y": 0.36 },
+            "originN": { "x": 0.16, "y": 0.34 },
             "rows": 10,
             "seatsPerRow": 5,
             "spacingN": { "dx": 0.030, "dy": 0.050 }
@@ -25,7 +25,7 @@
             "id": "D2",
             "label": "D2",
             "sectorKey": "8",
-            "originN": { "x": 0.72, "y": 0.36 },
+            "originN": { "x": 0.72, "y": 0.34 },
             "rows": 10,
             "seatsPerRow": 5,
             "spacingN": { "dx": 0.030, "dy": 0.050 }
