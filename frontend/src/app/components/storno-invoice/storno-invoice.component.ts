@@ -1,6 +1,9 @@
 import { Component, Renderer2, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { TicketsService } from '../../services/tickets.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 type CancellationResultDto = {
   orderId: number;
@@ -14,6 +17,8 @@ type State = {
   customerName?: string;
   payment?: string;
   originalInvoiceNo?: string;
+  eventTitle?: string;
+  seats?: string[];
 };
 
 @Component({
@@ -31,11 +36,37 @@ export class StornoInvoiceComponent implements OnDestroy {
   stornoDateStr = '';
   customerName = 'Kunde';
   originalInvoiceNo = '';
+  tickets: any[] = [];
 
-  constructor(private router: Router, private renderer: Renderer2) {
+  eventTitle = '';
+  seatLabels: string[] = [];
+
+  constructor(
+    private router: Router,
+    private renderer: Renderer2,
+    private ticketsService: TicketsService
+  ) {
     const state = history.state as State;
 
     this.cancellation = state.cancellation;
+
+    this.eventTitle = state.eventTitle ?? '';
+    this.seatLabels = state.seats ?? [];
+
+    const ids = this.cancellation?.cancelledTicketIds ?? [];
+
+    if (ids.length) {
+      forkJoin(
+        ids.map(id =>
+          this.ticketsService.getTicketById(id).pipe(
+            catchError(() => of(null))
+          )
+        )
+      ).pipe(
+        map(list => list.filter(x => x != null))
+      ).subscribe(list => this.tickets = list);
+    }
+
     this.customerName = state.customerName ?? 'Kunde';
     this.originalInvoiceNo = state.originalInvoiceNo ?? '';
 
@@ -82,4 +113,20 @@ export class StornoInvoiceComponent implements OnDestroy {
     const mi = String(d.getMinutes()).padStart(2, '0');
     return `${dd}.${mm}.${yyyy} ${hh}:${mi}`;
   }
+
+  ticketSeatLabel(t: any): string {
+    const sector = t?.sectorName ?? t?.seat?.sector?.name ?? null;
+
+    const row = t?.seatRow ?? t?.seat?.row ?? t?.row ?? null;
+    const number = t?.seatNumber ?? t?.seat?.number ?? t?.number ?? null;
+
+    const seat = (row != null && number != null)
+      ? `Reihe ${row}, Sitz ${number}`
+      : (t?.seatId != null ? `Sitz #${t.seatId}` : null);
+
+    if (sector && seat) return `${sector} • ${seat}`;
+    if (seat) return seat;
+    return 'Freie Platzwahl';
+  }
+
 }
