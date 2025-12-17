@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 
+import at.ac.tuwien.sepr.groupphase.backend.service.impl.HallServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -30,13 +31,15 @@ public class HallDataGenerator {
     private final VenueRepository venueRepository;
     private final HallRepository hallRepository;
     private final ObjectMapper objectMapper;
+    private final HallServiceImpl hallServiceImpl;
 
     public HallDataGenerator(VenueRepository venueRepository,
                              HallRepository hallRepository,
-                             ObjectMapper objectMapper) {
+                             ObjectMapper objectMapper, HallServiceImpl hallServiceImpl) {
         this.venueRepository = venueRepository;
         this.hallRepository = hallRepository;
         this.objectMapper = objectMapper;
+        this.hallServiceImpl = hallServiceImpl;
     }
 
     private JsonNode loadLayout(String fileName) {
@@ -61,24 +64,41 @@ public class HallDataGenerator {
         }
 
         // Layout wird einmal geladen und anschließend für jede Hall gesetzt
-        JsonNode layout = loadLayout("hall1_layout.json");
+        JsonNode layout1 = loadLayout("hall1_layout.json");
+        JsonNode layout2 = loadLayout("hall2_layout.json");
 
         LOGGER.debug("Generating halls for venues");
 
         for (Venue venue : venues) {
 
-            Hall mainHall = new Hall();
-            mainHall.setName("Saal A");
-            mainHall.setVenue(venue);
-            mainHall.setLayoutMetadata(layout);
+            if (venue.getName() == "Graz Arena") {
+                Hall mnHall = new Hall();
+                mnHall.setName("Saal A");
+                mnHall.setVenue(venue);
+                mnHall.setLayoutMetadata(layout2);
 
-            Hall smallHall = new Hall();
-            smallHall.setName("Saal B");
-            smallHall.setVenue(venue);
-            smallHall.setLayoutMetadata(layout);
+                Hall slHall = new Hall();
+                slHall.setName("Saal B");
+                slHall.setVenue(venue);
+                slHall.setLayoutMetadata(layout2);
 
-            hallRepository.save(mainHall);
-            hallRepository.save(smallHall);
+                hallRepository.save(mnHall);
+                hallRepository.save(slHall);
+            } else {
+
+                Hall mainHall = new Hall();
+                mainHall.setName("Saal A");
+                mainHall.setVenue(venue);
+                mainHall.setLayoutMetadata(layout1);
+
+                Hall smallHall = new Hall();
+                smallHall.setName("Saal B");
+                smallHall.setVenue(venue);
+                smallHall.setLayoutMetadata(layout1);
+
+                hallRepository.save(mainHall);
+                hallRepository.save(smallHall);
+            }
         }
 
         LOGGER.debug("Hall generation complete");
