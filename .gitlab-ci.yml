@@ -78,6 +78,7 @@ build-image:
   stage: build
   dependencies:
     - test-frontend
+    - gitinspector
   script:
     - rm -rf backend/src/main/resources/static/*
     - mkdir -p backend/src/main/resources/static/
