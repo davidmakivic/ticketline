@@ -7,6 +7,7 @@ variables:
 cache:
   paths:
     - .m2
+  key: ${CI_COMMIT_BRANCH}
 
 stages:
   - test
@@ -22,6 +23,10 @@ test-backend:
 test-frontend:
   stage: test
   image: node:24
+  cache:
+    paths:
+      - frontend/node_modules
+    key: frontend-${CI_COMMIT_BRANCH}
   script:
     - cd frontend
     - npm ci --legacy-peer-deps
@@ -35,6 +40,8 @@ test-frontend:
 e2e-test:
   stage: test
   image: registry.reset.inso-w.at/pub/docker/cypress:latest
+  dependencies:
+    - test-frontend
   script:
     - cd frontend
     - npm ci --legacy-peer-deps
@@ -67,15 +74,17 @@ gitinspector:
       - gitinspector.html
     expire_in: 1 hour
 
-
 build-image:
   stage: build
+  dependencies:
+    - test-frontend
   script:
+    - rm -rf backend/src/main/resources/static/*
     - mkdir -p backend/src/main/resources/static/
     - cp -rv frontend/dist/sepr-group-phase/browser/* gitinspector.html backend/src/main/resources/static/
     - cd backend
-    - mvn -B clean install -DskipTests
-    - mvn -B jib:build -Djib.to.image=registry.reset.inso-w.at/$CI_PROJECT_PATH -Djib.to.tags=$CI_PIPELINE_ID -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_REGISTRY_PASSWORD
+    - mvn clean install -DskipTests
+    - mvn jib:build -Djib.to.image=registry.reset.inso-w.at/$CI_PROJECT_PATH -Djib.to.tags=$CI_PIPELINE_ID -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_REGISTRY_PASSWORD
   only:
     - master
 
