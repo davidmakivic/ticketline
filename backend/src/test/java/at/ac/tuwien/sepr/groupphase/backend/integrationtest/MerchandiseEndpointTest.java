@@ -96,7 +96,7 @@ public class MerchandiseEndpointTest {
 
     @Test
     void givenMerchandise_whenCreate_thenReturnsCreatedMerchandise() throws Exception {
-        MerchandiseDto dto = new MerchandiseDto(null, "Poster", "Band Poster", 10, 50);
+        MerchandiseDto dto = new MerchandiseDto(null, "Poster", "Band Poster", 10, 50, null);
 
         String body = objectMapper.writeValueAsString(dto);
 
