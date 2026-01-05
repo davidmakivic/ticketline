@@ -2,6 +2,8 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 
+import java.time.Instant;
+
 public class TicketDto {
 
     private Long id;
@@ -14,6 +16,10 @@ public class TicketDto {
 
     private Long priceFinalCents;
     private TicketStatus status;
+
+    private Instant reservedUntil;
+    private Long reservedByUserId;
+    private Boolean reservedByMe;
     private Long version;
 
     public TicketDto() {
@@ -94,6 +100,30 @@ public class TicketDto {
 
     public void setStatus(TicketStatus status) {
         this.status = status;
+    }
+
+    public Instant getReservedUntil() {
+        return reservedUntil;
+    }
+
+    public void setReservedUntil(Instant reservedUntil) {
+        this.reservedUntil = reservedUntil;
+    }
+
+    public Long getReservedByUserId() {
+        return reservedByUserId;
+    }
+
+    public void setReservedByUserId(Long reservedByUserId) {
+        this.reservedByUserId = reservedByUserId;
+    }
+
+    public Boolean getReservedByMe() {
+        return reservedByMe;
+    }
+
+    public void setReservedByMe(Boolean reservedByMe) {
+        this.reservedByMe = reservedByMe;
     }
 
     public Long getVersion() {

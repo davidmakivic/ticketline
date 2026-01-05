@@ -68,28 +68,47 @@ public class ReservationServiceImpl implements ReservationService {
             throw new NotFoundException("One or more tickets not found");
         }
 
+        var now = java.time.Instant.now();
+        Long currentUserId = user.getUserId();
+
+        // 1) Validieren: Tickets müssen ein gültiger HOLD (RESERVED + von mir + nicht expired) sein
         for (Ticket t : tickets) {
-            if (t.getStatus() != TicketStatus.AVAILABLE) {
+            if (t.getStatus() != TicketStatus.RESERVED) {
                 throw new ConflictException(
                     "Ticket not available",
-                    List.of("Ticket " + t.getId() + " is " + t.getStatus())
+                    List.of("Ticket " + t.getId() + " is " + t.getStatus() + " (expected RESERVED hold).")
+                );
+            }
+
+            if (t.getReservedByUserId() == null || !t.getReservedByUserId().equals(currentUserId)) {
+                throw new ConflictException(
+                    "Ticket not available",
+                    List.of("Ticket " + t.getId() + " is not held by current user.")
+                );
+            }
+
+            if (t.getReservedUntil() == null || !t.getReservedUntil().isAfter(now)) {
+                throw new ConflictException(
+                    "Ticket not available",
+                    List.of("Ticket " + t.getId() + " hold expired.")
                 );
             }
         }
 
+        String reservationNumber = generateReservationNumber();
+        Reservation reservation = new Reservation(user, reservationNumber);
+        reservation.setTickets(tickets);
+        Reservation saved = reservationRepository.save(reservation);
+
         for (Ticket t : tickets) {
-            t.setStatus(TicketStatus.RESERVED);
+            t.setReservedUntil(null);
+            t.setReservedByUserId(null);
         }
         ticketRepository.saveAll(tickets);
 
-        String reservationNumber = generateReservationNumber();
-
-        Reservation reservation = new Reservation(user, reservationNumber);
-        reservation.setTickets(tickets);
-
-        Reservation saved = reservationRepository.save(reservation);
         return reservationMapper.reservationToReservationDto(saved);
     }
+
 
     private String generateReservationNumber() {
         return "R-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();

@@ -23,6 +23,9 @@ import { Ticket, TicketStatus } from '../../dtos/ticket';
 import { EventsService   } from "../../services/events.service";
 import { EventDto } from "../../dtos/event";
 
+import { interval, Subject, takeUntil } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 type StageEl = Extract<LayoutElement, { type: 'stage' }>;
 type StandingEl = Extract<LayoutElement, { type: 'standingArea' }>;
 type SeatBlockEl = Extract<LayoutElement, { type: 'seatBlock' }>;
@@ -74,6 +77,8 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   // selected seatIds
   selectedSeatIds = new Set<number>();
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
     private route: ActivatedRoute,
     private performancesService: PerformancesService,
@@ -86,6 +91,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
     private eventsService: EventsService,
     private authService: AuthService,
     private pendingReservation: PendingReservationService,
+    private snackBar: MatSnackBar,
   ) {
     this.init();
   }
@@ -98,10 +104,52 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.ro && this.planWrap) {
       this.ro.disconnect();
     }
   }
+
+  private startRefreshLoop() {
+    interval(10_000)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(() => this.ticketsService.getTicketsByPerformance(this.performanceId))
+      )
+      .subscribe({
+        next: (tickets) => this.applyTicketsRefresh(tickets),
+        error: () => {
+        }
+      });
+  }
+
+  private refreshTicketsOnce() {
+    this.ticketsService.getTicketsByPerformance(this.performanceId)
+      .subscribe(tickets => this.applyTicketsRefresh(tickets));
+  }
+
+  private applyTicketsRefresh(tickets: Ticket[]) {
+    this.ticketBySeatId.clear();
+
+    for (const t of tickets) {
+      if (t.seatId == null) continue;
+      this.ticketBySeatId.set(t.seatId, t);
+    }
+
+    this.selectedSeatIds.clear();
+
+    if (!this.authService.isLoggedIn()) {
+      return;
+    }
+
+    for (const [seatId, t] of this.ticketBySeatId.entries()) {
+        if (t.status === TicketStatus.RESERVED && t.reservedByMe) {
+          this.selectedSeatIds.add(seatId);
+        }
+      }
+  }
+
 
   private syncContainerSize() {
     if (!this.planWrap) return;
@@ -139,12 +187,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
           this.sectorKeyBySectorId.set(s.id, s.sectorKey);
         }
 
-        // tickets by seatId
-        this.ticketBySeatId.clear();
-        for (const t of tickets) {
-          if (t.seatId == null) continue;
-          this.ticketBySeatId.set(t.seatId, t);
-        }
+        this.applyTicketsRefresh(tickets);
 
         // Load venue + seats for sectors used in this hall
         const seatCalls = (hall.sectorIndex ?? []).map(s => this.seatsService.getBySectorId(s.id));
@@ -187,6 +230,9 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
         }
 
         this.loading = false;
+        if (this.authService.isLoggedIn()) {
+          this.startRefreshLoop();
+        }
       },
       error: (e) => {
         console.error(e);
@@ -204,7 +250,7 @@ addSelectedToCart() {
     const ticket = this.ticketBySeatId.get(seatId);
     if (!ticket) continue;
 
-    calls.push(this.cart.addTicketAndReserve(ticket.id));
+    calls.push(this.cart.addTicketAndHold(ticket.id));
   }
 
   if (calls.length === 0) {
@@ -302,21 +348,67 @@ addSelectedToCart() {
     const ticket = this.ticketBySeatId.get(seatId);
     if (!ticket) return 'missing';
 
+    if (
+      this.authService.isLoggedIn() &&
+      ticket.status === TicketStatus.RESERVED &&
+      ticket.reservedByMe
+    ) {
+      return 'selected';
+    }
+
     if (ticket.status !== TicketStatus.AVAILABLE) return 'reserved';
-    if (this.selectedSeatIds.has(seatId)) return 'selected';
+
     return 'free';
   }
+
+
 
   onSeatClick(sectorKey: string, row: number, seat: number) {
     const seatId = this.seatIdByKey.get(this.seatKey(sectorKey, row, seat));
     if (!seatId) return;
 
-    const ticket = this.ticketBySeatId.get(seatId);
-    if (!ticket || ticket.status !== TicketStatus.AVAILABLE) return;
+    if (!this.authService.isLoggedIn()) {
+        this.snackBar.open(
+          'Bitte einloggen, um Sitzplätze auswählen zu können.',
+          'Login',
+          {
+            duration: 3000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom'
+          }
+        ).onAction().subscribe(() => {
+          this.router.navigate(['/login'], {
+            queryParams: { redirect: this.router.url }
+          });
+        });
+        return;
+      }
 
-    if (this.selectedSeatIds.has(seatId)) this.selectedSeatIds.delete(seatId);
-    else this.selectedSeatIds.add(seatId);
+    const ticket = this.ticketBySeatId.get(seatId);
+    if (!ticket) return;
+
+    if (ticket.status === TicketStatus.RESERVED && ticket.reservedByMe) {
+      this.ticketsService.releaseHold(ticket.id).subscribe({
+        next: (updated) => {
+          this.ticketBySeatId.set(seatId, updated);
+          this.selectedSeatIds.delete(seatId);
+        },
+        error: () => this.refreshTicketsOnce(),
+      });
+      return;
+    }
+
+    if (ticket.status !== TicketStatus.AVAILABLE) return;
+
+    this.ticketsService.hold(ticket.id).subscribe({
+      next: (updated) => {
+        this.ticketBySeatId.set(seatId, updated);
+        this.selectedSeatIds.add(seatId);
+      },
+      error: () => this.refreshTicketsOnce(),
+    });
   }
+
 
   // ---- standing seat state mapping
 
@@ -360,7 +452,15 @@ addSelectedToCart() {
       if (t.status !== TicketStatus.AVAILABLE) continue;
       if (this.selectedSeatIds.has(seatId)) continue;
 
-      this.selectedSeatIds.add(seatId);
+      this.ticketsService.hold(t.id).subscribe({
+            next: (updated) => {
+              this.ticketBySeatId.set(seatId, updated);
+              this.selectedSeatIds.add(seatId);
+            },
+            error: () => {
+              this.refreshTicketsOnce();
+            }
+          });
       return;
     }
   }
@@ -369,12 +469,27 @@ addSelectedToCart() {
     const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
 
     for (let i = seatIds.length - 1; i >= 0; i--) {
-      const seatId = seatIds[i];
-      if (this.selectedSeatIds.has(seatId)) {
-        this.selectedSeatIds.delete(seatId);
+        const seatId = seatIds[i];
+        if (!this.selectedSeatIds.has(seatId)) continue;
+
+        const t = this.ticketBySeatId.get(seatId);
+        if (!t) {
+          this.selectedSeatIds.delete(seatId);
+          return;
+        }
+
+        this.ticketsService.releaseHold(t.id).subscribe({
+          next: (updated) => {
+            this.ticketBySeatId.set(seatId, updated);
+            this.selectedSeatIds.delete(seatId);
+          },
+          error: () => {
+            this.refreshTicketsOnce();
+          }
+        });
+
         return;
       }
-    }
   }
 
   onStandingClick(ev: PointerEvent, sectorKey: string) {
@@ -495,7 +610,8 @@ addSelectedToCart() {
     for (const seatId of this.selectedSeatIds) {
       const t = this.ticketBySeatId.get(seatId);
       if (!t) continue;
-      if (t.status !== TicketStatus.AVAILABLE) continue;
+      if (t.status !== TicketStatus.RESERVED) continue;
+      if (!t.reservedByMe) continue;
       ids.push(t.id);
     }
 
