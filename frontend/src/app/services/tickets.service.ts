@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Ticket, TicketStatus } from '../dtos/ticket';
-import { TicketStatusUpdateDto } from '../dtos/ticket-status-update';
 
 @Injectable({ providedIn: 'root' })
 export class TicketsService {
@@ -24,27 +23,19 @@ export class TicketsService {
     return this.httpClient.get<Ticket>(`${this.ticketsBaseUri}/${id}`);
   }
 
-  reserve(ticketId: number, version: number): Observable<Ticket> {
-    return this.httpClient.put<Ticket>(
-      `${this.ticketsBaseUri}/${ticketId}/reserve`,
-      { status: TicketStatus.RESERVED, version }
-    );
+  hold(ticketId: number): Observable<Ticket> {
+    return this.httpClient.post<Ticket>(`${this.ticketsBaseUri}/${ticketId}/hold`, {});
   }
 
-  release(ticketId: number, version: number) {
-    return this.httpClient.put<Ticket>(
-      `${this.ticketsBaseUri}/${ticketId}/release`,
-      { status: TicketStatus.AVAILABLE, version }
-    );
+  releaseHold(ticketId: number): Observable<Ticket> {
+    return this.httpClient.delete<Ticket>(`${this.ticketsBaseUri}/${ticketId}/hold`);
   }
+
 
   getTicketsByPerformance(performanceId: number): Observable<Ticket[]> {
     return this.httpClient.get<Ticket[]>(`${this.ticketsBaseUri}/performance/${performanceId}`);
   }
 
-  updateStatus(ticketId: number, body: TicketStatusUpdateDto): Observable<Ticket> {
-    return this.httpClient.put<Ticket>(`${this.ticketsBaseUri}/${ticketId}/status`, body);
-  }
 
   createTicket(ticket: Ticket): Observable<Ticket> {
     return this.httpClient.post<Ticket>(this.ticketsBaseUri, ticket);

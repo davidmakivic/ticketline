@@ -36,19 +36,18 @@ export class CartService {
     this.set([...current, { ticketId, addedAt: new Date().toISOString() }]);
   }
 
-  addTicketAndReserve(ticketId: number): Observable<Ticket> {
-    return this.ticketsService.getTicketById(ticketId).pipe(
-      switchMap((ticket: Ticket) => this.ticketsService.reserve(ticketId, ticket.version)),
+  addTicketAndHold(ticketId: number): Observable<Ticket> {
+    return this.ticketsService.hold(ticketId).pipe(
       tap(() => this.addTicket(ticketId))
     );
   }
 
-  removeTicketAndRelease(ticketId: number) {
-    return this.ticketsService.getTicketById(ticketId).pipe(
-      switchMap(ticket => this.ticketsService.release(ticketId, ticket.version)),
+  removeTicketAndRelease(ticketId: number): Observable<Ticket> {
+    return this.ticketsService.releaseHold(ticketId).pipe(
       tap(() => this.removeTicket(ticketId))
     );
   }
+
 
   removeTicket(ticketId: number): void {
     this.set(this.items$.value.filter(i => i.ticketId !== ticketId));
