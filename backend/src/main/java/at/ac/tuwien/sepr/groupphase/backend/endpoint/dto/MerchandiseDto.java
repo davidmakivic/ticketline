@@ -7,14 +7,17 @@ public class MerchandiseDto {
     private String description;
     private Integer price;
     private Integer quantity;
+    private String imageContentType;
 
 
-    public MerchandiseDto(Long id, String name, String description, Integer price, Integer quantity) {
+
+    public MerchandiseDto(Long id, String name, String description, Integer price, Integer quantity,  String imageContentType) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.quantity = quantity;
+        this.imageContentType = imageContentType;
     }
 
     public Long getId() {
@@ -55,6 +58,14 @@ public class MerchandiseDto {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 
 }
