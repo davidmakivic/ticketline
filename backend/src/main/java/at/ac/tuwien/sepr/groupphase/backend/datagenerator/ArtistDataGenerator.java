@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @Profile("generateData")
+@DependsOn("eventDataGenerator")
 @Component
 public class ArtistDataGenerator {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
