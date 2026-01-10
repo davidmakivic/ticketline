@@ -93,11 +93,12 @@ init-data:
   stage: deploy
   image: registry.reset.inso-w.at/$CI_PROJECT_PATH:$CI_PIPELINE_ID
   script:
-    - java -Xmx384m -Dspring.profiles.active=qa,generateData -jar /app/classes/*.jar
+    - java -Xmx384m -cp /app/resources:/app/classes:/app/libs/* -Dspring.profiles.active=qa,generateData at.ac.tuwien.sepr.groupphase.backend.BackendApplication
   only:
     - master
   dependencies:
     - build-image
+
 
 deploy:
   stage: deploy
