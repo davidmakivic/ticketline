@@ -94,7 +94,6 @@ init-data:
   image: registry.reset.inso-w.at/$CI_PROJECT_PATH:$CI_PIPELINE_ID
   script:
     - java -Xmx384m -cp /app/resources:/app/classes:/app/libs/* -Dspring.profiles.active=qa,generateData at.ac.tuwien.sepr.groupphase.backend.BackendApplication
-  timeout: 10 minutes
   only:
     - master
   dependencies:
