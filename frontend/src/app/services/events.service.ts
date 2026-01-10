@@ -164,6 +164,33 @@ export class EventsService {
     };
   }
 
+  validatePerformanceBase(performance: Partial<PerformanceDto>): { valid: boolean; fieldErrors: { [key: string]: string } } {
+    const fieldErrors: { [key: string]: string } = {};
+
+    if (!performance.hallId || performance.hallId <= 0) {
+      fieldErrors['hallId'] = 'Halle ID muss größer als 0 sein';
+    }
+
+    if (!performance.startTime) {
+      fieldErrors['startTime'] = 'Startzeit ist erforderlich';
+    }
+
+    if (!performance.endTime) {
+      fieldErrors['endTime'] = 'Endzeit ist erforderlich';
+    }
+
+    if (performance.startTime && performance.endTime) {
+      if (new Date(performance.endTime) <= new Date(performance.startTime)) {
+        fieldErrors['endTime'] = 'Endzeit muss nach Startzeit liegen';
+      }
+    }
+
+    return {
+      valid: Object.keys(fieldErrors).length === 0,
+      fieldErrors
+    };
+  }
+
 
   updateEvent(id: number, event: EventDto): Observable<EventDto> {
     if (this.authService.getUserRole() !== 'ADMIN') {

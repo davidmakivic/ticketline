@@ -68,8 +68,11 @@
     </div>
     <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal, eventForm)">
       <div class="modal-body">
-        @if (error) {
-          <div class="alert alert-danger">{{ errorMessage }}</div>
+        @if (modalError) {
+          <div class="alert alert-danger">
+            {{ modalErrorMessage }}
+            <button type="button" (click)="vanishModalError()" class="close">×</button>
+          </div>
         }
 
         <!-- Event-Titel -->
@@ -130,23 +133,6 @@
           }
         </div>
 
-        <!-- Dauer -->
-        <div class="form-group">
-          <label>Dauer (Minuten) *</label>
-          <input type="number" class="form-control" [(ngModel)]="currentEvent.durationMinutes" name="duration"
-                 required min="1" #duration="ngModel">
-          @if ((duration.touched || eventForm.submitted) && duration.invalid) {
-            <div class="error">
-              @if (duration.errors?.['required']) {
-                <small>Dauer ist erforderlich</small>
-              }
-              @if (duration.errors?.['min']) {
-                <small>Dauer muss mindestens 1 Minute sein</small>
-              }
-            </div>
-          }
-        </div>
-
         <!-- Bild (optional) -->
         <div class="form-group">
           <label>Bild (optional)</label>
@@ -199,9 +185,9 @@
         </div>
 
         <div class="form-group">
-          <label>Basispreis (Cents)</label>
-          <input type="number" class="form-control" [(ngModel)]="newPerformance.basePriceCents" name="basePrice"
-                 min="0" #basePrice="ngModel">
+          <label>Basispreis (Euro)</label>
+          <input type="number" class="form-control" [(ngModel)]="newPerformancePriceEuros" name="basePrice"
+                 min="0" step="0.01" #basePrice="ngModel">
           @if (performanceErrors['basePrice']) {
             <div class="error">
               <small>{{ performanceErrors['basePrice'] }}</small>
@@ -209,24 +195,36 @@
           }
         </div>
 
+        @if (performanceErrors['duration']) {
+          <div class="error">
+            <small>{{ performanceErrors['duration'] }}</small>
+          </div>
+        }
 
         <button type="button" class="btn btn-secondary" (click)="addPerformanceToList()">Performance hinzufügen</button>
 
         <!-- Performance-Liste -->
         @if (performances.length > 0) {
           <div class="performance-list">
-            <h6>Veranstaltungen</h6>
+            <h6>Aufführungen</h6>
             @for (perf of performances; track perf.id || $index) {
               <div class="performance-item">
                 <div class="performance-info">
                   <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
                   <p><strong>Ende:</strong> {{ perf.endTime | date:'short' }}</p>
                   <p><strong>Hall:</strong> {{ perf.hallId }}</p>
-                  <p><strong>Preis:</strong> €{{ perf.basePriceCents / 100 }}</p>
+                  <p><strong>Preis:</strong> €{{ (perf.basePriceCents / 100).toFixed(2) }}</p>
                 </div>
                 <button type="button" class="remove-btn" (click)="removePerformance($index)">Entfernen</button>
               </div>
             }
+          </div>
+        }
+
+        <!-- Berechnete Dauer anzeigen -->
+        @if (currentEvent && currentEvent.durationMinutes > 0) {
+          <div class="form-group" style="margin-top: 16px;">
+            <strong>Berechnete Dauer:</strong> {{ currentEvent.durationMinutes }} Minuten
           </div>
         }
       </div>

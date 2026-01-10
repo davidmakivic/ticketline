@@ -63,7 +63,6 @@ export class EventsListComponent implements OnInit {
   halls: Hall[] = [];
   hallsWithVenues: { hall: Hall; venueName?: string }[] = [];
 
-
   searchTitle: string = '';
   searchArtist: string = '';
   searchLocation: string = '';
@@ -80,8 +79,11 @@ export class EventsListComponent implements OnInit {
   isEditMode: boolean = false;
   performances: PerformanceDto[] = [];
   newPerformance: Partial<PerformanceDto> = {};
+  newPerformancePriceEuros: number | null = null;
   error: boolean = false;
   errorMessage: string = '';
+  modalError: boolean = false;
+  modalErrorMessage: string = '';
 
   constructor(
     private eventsService: EventsService,
@@ -192,7 +194,9 @@ export class EventsListComponent implements OnInit {
     this.selectedFile = null;
     this.performances = [];
     this.newPerformance = {};
-    this.error = false;
+    this.newPerformancePriceEuros = null;
+    this.modalError = false;
+    this.modalErrorMessage = '';
     this.modalService.open(eventAddModal, {size: 'lg'});
   }
 
@@ -205,26 +209,89 @@ export class EventsListComponent implements OnInit {
 
   performanceErrors: { [key: string]: string } = {};
 
+  calculateDurationFromPerformances(): number | null {
+    if (this.performances.length === 0) {
+      return null;
+    }
+
+    const firstPerf = this.performances[0];
+    const startTime = new Date(firstPerf.startTime);
+    const endTime = new Date(firstPerf.endTime);
+    const durationMs = endTime.getTime() - startTime.getTime();
+    const durationMinutes = Math.round(durationMs / (1000 * 60));
+
+    return durationMinutes > 0 ? durationMinutes : null;
+  }
+
   addPerformanceToList(): void {
-    const validation = this.eventsService.validatePerformance(this.newPerformance);
-    if (!validation.valid) {
-      this.performanceErrors = validation.fieldErrors;
+    // Validiere Halle, Start- und Endzeit
+    const baseValidation = this.eventsService.validatePerformanceBase(this.newPerformance);
+    if (!baseValidation.valid) {
+      this.performanceErrors = baseValidation.fieldErrors;
       return;
     }
 
-    this.performances.push({
-      ...this.newPerformance,
-      id: Date.now()
-    } as PerformanceDto);
+    // Validiere Preis separat
+    if (this.newPerformancePriceEuros === null || this.newPerformancePriceEuros === undefined || this.newPerformancePriceEuros < 0) {
+      this.performanceErrors['basePrice'] = 'Basispreis darf nicht negativ sein';
+      return;
+    }
 
+    // Berechne Dauer aus der ersten Performance
+    if (this.performances.length === 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
+      const startTime = new Date(this.newPerformance.startTime);
+      const endTime = new Date(this.newPerformance.endTime);
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const durationMinutes = Math.round(durationMs / (1000 * 60));
+
+      if (this.currentEvent) {
+        this.currentEvent.durationMinutes = durationMinutes;
+      }
+    }
+
+    // Validiere, dass alle Performances die gleiche Dauer haben
+    if (this.performances.length > 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
+      const startTime = new Date(this.newPerformance.startTime);
+      const endTime = new Date(this.newPerformance.endTime);
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const durationMinutes = Math.round(durationMs / (1000 * 60));
+
+      if (this.currentEvent && durationMinutes !== this.currentEvent.durationMinutes) {
+        this.performanceErrors['duration'] = 'Alle Aufführungen müssen die gleiche Dauer haben';
+        return;
+      }
+    }
+
+    // Konvertiere Preis von Euro zu Cents
+    const performanceToAdd: PerformanceDto = {
+      ...this.newPerformance as PerformanceDto,
+      basePriceCents: Math.round(this.newPerformancePriceEuros * 100),
+      id: Date.now()
+    };
+
+    this.performances.push(performanceToAdd);
     this.newPerformance = {};
+    this.newPerformancePriceEuros = null;
     this.performanceErrors = {};
-    this.error = false;
   }
+
+
+
 
 
   removePerformance(index: number): void {
     this.performances.splice(index, 1);
+    // Berechne Dauer neu, wenn noch Performances vorhanden sind
+    if (this.performances.length > 0) {
+      const duration = this.calculateDurationFromPerformances();
+      if (this.currentEvent && duration) {
+        this.currentEvent.durationMinutes = duration;
+      }
+    } else {
+      if (this.currentEvent) {
+        this.currentEvent.durationMinutes = 0;
+      }
+    }
   }
 
   private loadHalls(): void {
@@ -261,16 +328,23 @@ export class EventsListComponent implements OnInit {
     }
 
     if (!this.currentEvent) {
-      this.error = true;
-      this.errorMessage = 'Event-Daten fehlen';
+      this.modalError = true;
+      this.modalErrorMessage = 'Event-Daten fehlen';
+      return;
+    }
+
+    // Validiere, dass mindestens eine Performance vorhanden ist
+    if (this.performances.length === 0) {
+      this.modalError = true;
+      this.modalErrorMessage = 'Mindestens eine Aufführung ist erforderlich';
       return;
     }
 
     // Service-Validierung durchführen
     const validation = this.eventsService.validateEvent(this.currentEvent);
     if (!validation.valid) {
-      this.error = true;
-      this.errorMessage = validation.errors.join(', ');
+      this.modalError = true;
+      this.modalErrorMessage = validation.errors.join(', ');
       return;
     }
 
@@ -283,8 +357,8 @@ export class EventsListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        this.error = true;
-        this.errorMessage = error.error?.error || 'Fehler beim Erstellen des Events';
+        this.modalError = true;
+        this.modalErrorMessage = error.error?.error || 'Fehler beim Erstellen des Events';
         this.isLoading = false;
       }
     });
@@ -319,4 +393,7 @@ export class EventsListComponent implements OnInit {
     this.error = false;
   }
 
+  vanishModalError(): void {
+    this.modalError = false;
+  }
 }
