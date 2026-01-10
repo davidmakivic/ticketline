@@ -67,10 +67,14 @@ public class DataGeneratorOrchestrator {
 
             // Ebene 1: Keine Abhängigkeiten
             LOGGER.debug("Stage 1: Generating price categories, users, venues, and events...");
-            priceCategoryDataGenerator.generatePriceCategories();
             userDataGenerator.generateUser();
+            priceCategoryDataGenerator.generatePriceCategories();
             venueDataGenerator.generateVenues();
             eventDataGenerator.generateEventData();
+
+            // Ebene 8: Unabhängig
+            LOGGER.debug("Stage 8: Generating news...");
+            newsDataGenerator.generateMessage();
 
             // Ebene 2: Abhängig von Ebene 1
             LOGGER.debug("Stage 2: Generating halls and artists...");
@@ -97,9 +101,7 @@ public class DataGeneratorOrchestrator {
             LOGGER.debug("Stage 7: Generating orders...");
             orderDataGenerator.generateOrders();
 
-            // Ebene 8: Unabhängig
-            LOGGER.debug("Stage 8: Generating news...");
-            newsDataGenerator.generateMessage();
+
 
             LOGGER.info("All data generation completed successfully. Shutting down application.");
 
