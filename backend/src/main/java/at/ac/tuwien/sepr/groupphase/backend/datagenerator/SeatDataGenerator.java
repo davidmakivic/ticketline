@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn("sectorDataGenerator")
 @Component
 public class SeatDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

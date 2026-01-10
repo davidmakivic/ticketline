@@ -8,11 +8,13 @@ import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 
+@Profile("generateData")
 @Component
 public class UserDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -26,7 +28,7 @@ public class UserDataGenerator {
     }
 
     @PostConstruct
-    private void generateUser() {
+    void generateUser() {
         if (!userRepository.findAll().isEmpty()) {
             LOG.debug("user already generated");
         } else {

@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn({"eventDataGenerator", "hallDataGenerator"})
 @Component
 public class PerformanceDataGenerator {
 

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn({"userDataGenerator", "ticketDataGenerator"})
 @Component
 public class OrderDataGenerator {
 

@@ -21,7 +21,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn("venueDataGenerator")
 @Component
 public class HallDataGenerator {
 

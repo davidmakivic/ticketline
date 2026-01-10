@@ -18,7 +18,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn({"hallDataGenerator", "priceCategoryDataGenerator"})
 @Component
 public class SectorDataGenerator {
 

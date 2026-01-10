@@ -22,7 +22,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Profile("generateData")
-@DependsOn({"performanceDataGenerator", "seatDataGenerator"})
 @Component
 public class TicketDataGenerator {
 
