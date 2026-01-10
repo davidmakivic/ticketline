@@ -89,22 +89,10 @@ build-image:
   only:
     - master
 
-init-data:
-  stage: deploy
-  image: registry.reset.inso-w.at/$CI_PROJECT_PATH:$CI_PIPELINE_ID
-  script:
-    - java -Xmx384m -Dspring.profiles.active=qa,generateData -jar /app/classes/*.jar
-  only:
-    - master
-  dependencies:
-    - build-image
-
 deploy:
   stage: deploy
   environment:
     name: development
-  needs:
-    - init-data
   script: |
     curl -H 'X-DeployToken: '$DEPLOY_TOKEN -H 'Content-type: application/json' -vf -XPUT --data '{"image": "'$CI_PROJECT_PATH'", "tag": "'$CI_PIPELINE_ID'"}' https://reset.inso-world.com/api/dockerDeployment
   only:
