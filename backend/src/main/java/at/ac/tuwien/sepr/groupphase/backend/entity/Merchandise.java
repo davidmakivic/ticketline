@@ -29,6 +29,12 @@ public class Merchandise {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Column(name = "imageData", columnDefinition = "LONGBLOB")
+    private byte[] imageData;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
+
     public Merchandise() {
     }
 
@@ -70,6 +76,22 @@ public class Merchandise {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 
 }
