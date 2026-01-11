@@ -1,0 +1,24 @@
+<h2>{{ item.name }}</h2>
+
+<p>{{ item.description }}</p>
+
+<div class="quantity">
+  <button (click)="decrease()">−</button>
+  <span>{{ quantity }}</span>
+  <button (click)="increase()">+</button>
+</div>
+
+@if (item.availableSizes?.length) {
+  <select [(ngModel)]="selectedSize">
+    @for (s of item.availableSizes; track s.size) {
+      @if (s.quantity > 0) {
+        <option [value]="s.size">{{ s.size }}</option>
+      }
+    }
+  </select>
+}
+
+<button class="add" (click)="addToCart()">
+  In den Warenkorb
+</button>
+

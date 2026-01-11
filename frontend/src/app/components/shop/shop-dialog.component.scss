@@ -1,0 +1,75 @@
+:host {
+  display: block;
+  color: white;
+}
+
+/* Dialog-Hintergrund (Angular Material) */
+::ng-deep .mat-mdc-dialog-surface {
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+}
+
+/* Titel & Beschreibung */
+h2,
+p {
+  text-align: center;
+  color: white;
+  margin: 8px 0;
+}
+
+/* Wrapper für den gesamten Inhalt */
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Stückzahl */
+.quantity {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+  color: white;
+
+  span {
+    min-width: 24px;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+
+  button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    font-size: 18px;
+    background: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+    cursor: pointer;
+  }
+}
+
+/* Dropdown (Größe auswählen) */
+select {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: none;
+  background-color: #2a2a2a;
+  color: white;
+  text-align: center;
+}
+
+/* Add-to-cart Button */
+.add {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  border-radius: 24px;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
