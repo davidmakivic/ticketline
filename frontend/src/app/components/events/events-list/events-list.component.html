@@ -265,6 +265,14 @@
         </mat-card>
       }
     </div>
+
+    <!-- Paginator hier einfügen -->
+    <mat-paginator
+      [length]="totalEvents"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
   } @else {
     <p class="no-events">Keine Veranstaltungen gefunden</p>
   }

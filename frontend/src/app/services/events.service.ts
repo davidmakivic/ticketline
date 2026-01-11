@@ -3,7 +3,7 @@ import {Globals} from '../global/globals';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {AuthService} from "./auth.service";
 import {Observable} from "rxjs";
-import {EventAutocompleteDto, EventDto, EventTop10Dto, EventTypeDto} from "../dtos/event";
+import {EventAutocompleteDto, EventDto, EventTop10Dto, EventTypeDto, PagedResult} from "../dtos/event";
 import {PerformanceDto} from "../dtos/performanceDto";
 
 @Injectable({providedIn: "root"})
@@ -12,8 +12,11 @@ export class EventsService {
 
   constructor(private httpClient: HttpClient, private globals: Globals, private authService: AuthService) {}
 
-  getEvents(): Observable<EventDto[]> {
-    return this.httpClient.get<EventDto[]>(this.eventsBaseUri);
+  getEvents(page: number = 0, size: number = 10): Observable<PagedResult<EventDto>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.httpClient.get<PagedResult<EventDto>>(this.eventsBaseUri, { params });
   }
 
   searchAdvanced(filters: {
@@ -23,29 +26,19 @@ export class EventsService {
     eventType?: string;
     startDate?: Date;
     durationMinutes?: number;
-  }): Observable<EventDto[]> {
-    let params = new HttpParams();
+  }, page: number = 0, size: number = 10): Observable<PagedResult<EventDto>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
 
-    if (filters.title) {
-      params = params.set('title', filters.title);
-    }
-    if (filters.artist) {
-      params = params.set('artist', filters.artist);
-    }
-    if (filters.location) {
-      params = params.set('location', filters.location);
-    }
-    if (filters.eventType) {
-      params = params.set('eventType', filters.eventType);
-    }
-    if (filters.startDate) {
-      params = params.set('startDate', this.formatDate(filters.startDate));
-    }
-    if (filters.durationMinutes) {
-      params = params.set('durationMinutes', filters.durationMinutes.toString());
-    }
+    if (filters.title) params = params.set('title', filters.title);
+    if (filters.artist) params = params.set('artist', filters.artist);
+    if (filters.location) params = params.set('location', filters.location);
+    if (filters.eventType) params = params.set('eventType', filters.eventType);
+    if (filters.startDate) params = params.set('startDate', this.formatDate(filters.startDate));
+    if (filters.durationMinutes) params = params.set('durationMinutes', filters.durationMinutes.toString());
 
-    return this.httpClient.get<EventDto[]>(`${this.eventsBaseUri}/query`, { params });
+    return this.httpClient.get<PagedResult<EventDto>>(`${this.eventsBaseUri}/query`, { params });
   }
 
   private formatDate(date: Date): string {

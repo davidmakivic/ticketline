@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,11 +23,11 @@ public interface EventService {
 
     List<EventDto> findByAnyTitle(String title);
 
-    List<EventDto> findByAdvancedFilters(String title, String artist, String location,
-                                         EventType eventType, Date startDate, Integer durationMinutes);
+    Page<EventDto> findAll(int page, int size);
 
-    List<EventDto> findAll();
-
+    Page<EventDto> findByAdvancedFilters(String title, String artist, String location,
+                                         EventType eventType, Date startDate, Integer durationMinutes,
+                                         int page, int size);
     void addArtist(Long eventId, Long artistId);
 
     void removeArtist(Long eventId, Long artistId);

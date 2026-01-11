@@ -13,8 +13,10 @@ import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -109,24 +111,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDto> findByAdvancedFilters(String title, String artist, String location,
-                                                EventType eventType, Date startDate, Integer durationMinutes) {
-        LOGGER.info("Searching events with advanced filters");
-
-        String titleParam = (title == null || title.trim().isEmpty()) ? null : title;
-        String artistParam = (artist == null || artist.trim().isEmpty()) ? null : artist;
-        String locationParam = (location == null || location.trim().isEmpty()) ? null : location;
-
-        List<Event> events = eventRepository.findByAdvancedFilters(
-            titleParam, artistParam, locationParam, eventType, startDate, durationMinutes
-        );
-        return eventMapper.eventToEventDto(events);
+    public Page<EventDto> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        return eventRepository.findAllPaginated(pageable)
+            .map(eventMapper::eventToEventDto);
     }
 
     @Override
-    public List<EventDto> findAll() {
-        LOGGER.info("Fetching all events");
-        return eventMapper.eventToEventDto(eventRepository.findAll());
+    public Page<EventDto> findByAdvancedFilters(String title, String artist, String location,
+                                                EventType eventType, Date startDate, Integer durationMinutes,
+                                                int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        return eventRepository.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, pageable)
+            .map(eventMapper::eventToEventDto);
     }
 
     @Override

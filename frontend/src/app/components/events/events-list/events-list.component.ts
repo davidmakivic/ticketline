@@ -27,6 +27,7 @@ import {AuthService} from "../../../services/auth.service";
 import {Hall} from "../../../dtos/hall";
 import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
+import {MatPaginator, PageEvent} from "@angular/material/paginator";
 
 @Component({
   selector: 'app-events-list',
@@ -52,7 +53,8 @@ import {VenuesService} from "../../../services/venues.service";
     MatButton,
     MatIconModule,
     RouterLink,
-    MatSuffix
+    MatSuffix,
+    MatPaginator
   ],
   standalone: true,
   styleUrls: ['./events-list.component.scss']
@@ -62,6 +64,12 @@ export class EventsListComponent implements OnInit {
   eventImages: Map<number, SafeUrl> = new Map();
   halls: Hall[] = [];
   hallsWithVenues: { hall: Hall; venueName?: string }[] = [];
+
+  // Pagination
+  currentPage: number = 0;
+  pageSize: number = 10;
+  totalEvents: number = 0;
+  totalPages: number = 0;
 
   searchTitle: string = '';
   searchArtist: string = '';
@@ -107,10 +115,12 @@ export class EventsListComponent implements OnInit {
 
   loadEvents(): void {
     this.isLoading = true;
-    this.eventsService.getEvents().subscribe({
-      next: (data) => {
-        this.events = data;
-        this.loadImagesForEvents(data);
+    this.eventsService.getEvents(this.currentPage, this.pageSize).subscribe({
+      next: (pagedResult) => {
+        this.events = pagedResult.content;
+        this.totalEvents = pagedResult.totalElements;
+        this.totalPages = pagedResult.totalPages;
+        this.loadImagesForEvents(this.events);
         this.isLoading = false;
       },
       error: (error) => {
@@ -121,6 +131,7 @@ export class EventsListComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.currentPage = 0;
     this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
 
@@ -129,6 +140,7 @@ export class EventsListComponent implements OnInit {
         ? this.selectedStartDate
         : new Date(this.selectedStartDate);
     }
+
     this.eventsService.searchAdvanced({
       title: this.searchTitle || undefined,
       artist: this.searchArtist || undefined,
@@ -136,10 +148,12 @@ export class EventsListComponent implements OnInit {
       eventType: this.selectedEventType || undefined,
       startDate: startDateFormatted,
       durationMinutes: this.selectedDuration || undefined
-    }).subscribe({
-      next: (events) => {
-        this.events = events;
-        this.loadImagesForEvents(events);
+    }, this.currentPage, this.pageSize).subscribe({
+      next: (pagedResult) => {
+        this.events = pagedResult.content;
+        this.totalEvents = pagedResult.totalElements;
+        this.totalPages = pagedResult.totalPages;
+        this.loadImagesForEvents(this.events);
         this.isLoading = false;
       },
       error: (error) => {
@@ -149,6 +163,18 @@ export class EventsListComponent implements OnInit {
     });
   }
 
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+
+    if (this.searchTitle || this.searchArtist || this.searchLocation ||
+      this.selectedEventType || this.selectedStartDate || this.selectedDuration) {
+      this.onSearch();
+    } else {
+      this.loadEvents();
+    }
+  }
+
   resetFilters(): void {
     this.searchTitle = '';
     this.searchArtist = '';
@@ -156,6 +182,7 @@ export class EventsListComponent implements OnInit {
     this.selectedEventType = null;
     this.selectedStartDate = null;
     this.selectedDuration = null;
+    this.currentPage = 0;
     this.eventImages.clear();
     this.loadEvents();
   }
