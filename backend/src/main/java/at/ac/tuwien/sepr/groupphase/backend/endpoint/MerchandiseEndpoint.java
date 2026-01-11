@@ -4,6 +4,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseDto;
 import at.ac.tuwien.sepr.groupphase.backend.service.MerchandiseService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -17,11 +19,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/merchandise")
 public class MerchandiseEndpoint {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final MerchandiseService service;
 
@@ -31,14 +36,14 @@ public class MerchandiseEndpoint {
 
     @PermitAll
     @GetMapping
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    //@Secured({"ROLE_ADMIN", "ROLE_USER"})
     public List<MerchandiseDto> getAll() {
         return service.findAll();
     }
 
     @PermitAll
     @GetMapping("/{id}")
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    //@Secured({"ROLE_ADMIN", "ROLE_USER"})
     public ResponseEntity<MerchandiseDto> getById(@PathVariable Long id) {
         MerchandiseDto dto = service.findById(id);
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
@@ -56,5 +61,12 @@ public class MerchandiseEndpoint {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PermitAll
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> getMerchandiseImage(@PathVariable Long id) {
+        LOGGER.info("Fetching image for merchandise id={}", id);
+        return service.getMerchandiseImage(id);
     }
 }
