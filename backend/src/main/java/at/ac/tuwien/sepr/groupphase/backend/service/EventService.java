@@ -28,6 +28,7 @@ public interface EventService {
     Page<EventDto> findByAdvancedFilters(String title, String artist, String location,
                                          EventType eventType, Date startDate, Integer durationMinutes,
                                          int page, int size);
+
     void addArtist(Long eventId, Long artistId);
 
     void removeArtist(Long eventId, Long artistId);
