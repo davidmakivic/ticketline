@@ -71,6 +71,14 @@
       </div>
 
       <div class="order-actions">
+        <button class="btn-outline" (click)="openInvoice(o)" [disabled]="isCancelled(o)">
+          Rechnung drucken
+        </button>
+
+        <button class="btn-outline" (click)="openStorno(o)" [disabled]="!isCancelled(o)">
+          Stornorechnung drucken
+        </button>
+
         <button class="btn-danger" (click)="cancelOrder(o)" [disabled]="isCancelled(o)">
           Stornieren
         </button>
@@ -79,7 +87,6 @@
     </div>
   </div>
 
-  <!-- Confirm Modal -->
   <div class="confirm-backdrop" *ngIf="confirmOpen">
     <div class="confirm-modal">
       <div class="confirm-title">
@@ -98,10 +105,15 @@
 
     <div class="orders-grid" *ngIf="reservations.length > 0; else noRes">
       <div class="order-card" *ngFor="let r of reservations">
+
         <div class="order-top">
           <div class="order-id">
             {{ eventTitleByReservationId[r.id] || 'Unbekannte Veranstaltung' }}
             <span class="mono">#{{ r.id }}</span>
+          </div>
+
+          <div class="order-total">
+            {{ toEuro(reservationTotalCentsById[r.id] ?? 0) }}
           </div>
         </div>
 
@@ -117,17 +129,35 @@
           </div>
         </div>
 
-        <div class="tickets">
+        <div class="res-details" *ngIf="reservationLinesById[r.id]?.length">
+          <div class="res-line" *ngFor="let line of reservationLinesById[r.id]">
+            <div class="res-left">
+              <div class="res-title">{{ line.title }}</div>
+              <div class="res-seat">{{ line.seatLabel }}</div>
+            </div>
+
+            <div class="res-price">{{ toEuro(line.priceCents) }}</div>
+          </div>
+        </div>
+
+        <div class="tickets" *ngIf="reservationSeatsById[r.id]?.length">
           <div class="tickets-title">Plätze</div>
 
-          <div class="tickets-chips" *ngIf="reservationSeatsById[r.id]?.length; else noResSeats">
+          <div class="tickets-chips">
             <span class="chip" *ngFor="let s of reservationSeatsById[r.id]">{{ s }}</span>
           </div>
-
-          <ng-template #noResSeats>
-            <div class="order-sub">Keine Plätze</div>
-          </ng-template>
         </div>
+
+        <div class="order-actions">
+          <button class="btn-outline" (click)="buyReservation(r)" [disabled]="!(r.ticketIds?.length)">
+            Kaufen
+          </button>
+
+          <button class="btn-danger" (click)="deleteReservation(r)">
+            Löschen
+          </button>
+        </div>
+
       </div>
     </div>
 
