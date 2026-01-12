@@ -1,21 +1,139 @@
-<div class="container">
-  <h2>Orders</h2>
+<div class="orders-page">
 
-  <div *ngIf="loading">Loading...</div>
+  <div class="orders-header">
+    <div>
+      <h1 class="orders-title">Bestellübersicht</h1>
+      <p class="orders-subtitle">
+        Hier siehst du deine Bestellungen. Du kannst gekaufte Tickets stornieren.
+      </p>
+    </div>
 
-  <div *ngIf="error" class="error">
-    {{ error }}
+    <button class="btn-outline" (click)="load()" [disabled]="loading">
+      Neu laden
+    </button>
   </div>
 
-  <div *ngIf="orders.length === 0 && !loading">
-    No orders available.
+  <div *ngIf="loading" class="state state-loading">Loading...</div>
+  <div *ngIf="error" class="state state-error">{{ error }}</div>
+
+  <div *ngIf="orders.length === 0 && !loading && !error" class="state state-empty">
+    Keine Bestellungen vorhanden.
   </div>
 
-  <div *ngFor="let o of orders" class="order-card">
-    <div>ID: {{ o.id }}</div>
-    <div>User: {{ o.userId }}</div>
-    <div>Total: {{ toEuro(o.totalPriceCents) }}</div>
-    <div>Created: {{ o.createdAt | date: 'medium' }}</div>
-    <div>Tickets: {{ o.ticketIds.length }}</div>
+  <div class="orders-grid" *ngIf="orders.length > 0 && !loading">
+    <div class="order-card" *ngFor="let o of orders">
+
+      <div class="order-top">
+        <div class="order-id">
+          {{ orderTitle(o) }}
+          <span class="mono">#{{ o.id }}</span>
+        </div>
+
+        <div class="order-total">
+          {{ toEuro(o.totalPriceCents) }}
+        </div>
+      </div>
+
+      <div class="order-meta">
+        <div class="meta-item">
+          <span class="meta-label">Datum</span>
+          <span class="meta-value">{{ o.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Tickets</span>
+          <div class="meta-value">{{ ticketCountByOrderId[o.id] ?? 0 }}</div>
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Status</span>
+          <span
+            class="badge"
+            [class.badge-ok]="!isCancelled(o)"
+            [class.badge-cancel]="isCancelled(o)">
+            {{ statusLabel(o) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="tickets">
+        <div class="tickets-title">Plätze</div>
+
+        <div class="tickets-chips" *ngIf="orderSeats(o)?.length; else noSeats">
+          <span class="chip" *ngFor="let s of orderSeats(o)">
+            {{ s }}
+          </span>
+        </div>
+
+        <ng-template #noSeats>
+          <div class="order-sub">Keine Plätze</div>
+        </ng-template>
+      </div>
+
+      <div class="order-actions">
+        <button class="btn-danger" (click)="cancelOrder(o)" [disabled]="isCancelled(o)">
+          Stornieren
+        </button>
+      </div>
+
+    </div>
   </div>
+
+  <!-- Confirm Modal -->
+  <div class="confirm-backdrop" *ngIf="confirmOpen">
+    <div class="confirm-modal">
+      <div class="confirm-title">
+        Bestellung #{{ confirmOrder?.id }} wirklich stornieren?
+      </div>
+
+      <div class="confirm-actions">
+        <button class="btn-outline" (click)="closeCancelConfirm()">Abbrechen</button>
+        <button class="btn-danger" (click)="doCancelConfirmed()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showReservations" style="margin-top:18px;">
+    <h2 class="orders-title">Reservierungen</h2>
+
+    <div class="orders-grid" *ngIf="reservations.length > 0; else noRes">
+      <div class="order-card" *ngFor="let r of reservations">
+        <div class="order-top">
+          <div class="order-id">
+            {{ eventTitleByReservationId[r.id] || 'Unbekannte Veranstaltung' }}
+            <span class="mono">#{{ r.id }}</span>
+          </div>
+        </div>
+
+        <div class="order-meta">
+          <div class="meta-item">
+            <span class="meta-label">Tickets</span>
+            <div class="meta-value">{{ reservationTicketCountById[r.id] ?? 0 }}</div>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-label">Status</span>
+            <span class="badge badge-ok">Reserviert</span>
+          </div>
+        </div>
+
+        <div class="tickets">
+          <div class="tickets-title">Plätze</div>
+
+          <div class="tickets-chips" *ngIf="reservationSeatsById[r.id]?.length; else noResSeats">
+            <span class="chip" *ngFor="let s of reservationSeatsById[r.id]">{{ s }}</span>
+          </div>
+
+          <ng-template #noResSeats>
+            <div class="order-sub">Keine Plätze</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noRes>
+      <div class="state state-empty">Keine Reservierungen vorhanden.</div>
+    </ng-template>
+  </div>
+
 </div>

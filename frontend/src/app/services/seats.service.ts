@@ -12,4 +12,9 @@ export class SeatsService {
   getBySectorId(sectorId: number): Observable<Seat[]> {
     return this.http.get<Seat[]>(`${this.baseUri}/sector/${sectorId}`);
   }
+
+  getById(id: number): Observable<Seat> {
+    return this.http.get<Seat>(`${this.baseUri}/${id}`);
+  }
+
 }

@@ -1,8 +1,11 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.CancellationResultDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderUpdateDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 
 import java.util.List;
 
@@ -38,7 +41,7 @@ public interface OrderService {
      * @param createDto the DTO containing the ticket IDs required to build the order
      * @return the newly created order as OrderDto
      */
-    OrderDto createOrder(OrderCreateDto createDto);
+    OrderDto createOrder(OrderCreateDto createDto) throws ValidationException, ConflictException;
 
 
     /**
@@ -49,4 +52,14 @@ public interface OrderService {
      * @return the updated order as OrderDto
      */
     OrderDto updateOrder(long id, OrderUpdateDto updateDto);
+
+    /**
+     * Cancels one or more tickets of an existing order.
+     *
+     * @param orderId   the ID of the order
+     * @param ticketIds the IDs of the tickets to cancel
+     * @return the result of the cancellation including refunded amount
+     */
+    CancellationResultDto cancelTickets(long orderId, List<Long> ticketIds);
+
 }

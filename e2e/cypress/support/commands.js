@@ -2,8 +2,8 @@ Cypress.Commands.add('loginAdmin', () => {
     cy.fixture('settings').then(settings => {
         cy.visit('http://' + settings.baseUrl);
         cy.get('a[routerlink="/login"]').click();
-        cy.get('input[name="username"]').type(settings.adminUser);
-        cy.get('input[name="password"]').type(settings.adminPw);
+        cy.get('input[type="email"]').type(settings.adminUser);
+        cy.get('input[type="password"]').type(settings.adminPw);
         cy.contains('button', 'Login').click();
         cy.wait(1000);
     })
@@ -11,8 +11,8 @@ Cypress.Commands.add('loginAdmin', () => {
 
 Cypress.Commands.add('createMessage', (msg) => {
     cy.fixture('settings').then(settings => {
-        cy.contains('button', 'Add message').should('exist');
-        cy.contains('button', 'Add message').click();
+        cy.contains('button', 'News erstellen').should('exist');
+        cy.contains('button', 'News erstellen').click();
         cy.get('input[name="title"]', { timeout: 5000 }).should('be.visible').type('title' + msg);
         cy.get('textarea[name="summary"]').should('be.visible').type('summary' + msg);
         cy.get('textarea[name="text"]').should('be.visible').type('text' + msg);

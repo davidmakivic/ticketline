@@ -4,11 +4,12 @@
 
   <ng-container *ngIf="!loading && !error">
     <div class="title">
-      <h1>Sitzplatzauswahl</h1>
+      <h1>Ticketauswahl</h1>
 
       <div class="subtitle">
         <div class="date">{{ dateLabel }}</div>
         <div class="city">{{ city }}</div>
+        <div class="event-title">{{ title }}</div>
       </div>
 
       <div class="meta">
@@ -61,13 +62,44 @@
                 [attr.height]="h(r.h)"
                 rx="14"
                 class="standing"
+                [ngClass]="standingStatus(el.sectorKey)"
+                (pointerdown)="onStandingClick($event, el.sectorKey)"
+                (contextmenu)="$event.preventDefault()"
               />
               <text
                 [attr.x]="x(r.x) + 10"
                 [attr.y]="y(r.y) + 22"
                 class="standing-text"
+                style="pointer-events:none;"
               >
                 {{ el.label }}
+              </text>
+
+              <text
+                [attr.x]="x(r.x) + 10"
+                [attr.y]="y(r.y) + 42"
+                class="standing-subtext"
+                style="pointer-events:none;"
+              >
+                {{ standingAvailabilityLabel(el.sectorKey) }}
+                <tspan *ngIf="standingSelectedCount(el.sectorKey) > 0">
+                  · {{ standingSelectedCount(el.sectorKey) }} ausgewählt
+                </tspan>
+              </text>
+
+              <text
+                [attr.x]="x(r.x)"
+                [attr.y]="y(r.y) + 62"
+                class="standing-subtext"
+                style="pointer-events:none;"
+              >
+                <tspan dx="6" *ngIf="standingAvailabilityLabel(el.sectorKey) !== 'Ausverkauft'">
+                  (Links-Klick +1, Rechts-Klick −1)
+                </tspan>
+
+                <tspan dx="6" *ngIf="standingAvailabilityLabel(el.sectorKey) === 'Ausverkauft'">
+                  (Links-Klick +1, Rechts-Klick −1)
+                </tspan>
               </text>
             </ng-container>
           </g>
@@ -79,7 +111,7 @@
 
                 <text
                   [attr.x]="x(o.x)"
-                  [attr.y]="y(o.y) - 10"
+                  [attr.y]="y(o.y) - 20"
                   class="block-label"
                 >
                   {{ el.label }}
@@ -93,7 +125,7 @@
                       [attr.r]="seatR"
                       class="seat"
                       [ngClass]="seatStatus(el.sectorKey, (el.rows - i), (j + 1))"
-                      (click)="onSeatClick(el.sectorKey, (el.rows - i), (j + 1))"
+                      (pointerdown)="onSeatClick(el.sectorKey, (el.rows - i), (j + 1))"
                     />
                   </ng-container>
                 </ng-container>
@@ -117,7 +149,7 @@
 
     <div class="summary">
       <div class="sum-row" *ngFor="let s of sectorSummary()">
-        <div>Sektor {{ s.sectorKey }}: {{ s.count }} Tickets</div>
+        <div>Sektor {{ s.name }}: {{ s.count }} Ticket(s)</div>
         <div class="muted">{{ s.priceLabel }}</div>
       </div>
 
@@ -138,7 +170,7 @@
         <button class="btn secondary" type="button" (click)="reserveSelected()" [disabled]="selectedSeatIds.size === 0">
           Reservieren
         </button>
-        <button class="btn outline" type="button" (click)="clearSelection()">Abbrechen</button>
+        <button class="btn outline" type="button" (click)="clearSelection()">Auswahl leeren</button>
       </div>
     </div>
   </ng-container>

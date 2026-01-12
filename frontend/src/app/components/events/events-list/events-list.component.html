@@ -1,42 +1,256 @@
 <div class="events-container">
-  <div class="search-section">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Nach Titel suchen</mat-label>
-      <input
-        matInput
-        [(ngModel)]="searchTitle"
-        (keyup)="search()"
-        placeholder="Event-Titel eingeben">
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="search()"
-        [attr.aria-label]="'Suchen'">
-        <mat-icon>search</mat-icon>
-      </button>
-    </mat-form-field>
+  <div class="search-filters">
+    @if (isAdmin()) {
+      <div class="admin-actions" style="margin-bottom: 20px;">
+        <button mat-raised-button color="primary" (click)="openAddEventModal(eventAddModal)">
+          <mat-icon>add</mat-icon> Neue Veranstaltung
+        </button>
+      </div>
+    }
+
+    @if (error) {
+      <div class="alert alert-danger">
+        {{ errorMessage }}
+        <button type="button" (click)="vanishError()" class="close">×</button>
+      </div>
+    }
+
+    <div class="filter-row">
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Veranstaltungstitel</mat-label>
+        <input matInput [(ngModel)]="searchTitle" (keyup)="performSearch()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Künstler</mat-label>
+        <input matInput [(ngModel)]="searchArtist" (keyup)="performSearch()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Ort</mat-label>
+        <input matInput [(ngModel)]="searchLocation" (keyup)="performSearch()">
+      </mat-form-field>
+    </div>
+
+    <div class="filter-row">
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Veranstaltungstyp</mat-label>
+        <mat-select [(ngModel)]="selectedEventType" (selectionChange)="performSearch()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (type of eventTypes; track type) {
+            <mat-option [value]="type">{{ getEventTypeLabel(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Datum</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (change)="performSearch()">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Dauer (Minuten)</mat-label>
+        <input matInput type="number" [(ngModel)]="selectedDuration" (keyup.enter)="performSearch()">
+      </mat-form-field>
+    </div>
+
+    <div class="filter-actions">
+      <button mat-raised-button color="primary" (click)="performSearch()">Suchen</button>
+      <button mat-stroked-button (click)="resetFilters()">Zurücksetzen</button>
+    </div>
   </div>
 
-  @if (loading) {
-    <div class="spinner">
-      <mat-spinner></mat-spinner>
+  <ng-template #eventAddModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Neue Veranstaltung erstellen</h5>
     </div>
-  }
+    <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal, eventForm)">
+      <div class="modal-body">
+        @if (modalError) {
+          <div class="alert alert-danger">
+            {{ modalErrorMessage }}
+            <button type="button" (click)="vanishModalError()" class="close">×</button>
+          </div>
+        }
 
-  @if (!loading && events.length > 0) {
+        <!-- Event-Titel -->
+        <div class="form-group">
+          <label>Titel *</label>
+          <input type="text" class="form-control" [(ngModel)]="currentEvent.title" name="title"
+                 required minlength="3" maxlength="100" #title="ngModel">
+          @if ((title.touched || eventForm.submitted) && title.invalid) {
+            <div class="error">
+              @if (title.errors?.['required']) {
+                <small>Titel ist erforderlich</small>
+              }
+              @if (title.errors?.['minlength']) {
+                <small>Mindestens 3 Zeichen</small>
+              }
+              @if (title.errors?.['maxlength']) {
+                <small>Maximal 100 Zeichen</small>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Event-Beschreibung -->
+        <div class="form-group">
+          <label>Beschreibung *</label>
+          <textarea class="form-control" [(ngModel)]="currentEvent.description" name="description" rows="4"
+                    required minlength="10" maxlength="1000" #description="ngModel"></textarea>
+          @if ((description.touched || eventForm.submitted) && description.invalid) {
+            <div class="error">
+              @if (description.errors?.['required']) {
+                <small>Beschreibung ist erforderlich</small>
+              }
+              @if (description.errors?.['minlength']) {
+                <small>Mindestens 10 Zeichen</small>
+              }
+              @if (description.errors?.['maxlength']) {
+                <small>Maximal 1000 Zeichen</small>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Kategorie -->
+        <div class="form-group">
+          <label>Kategorie *</label>
+          <select class="form-control" [(ngModel)]="currentEvent.category" name="category" required #category="ngModel">
+            <option [ngValue]="null">Bitte wählen</option>
+            @for (type of eventTypes; track type) {
+              <option [ngValue]="type">{{ getEventTypeLabel(type) }}</option>
+            }
+          </select>
+          @if ((category.touched || eventForm.submitted) && category.invalid) {
+            <div class="error">
+              @if (category.errors?.['required']) {
+                <small>Kategorie ist erforderlich</small>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Bild (optional) -->
+        <div class="form-group">
+          <label>Bild (optional)</label>
+          <div class="file-input-wrapper">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" id="eventImage">
+          </div>
+        </div>
+
+        <hr>
+        <h6>Aufführungen hinzufügen</h6>
+
+        <!-- Performance-HallId -->
+        <div class="form-group">
+          <label>Halle</label>
+          <select class="form-control" [(ngModel)]="newPerformance.hallId" name="hallId">
+            <option [ngValue]="null">Bitte wählen</option>
+            @for (item of hallsWithVenues; track item.hall.id) {
+              <option [ngValue]="item.hall.id">
+                {{ item.venueName ? item.venueName + ' - ' : '' }}{{ item.hall.name }}
+              </option>
+            }
+          </select>
+          @if (performanceErrors['hallId']) {
+            <div class="error">
+              <small>{{ performanceErrors['hallId'] }}</small>
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Startzeit</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.startTime" name="startTime"
+                 #startTime="ngModel">
+          @if (performanceErrors['startTime']) {
+            <div class="error">
+              <small>{{ performanceErrors['startTime'] }}</small>
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Endzeit</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="newPerformance.endTime" name="endTime"
+                 #endTime="ngModel">
+          @if (performanceErrors['endTime']) {
+            <div class="error">
+              <small>{{ performanceErrors['endTime'] }}</small>
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Basispreis (Euro)</label>
+          <input type="number" class="form-control" [(ngModel)]="newPerformancePriceEuros" name="basePrice"
+                 min="0" step="0.01" #basePrice="ngModel">
+          @if (performanceErrors['basePrice']) {
+            <div class="error">
+              <small>{{ performanceErrors['basePrice'] }}</small>
+            </div>
+          }
+        </div>
+
+        @if (performanceErrors['duration']) {
+          <div class="error">
+            <small>{{ performanceErrors['duration'] }}</small>
+          </div>
+        }
+
+        <button type="button" class="btn btn-secondary" (click)="addPerformanceToList()">Performance hinzufügen</button>
+
+        <!-- Performance-Liste -->
+        @if (performances.length > 0) {
+          <div class="performance-list">
+            <h6>Aufführungen</h6>
+            @for (perf of performances; track perf.id || $index) {
+              <div class="performance-item">
+                <div class="performance-info">
+                  <p><strong>Start:</strong> {{ perf.startTime | date:'short' }}</p>
+                  <p><strong>Ende:</strong> {{ perf.endTime | date:'short' }}</p>
+                  <p><strong>Hall:</strong> {{ perf.hallId }}</p>
+                  <p><strong>Preis:</strong> €{{ (perf.basePriceCents / 100).toFixed(2) }}</p>
+                </div>
+                <button type="button" class="remove-btn" (click)="removePerformance($index)">Entfernen</button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Berechnete Dauer anzeigen -->
+        @if (currentEvent && currentEvent.durationMinutes > 0) {
+          <div class="form-group" style="margin-top: 16px;">
+            <strong>Berechnete Dauer:</strong> {{ currentEvent.durationMinutes }} Minuten
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss('close')">Abbrechen</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading || eventForm.invalid">
+          @if (isLoading) {
+            <span>Wird gespeichert...</span>
+          } @else {
+            <span>Speichern</span>
+          }
+        </button>
+      </div>
+    </form>
+  </ng-template>
+
+  @if (isLoading) {
+    <mat-spinner></mat-spinner>
+  } @else if (events.length > 0) {
     <div class="events-list">
       @for (event of events; track event.id) {
-        <mat-card
-          class="event-card"
-          [routerLink]="['/events', event.id]"
-          [attr.aria-label]="'Event: ' + event.title">
+        <mat-card class="event-card" [routerLink]="['/events', event.id]">
           <div class="card-content">
-            @if (event.imageUrl) {
-              <img
-                [src]="event.imageUrl"
-                alt="Event-Bild: {{ event.title }}"
-                class="event-image"
-                loading="lazy">
+            @if (getEventImage(event.id!)) {
+              <img [src]="getEventImage(event.id!)" alt="Event-Bild: {{ event.title }}" class="event-image" loading="lazy">
             }
             <div class="event-info">
               <mat-card-header>
@@ -44,16 +258,23 @@
               </mat-card-header>
               <mat-card-content>
                 <p>{{ event.description }}</p>
-                <span class="event-category">{{ event.category }}</span>
+                <span class="event-category">{{ getEventTypeLabel(event.category) }}</span>
               </mat-card-content>
             </div>
           </div>
         </mat-card>
       }
     </div>
-  }
 
-  @if (!loading && events.length === 0) {
-    <p class="no-events">Keine Events gefunden</p>
+    <!-- Paginator hier einfügen -->
+    <mat-paginator
+      [length]="totalEvents"
+      [pageSize]="pageSize"
+      [pageIndex]="currentPage"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  } @else {
+    <p class="no-events">Keine Veranstaltungen gefunden</p>
   }
 </div>

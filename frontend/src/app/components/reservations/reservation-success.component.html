@@ -1,0 +1,24 @@
+<div class="page">
+  <mat-card class="card">
+    <mat-card-content>
+
+      @if (reservation) {
+      <h1>Reservierung erfolgreich</h1>
+      <p>Ihre Reservierungsnummer lautet:</p>
+
+      <div class="number">{{ reservation.reservationNumber }}</div>
+
+      <p class="muted">
+        Bitte holen Sie Ihre Tickets spätestens 30 Minuten vor Beginn der Aufführung ab.
+      </p>
+
+      <button mat-raised-button color="primary" (click)="backHome()">Zur Startseite</button>
+      } @else {
+      <h1>Reservierung</h1>
+      <p>Daten nicht verfügbar.</p>
+      <button mat-stroked-button (click)="backHome()">Zur Startseite</button>
+      }
+
+    </mat-card-content>
+  </mat-card>
+</div>

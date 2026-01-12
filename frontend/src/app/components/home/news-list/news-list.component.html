@@ -9,9 +9,19 @@
     <div class="news-list">
       @for (item of news; track item.id; let last = $last) {
         <div class="news-item">
-          <h3 class="news-item-title">{{ item.title }}</h3>
-          <p class="news-item-summary">{{ item.summary }}</p>
-          <p class="news-item-date">{{ item.publishedAt | date }}</p>
+          <div class="news-item-content">
+            <div class="news-item-text">
+              <h3 class="news-item-title">{{ item.title }}</h3>
+              <p class="news-item-summary">{{ item.summary }}</p>
+              <p class="news-item-date">{{ item.publishedAt | date:'d. MMMM yyyy' }}</p>
+              <button class="news-item-button" (click)="openNewsDetails(item.id)">Details</button>
+            </div>
+            @if (item.imageUrl) {
+              <div class="news-item-image">
+                <img [src]="item.imageUrl" [alt]="item.title">
+              </div>
+            }
+          </div>
         </div>
         @if (!last) {
           <mat-divider></mat-divider>

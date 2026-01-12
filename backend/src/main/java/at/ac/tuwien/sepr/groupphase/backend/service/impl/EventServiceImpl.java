@@ -1,6 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.EventMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Artist;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
@@ -11,6 +13,10 @@ import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -103,9 +111,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDto> findAll() {
-        LOGGER.info("Fetching all events");
-        return eventMapper.eventToEventDto(eventRepository.findAll());
+    public Page<EventDto> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        return eventRepository.findAllPaginated(pageable)
+            .map(eventMapper::eventToEventDto);
+    }
+
+    @Override
+    public Page<EventDto> findByAdvancedFilters(String title, String artist, String location,
+                                                EventType eventType, Date startDate, Integer durationMinutes,
+                                                int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        return eventRepository.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, pageable)
+            .map(eventMapper::eventToEventDto);
     }
 
     @Override
@@ -138,5 +156,18 @@ public class EventServiceImpl implements EventService {
     public void delete(Long id) {
         LOGGER.info("Deleting event with id={}", id);
         eventRepository.deleteById(id);
+    }
+
+    @Override
+    public List<EventAutocompleteDto> findEventAutocomplete(String title, int limit) {
+        return this.eventRepository.findEventAutocompleteDto(title, PageRequest.of(0, limit));
+    }
+
+    @Override
+    public List<EventTop10Dto> getTop10ForCurrentMonth(EventType type) {
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+        Pageable top10 = PageRequest.of(0, 10);
+        return eventRepository.findTopEventsOfMonth(startOfMonth, endOfMonth, type, type == null, top10);
     }
 }

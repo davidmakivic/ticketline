@@ -13,6 +13,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.Instant;
 
 
 @Entity
@@ -26,6 +30,7 @@ public class Ticket {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "performance_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Performance performance;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,6 +43,12 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private TicketStatus status;
+
+    @Column(name = "reserved_until")
+    private Instant reservedUntil;
+
+    @Column(name = "reserved_by_user_id")
+    private Long reservedByUserId;
 
     @Version
     @Column(name = "version")
@@ -90,6 +101,22 @@ public class Ticket {
 
     public void setStatus(TicketStatus status) {
         this.status = status;
+    }
+
+    public Instant getReservedUntil() {
+        return reservedUntil;
+    }
+
+    public void setReservedUntil(Instant reservedUntil) {
+        this.reservedUntil = reservedUntil;
+    }
+
+    public Long getReservedByUserId() {
+        return reservedByUserId;
+    }
+
+    public void setReservedByUserId(Long reservedByUserId) {
+        this.reservedByUserId = reservedByUserId;
     }
 
     public Long getVersion() {

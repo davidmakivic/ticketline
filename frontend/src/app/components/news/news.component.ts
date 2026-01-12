@@ -1,10 +1,19 @@
-import {ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild, ViewChildren} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  ViewChildren,
+  ViewEncapsulation
+} from '@angular/core';
 import {NewsService} from '../../services/news.service';
 import {News} from '../../dtos/news';
 import {NgbModal, NgbPaginationConfig} from '@ng-bootstrap/ng-bootstrap';
 import {UntypedFormBuilder, NgForm} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {SafeUrl,DomSanitizer} from "@angular/platform-browser";
+import {Router} from "@angular/router";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
@@ -14,7 +23,9 @@ interface NewsWithImage extends News {
     selector: 'app-message',
     templateUrl: './news.component.html',
     styleUrls: ['./news.component.scss'],
-    standalone: false
+    standalone: false,
+  encapsulation: ViewEncapsulation.None
+
 })
 export class NewsComponent implements OnInit {
 
@@ -35,7 +46,9 @@ export class NewsComponent implements OnInit {
               private cd: ChangeDetectorRef,
               private authService: AuthService,
               private modalService: NgbModal,
-              private sanitizer: DomSanitizer) {
+              private sanitizer: DomSanitizer,
+              private router: Router
+  ) {
   }
 
   ngOnInit() {
@@ -56,19 +69,6 @@ export class NewsComponent implements OnInit {
     this.modalService.open(messageAddModal, {ariaLabelledBy: 'modal-basic-title'});
   }
 
-  openExistingMessageModal(id: number, messageAddModal: TemplateRef<any>) {
-    this.isEditMode = true;
-    this.messageService.getMessageById(id).subscribe({
-      next: res => {
-        this.currentMessage = res as NewsWithImage;
-        this.loadNewsImage(this.currentMessage);
-        this.modalService.open(messageAddModal, {ariaLabelledBy: 'modal-basic-title'});
-      },
-      error: err => {
-        this.defaultServiceErrorHandling(err);
-      }
-    });
-  }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -139,6 +139,11 @@ export class NewsComponent implements OnInit {
         }
       });
     }
+  }
+
+  openExistingMessageModal(id: number, messageAddModal: TemplateRef<any>) {
+    // Navigiere zur Detail-Seite statt Modal zu öffnen
+    this.router.navigate(['/news', id]);
   }
 
 

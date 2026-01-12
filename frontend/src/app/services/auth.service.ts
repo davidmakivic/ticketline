@@ -33,7 +33,14 @@ export class AuthService {
    * Check if a valid JWT token is saved in the localStorage
    */
   isLoggedIn() {
-    return !!this.getToken() && (this.getTokenExpirationDate(this.getToken()).valueOf() > new Date().valueOf());
+    if (!this.getToken()) {
+      return false;
+    }
+    if (this.getTokenExpirationDate(this.getToken()).valueOf() < Date.now()) {
+      localStorage.removeItem('authToken');
+      return false;
+    }
+    return true;
   }
 
   logoutUser() {
@@ -76,5 +83,13 @@ export class AuthService {
     date.setUTCSeconds(decoded.exp);
     return date;
   }
+
+registerUser(authRequest: AuthRequest): Observable<void> {
+  return this.httpClient.post<void>(
+    this.globals.backendUri + '/users',
+    authRequest
+  );
+}
+
 
 }

@@ -10,9 +10,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface TicketMapper {
 
-
     @Mapping(target = "performanceId", source = "performance.id")
     @Mapping(target = "seatId", source = "seat.id")
+    @Mapping(target = "seatRow", source = "seat.rowNumber")
+    @Mapping(target = "seatNumber", ignore = true)
+    @Mapping(target = "sectorName", source = "seat.sector.name")
     TicketDto ticketToTicketDto(Ticket ticket);
 
     @Mapping(target = "id", ignore = true)

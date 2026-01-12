@@ -1,12 +1,15 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 public interface EventService {
@@ -20,11 +23,19 @@ public interface EventService {
 
     List<EventDto> findByAnyTitle(String title);
 
-    List<EventDto> findAll();
+    Page<EventDto> findAll(int page, int size);
+
+    Page<EventDto> findByAdvancedFilters(String title, String artist, String location,
+                                         EventType eventType, Date startDate, Integer durationMinutes,
+                                         int page, int size);
 
     void addArtist(Long eventId, Long artistId);
 
     void removeArtist(Long eventId, Long artistId);
 
     void delete(Long id);
+
+    List<EventAutocompleteDto> findEventAutocomplete(String title, int limit);
+
+    List<EventTop10Dto> getTop10ForCurrentMonth(EventType type);
 }

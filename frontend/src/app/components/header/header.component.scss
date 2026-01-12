@@ -29,8 +29,17 @@ header mat-optgroup .mat-mdc-optgroup-label {
   color: green;
 }
 
-.mat-mdc-autocomplete-panel {
-  height: 1000px;
+
+.autocomplete-image-wrapper {
+  width: 3em;
+  height: 3em;
 }
 
+.autocomplete-image {
+  max-height: 100%;
+  max-width: 100%;
+}
+.title {
+  font-size: 1.5em;
+}
 

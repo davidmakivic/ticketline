@@ -17,11 +17,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return a list of orders, newest first
      */
     @Query("""
-        select distinct o
-        from Order o
-        left join fetch o.tickets
-        order by o.createdAt desc
-        """)
+                select distinct o
+                from Order o
+                left join fetch o.user
+                left join fetch o.tickets
+                order by o.createdAt desc
+                """)
     List<Order> findAllByOrderByCreatedAtDesc();
 
     /**
@@ -31,22 +32,24 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return a list of orders for that user, newest first
      */
     @Query("""
-        select distinct o
-        from Order o
-        left join fetch o.tickets
-        where o.user.userId = :userId
-        order by o.createdAt desc
-        """)
+                select distinct o
+                from Order o
+                left join fetch o.user
+                left join fetch o.tickets
+                where o.user.userId = :userId
+                order by o.createdAt desc
+                """)
     List<Order> findAllByUser_UserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     /**
      * Needed for getOrder(id) to avoid LazyInitializationException when mapping tickets.
      */
     @Query("""
-        select o
-        from Order o
-        left join fetch o.tickets
-        where o.id = :id
-        """)
+                select o
+                from Order o
+                left join fetch o.user
+                left join fetch o.tickets
+                where o.id = :id
+                """)
     java.util.Optional<Order> findByIdWithTickets(@Param("id") Long id);
 }

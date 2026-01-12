@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
+import {LOCALE_ID, NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
@@ -21,7 +21,11 @@ import {MatInputModule} from '@angular/material/input';
 import {MatDivider} from "@angular/material/divider";
 import {Top10Component} from "./components/home/top10/top10.component";
 import {NewsListComponent} from "./components/home/news-list/news-list.component";
+import {NgOptimizedImage, registerLocaleData} from "@angular/common";
+import { MatTooltipModule } from '@angular/material/tooltip';
+import localeDe from '@angular/common/locales/de';
 
+registerLocaleData(localeDe);
 
 @NgModule({
   declarations: [
@@ -35,6 +39,7 @@ import {NewsListComponent} from "./components/home/news-list/news-list.component
   imports: [BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    MatTooltipModule,
     NgbModule,
     FormsModule,
     MatButton,
@@ -43,11 +48,11 @@ import {NewsListComponent} from "./components/home/news-list/news-list.component
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent],
+    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent, NgOptimizedImage],
   exports: [
     Top10Component
   ],
-  providers: [httpInterceptorProviders, provideHttpClient(withInterceptorsFromDi())]
+  providers: [httpInterceptorProviders, provideHttpClient(withInterceptorsFromDi()),{ provide: LOCALE_ID, useValue: 'de-DE' }]
 })
 export class AppModule {
 }

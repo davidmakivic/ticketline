@@ -1,0 +1,73 @@
+<mat-card class="ticket-cart-item">
+  <mat-card-content>
+    @if (loading) {
+    <div class="loading">
+      <mat-spinner diameter="28"></mat-spinner>
+    </div>
+    }
+
+    <div class="row">
+
+      <!-- Spalte 1-->
+      <div class="col image-col">
+        @if (eventImageUrl) {
+        <img class="event-image" [src]="eventImageUrl" alt="Event Bild" loading="lazy">
+        } @else {
+        <div class="event-image placeholder"></div>
+        }
+      </div>
+
+      <!-- Spalte 2 -->
+      <div class="col event-col">
+        <div class="title">{{ eventTitle ?? '—' }}</div>
+
+        @if (performance) {
+        <div class="meta">
+          <div><strong>Datum:</strong> {{ performance.startTime | date:'dd. MMMM yyyy' }}</div>
+          <div><strong>Start:</strong> {{ performance.startTime | date:'HH:mm' }} Uhr</div>
+          <div><strong>Ende:</strong> {{ performance.endTime | date:'HH:mm' }} Uhr</div>
+        </div>
+        } @else {
+        <div class="meta">—</div>
+        }
+      </div>
+
+      <!-- Spalte 3 -->
+      <div class="col location-col">
+        <div class="city">{{ venue?.city ?? '—' }}</div>
+        <div class="venue-hall">
+          {{ venue?.name ?? '—' }}<span *ngIf="hall"> - {{ hall.name }}</span>
+        </div>
+        <div class="address">{{ fullAddress ?? '—' }}</div>
+      </div>
+
+      <!-- Spalte 4 -->
+      <div class="col seat-col">
+        <div class="seat-row">
+          <strong>Sektor:</strong> {{ sectorName ?? '—' }}
+        </div>
+        <div class="seat-row">
+          <strong>Reihe:</strong> {{ sectorType !== 'STANDING' ? (rowNumber ?? '—') : '—' }}
+        </div>
+        <div class="seat-row">
+          <strong>Sitz:</strong> {{ sectorType !== 'STANDING' ? (seatNumber ?? '—') : '—' }}
+        </div>
+      </div>
+
+      <!-- Spalte 5 -->
+      <div class="col price-col">
+        <div class="price">
+          {{ (priceEuro ?? 0) | currency:'EUR' }}
+        </div>
+      </div>
+
+      <!-- Spalte 6 -->
+      <div class="col actions-col">
+        <button mat-icon-button color="warn" (click)="onRemoveClick()" [attr.aria-label]="'Ticket entfernen'">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,117 @@
+package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
+
+import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
+import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PostConstruct;
+
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+@Profile("generateData")
+@Component
+public class MerchandiseDataGenerator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MerchandiseRepository merchandiseRepository;
+
+    public MerchandiseDataGenerator(MerchandiseRepository merchandiseRepository) {
+        this.merchandiseRepository = merchandiseRepository;
+    }
+
+    @PostConstruct
+    public void generateMerchandiseData() {
+        if (!merchandiseRepository.findAll().isEmpty()) {
+            LOGGER.debug("Merchandise already generated");
+            return;
+        }
+
+        LOGGER.debug("Generating merchandise entries");
+
+        Merchandise poster = new Merchandise();
+        poster.setName("Band Poster");
+        poster.setDescription("High quality poster of the band");
+        poster.setPrice(1000);
+        poster.setQuantity(50);
+        loadImageFromFile(poster, "src/main/resources/images/bandPoster.png");
+        merchandiseRepository.save(poster);
+
+
+        Merchandise tshirt = new Merchandise();
+        tshirt.setName("T-Shirt");
+        tshirt.setDescription("Official band T-shirt");
+        tshirt.setPrice(2500);
+        tshirt.setQuantity(100);
+        loadImageFromFile(tshirt, "src/main/resources/images/bandTshirt.png");
+        merchandiseRepository.save(tshirt);
+
+
+        Merchandise hoodie = new Merchandise();
+        hoodie.setName("Hoodie");
+        hoodie.setDescription("Official band hoodie");
+        hoodie.setPrice(5000);
+        hoodie.setQuantity(100);
+        loadImageFromFile(hoodie, "src/main/resources/images/bandHoodie.png");
+        merchandiseRepository.save(hoodie);
+
+        Merchandise cup = new Merchandise();
+        cup.setName("Cup");
+        cup.setDescription("Cup with band Logo on it");
+        cup.setPrice(1000);
+        cup.setQuantity(100);
+        loadImageFromFile(cup, "src/main/resources/images/bandCup.png");
+        merchandiseRepository.save(cup);
+
+
+        Merchandise vinyl = new Merchandise();
+        vinyl.setName("Vinyl Album");
+        vinyl.setDescription("Limited edition vinyl album");
+        vinyl.setPrice(4000);
+        vinyl.setQuantity(20);
+        loadImageFromFile(vinyl, "src/main/resources/images/bandVinyl.png");
+        merchandiseRepository.save(vinyl);
+
+
+        Merchandise mug = new Merchandise();
+        mug.setName("Coffee Mug");
+        mug.setDescription("Ceramic mug with band logo");
+        mug.setPrice(1500);
+        mug.setQuantity(75);
+        loadImageFromFile(mug, "src/main/resources/images/coffeeMug.png");
+        merchandiseRepository.save(mug);
+
+
+        Merchandise tankTop = new Merchandise();
+        tankTop.setName("Tank Top");
+        tankTop.setDescription("Tank top with band logo");
+        tankTop.setPrice(1500);
+        tankTop.setQuantity(100);
+        loadImageFromFile(tankTop, "src/main/resources/images/bandTankTop.png");
+        merchandiseRepository.save(tankTop);
+
+        LOGGER.debug("Merchandise data generated successfully");
+    }
+
+    private void loadImageFromFile(Merchandise merchandise, String filePath) {
+        try {
+            Path path = Paths.get(filePath);
+            if (Files.exists(path)) {
+                byte[] imageData = Files.readAllBytes(path);
+                merchandise.setImageData(imageData);
+                merchandise.setImageContentType("image/jpeg");
+            }
+        } catch (IOException e) {
+            LOGGER.warn("Could not load image from {}: {}", filePath, e.getMessage());
+        }
+    }
+
+}

@@ -10,6 +10,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
+import at.ac.tuwien.sepr.groupphase.backend.type.SectorType;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -43,6 +45,7 @@ public class TicketDataGenerator {
     }
 
     @PostConstruct
+    @Transactional
     public void generateTicketData() {
         if (!ticketRepository.findAll().isEmpty()) {
             LOGGER.debug("Tickets already generated");
@@ -63,7 +66,7 @@ public class TicketDataGenerator {
 
             Long hallId = performance.getHall().getId();
 
-            List<Seat> seatsForHall = seatRepository.findBySector_Hall_Id(hallId);
+            List<Seat> seatsForHall = seatRepository.findByHallIdWithSector(hallId);
 
             if (seatsForHall.isEmpty()) {
                 LOGGER.warn("No seats found for hall {} (performance id = {})",
@@ -78,7 +81,15 @@ public class TicketDataGenerator {
                 ticket.setSeat(seat);
                 ticket.setStatus(TicketStatus.AVAILABLE);
 
-                ticket.setPriceFinalCents(performance.getBasePriceCents());
+                SectorType sectorType = seat.getSector().getType();
+
+                Long basePrice = performance.getBasePriceCents();
+                double multiplier = sectorMultiplier(sectorType);
+
+                Long finalPrice = Math.round(basePrice * multiplier);
+
+                ticket.setPriceFinalCents(finalPrice);
+
 
                 ticketRepository.save(ticket);
                 created++;
@@ -87,5 +98,14 @@ public class TicketDataGenerator {
 
         LOGGER.debug("Ticket generation complete – created {} tickets", created);
     }
+
+    private double sectorMultiplier(SectorType sectorType) {
+        return switch (sectorType) {
+            case STANDING -> 1.0;
+            case SEATED -> 1.5;
+            case VIP -> 2.0;
+        };
+    }
+
 }
 
