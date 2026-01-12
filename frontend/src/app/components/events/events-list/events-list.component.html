@@ -18,17 +18,17 @@
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Veranstaltungstitel</mat-label>
-        <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()">
+        <input matInput [(ngModel)]="searchTitle" (keyup)="onSearch()">
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Künstler</mat-label>
-        <input matInput [(ngModel)]="searchArtist" (keyup.enter)="onSearch()">
+        <input matInput [(ngModel)]="searchArtist" (keyup)="onSearch()">
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Ort</mat-label>
-        <input matInput [(ngModel)]="searchLocation" (keyup.enter)="onSearch()">
+        <input matInput [(ngModel)]="searchLocation" (keyup)="onSearch()">
       </mat-form-field>
     </div>
 

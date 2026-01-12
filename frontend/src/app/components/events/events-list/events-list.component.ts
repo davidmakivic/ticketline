@@ -28,6 +28,7 @@ import {Hall} from "../../../dtos/hall";
 import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
 
 @Component({
   selector: 'app-events-list',
@@ -78,6 +79,8 @@ export class EventsListComponent implements OnInit {
   selectedStartDate: Date | null = null;
   selectedDuration: number | null = null;
 
+  private searchSubject = new Subject<void>();
+
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
 
@@ -107,6 +110,13 @@ export class EventsListComponent implements OnInit {
   ngOnInit(): void {
     this.loadEvents();
     this.loadHalls();
+
+    this.searchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.performSearch();
+    });
   }
 
   isAdmin(): boolean {
@@ -131,6 +141,39 @@ export class EventsListComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.currentPage = 0;
+    this.isLoading = true;
+    let startDateFormatted: Date | undefined = undefined;
+
+    if (this.selectedStartDate) {
+      startDateFormatted = this.selectedStartDate instanceof Date
+        ? this.selectedStartDate
+        : new Date(this.selectedStartDate);
+    }
+
+    this.eventsService.searchAdvanced({
+      title: this.searchTitle || undefined,
+      artist: this.searchArtist || undefined,
+      location: this.searchLocation || undefined,
+      eventType: this.selectedEventType || undefined,
+      startDate: startDateFormatted,
+      durationMinutes: this.selectedDuration || undefined
+    }, this.currentPage, this.pageSize).subscribe({
+      next: (pagedResult) => {
+        this.events = pagedResult.content;
+        this.totalEvents = pagedResult.totalElements;
+        this.totalPages = pagedResult.totalPages;
+        this.loadImagesForEvents(this.events);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Fehler bei der Suche:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private performSearch(): void {
     this.currentPage = 0;
     this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
