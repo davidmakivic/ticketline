@@ -27,6 +27,8 @@ import {AuthService} from "../../../services/auth.service";
 import {Hall} from "../../../dtos/hall";
 import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
+import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
 
 @Component({
   selector: 'app-events-list',
@@ -52,7 +54,8 @@ import {VenuesService} from "../../../services/venues.service";
     MatButton,
     MatIconModule,
     RouterLink,
-    MatSuffix
+    MatSuffix,
+    MatPaginator
   ],
   standalone: true,
   styleUrls: ['./events-list.component.scss']
@@ -63,6 +66,12 @@ export class EventsListComponent implements OnInit {
   halls: Hall[] = [];
   hallsWithVenues: { hall: Hall; venueName?: string }[] = [];
 
+  // Pagination
+  currentPage: number = 0;
+  pageSize: number = 10;
+  totalEvents: number = 0;
+  totalPages: number = 0;
+  private isSearchActive: boolean = false;
 
   searchTitle: string = '';
   searchArtist: string = '';
@@ -70,6 +79,8 @@ export class EventsListComponent implements OnInit {
   selectedEventType: EventTypeDto | null = null;
   selectedStartDate: Date | null = null;
   selectedDuration: number | null = null;
+
+  private searchSubject = new Subject<void>();
 
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
@@ -80,8 +91,11 @@ export class EventsListComponent implements OnInit {
   isEditMode: boolean = false;
   performances: PerformanceDto[] = [];
   newPerformance: Partial<PerformanceDto> = {};
+  newPerformancePriceEuros: number | null = null;
   error: boolean = false;
   errorMessage: string = '';
+  modalError: boolean = false;
+  modalErrorMessage: string = '';
 
   constructor(
     private eventsService: EventsService,
@@ -97,6 +111,13 @@ export class EventsListComponent implements OnInit {
   ngOnInit(): void {
     this.loadEvents();
     this.loadHalls();
+
+    this.searchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.performSearch();
+    });
   }
 
   isAdmin(): boolean {
@@ -105,10 +126,12 @@ export class EventsListComponent implements OnInit {
 
   loadEvents(): void {
     this.isLoading = true;
-    this.eventsService.getEvents().subscribe({
-      next: (data) => {
-        this.events = data;
-        this.loadImagesForEvents(data);
+    this.eventsService.getEvents(this.currentPage, this.pageSize).subscribe({
+      next: (pagedResult) => {
+        this.events = pagedResult.content;
+        this.totalEvents = pagedResult.totalElements;
+        this.totalPages = pagedResult.totalPages;
+        this.loadImagesForEvents(this.events);
         this.isLoading = false;
       },
       error: (error) => {
@@ -118,7 +141,10 @@ export class EventsListComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
+
+  performSearch(): void {
+    this.isSearchActive = true;
+    this.currentPage = 0;  // Wichtig: Immer auf Seite 0 zurücksetzen
     this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
 
@@ -127,6 +153,7 @@ export class EventsListComponent implements OnInit {
         ? this.selectedStartDate
         : new Date(this.selectedStartDate);
     }
+
     this.eventsService.searchAdvanced({
       title: this.searchTitle || undefined,
       artist: this.searchArtist || undefined,
@@ -134,10 +161,12 @@ export class EventsListComponent implements OnInit {
       eventType: this.selectedEventType || undefined,
       startDate: startDateFormatted,
       durationMinutes: this.selectedDuration || undefined
-    }).subscribe({
-      next: (events) => {
-        this.events = events;
-        this.loadImagesForEvents(events);
+    }, this.currentPage, this.pageSize).subscribe({
+      next: (pagedResult) => {
+        this.events = pagedResult.content;
+        this.totalEvents = pagedResult.totalElements;
+        this.totalPages = pagedResult.totalPages;
+        this.loadImagesForEvents(this.events);
         this.isLoading = false;
       },
       error: (error) => {
@@ -147,6 +176,18 @@ export class EventsListComponent implements OnInit {
     });
   }
 
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+
+    // Einfache Logik: Wenn isSearchActive, dann performSearch, sonst loadEvents
+    if (this.isSearchActive) {
+      this.performSearch();
+    } else {
+      this.loadEvents();
+    }
+  }
+
   resetFilters(): void {
     this.searchTitle = '';
     this.searchArtist = '';
@@ -154,6 +195,8 @@ export class EventsListComponent implements OnInit {
     this.selectedEventType = null;
     this.selectedStartDate = null;
     this.selectedDuration = null;
+    this.currentPage = 0;
+    this.isSearchActive = false;
     this.eventImages.clear();
     this.loadEvents();
   }
@@ -192,7 +235,9 @@ export class EventsListComponent implements OnInit {
     this.selectedFile = null;
     this.performances = [];
     this.newPerformance = {};
-    this.error = false;
+    this.newPerformancePriceEuros = null;
+    this.modalError = false;
+    this.modalErrorMessage = '';
     this.modalService.open(eventAddModal, {size: 'lg'});
   }
 
@@ -205,26 +250,89 @@ export class EventsListComponent implements OnInit {
 
   performanceErrors: { [key: string]: string } = {};
 
+  calculateDurationFromPerformances(): number | null {
+    if (this.performances.length === 0) {
+      return null;
+    }
+
+    const firstPerf = this.performances[0];
+    const startTime = new Date(firstPerf.startTime);
+    const endTime = new Date(firstPerf.endTime);
+    const durationMs = endTime.getTime() - startTime.getTime();
+    const durationMinutes = Math.round(durationMs / (1000 * 60));
+
+    return durationMinutes > 0 ? durationMinutes : null;
+  }
+
   addPerformanceToList(): void {
-    const validation = this.eventsService.validatePerformance(this.newPerformance);
-    if (!validation.valid) {
-      this.performanceErrors = validation.fieldErrors;
+    // Validiere Halle, Start- und Endzeit
+    const baseValidation = this.eventsService.validatePerformanceBase(this.newPerformance);
+    if (!baseValidation.valid) {
+      this.performanceErrors = baseValidation.fieldErrors;
       return;
     }
 
-    this.performances.push({
-      ...this.newPerformance,
-      id: Date.now()
-    } as PerformanceDto);
+    // Validiere Preis separat
+    if (this.newPerformancePriceEuros === null || this.newPerformancePriceEuros === undefined || this.newPerformancePriceEuros < 0) {
+      this.performanceErrors['basePrice'] = 'Basispreis darf nicht negativ sein';
+      return;
+    }
 
+    // Berechne Dauer aus der ersten Performance
+    if (this.performances.length === 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
+      const startTime = new Date(this.newPerformance.startTime);
+      const endTime = new Date(this.newPerformance.endTime);
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const durationMinutes = Math.round(durationMs / (1000 * 60));
+
+      if (this.currentEvent) {
+        this.currentEvent.durationMinutes = durationMinutes;
+      }
+    }
+
+    // Validiere, dass alle Performances die gleiche Dauer haben
+    if (this.performances.length > 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
+      const startTime = new Date(this.newPerformance.startTime);
+      const endTime = new Date(this.newPerformance.endTime);
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const durationMinutes = Math.round(durationMs / (1000 * 60));
+
+      if (this.currentEvent && durationMinutes !== this.currentEvent.durationMinutes) {
+        this.performanceErrors['duration'] = 'Alle Aufführungen müssen die gleiche Dauer haben';
+        return;
+      }
+    }
+
+    // Konvertiere Preis von Euro zu Cents
+    const performanceToAdd: PerformanceDto = {
+      ...this.newPerformance as PerformanceDto,
+      basePriceCents: Math.round(this.newPerformancePriceEuros * 100),
+      id: Date.now()
+    };
+
+    this.performances.push(performanceToAdd);
     this.newPerformance = {};
+    this.newPerformancePriceEuros = null;
     this.performanceErrors = {};
-    this.error = false;
   }
+
+
+
 
 
   removePerformance(index: number): void {
     this.performances.splice(index, 1);
+    // Berechne Dauer neu, wenn noch Performances vorhanden sind
+    if (this.performances.length > 0) {
+      const duration = this.calculateDurationFromPerformances();
+      if (this.currentEvent && duration) {
+        this.currentEvent.durationMinutes = duration;
+      }
+    } else {
+      if (this.currentEvent) {
+        this.currentEvent.durationMinutes = 0;
+      }
+    }
   }
 
   private loadHalls(): void {
@@ -261,16 +369,23 @@ export class EventsListComponent implements OnInit {
     }
 
     if (!this.currentEvent) {
-      this.error = true;
-      this.errorMessage = 'Event-Daten fehlen';
+      this.modalError = true;
+      this.modalErrorMessage = 'Event-Daten fehlen';
+      return;
+    }
+
+    // Validiere, dass mindestens eine Performance vorhanden ist
+    if (this.performances.length === 0) {
+      this.modalError = true;
+      this.modalErrorMessage = 'Mindestens eine Aufführung ist erforderlich';
       return;
     }
 
     // Service-Validierung durchführen
     const validation = this.eventsService.validateEvent(this.currentEvent);
     if (!validation.valid) {
-      this.error = true;
-      this.errorMessage = validation.errors.join(', ');
+      this.modalError = true;
+      this.modalErrorMessage = validation.errors.join(', ');
       return;
     }
 
@@ -283,8 +398,8 @@ export class EventsListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        this.error = true;
-        this.errorMessage = error.error?.error || 'Fehler beim Erstellen des Events';
+        this.modalError = true;
+        this.modalErrorMessage = error.error?.error || 'Fehler beim Erstellen des Events';
         this.isLoading = false;
       }
     });
@@ -319,4 +434,7 @@ export class EventsListComponent implements OnInit {
     this.error = false;
   }
 
+  vanishModalError(): void {
+    this.modalError = false;
+  }
 }
