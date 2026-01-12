@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Globals } from '../global/globals';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
-import { Ticket } from '../dtos/ticket';
-import { TicketStatusUpdateDto } from '../dtos/ticket-status-update';
+
+import { Ticket, TicketStatus } from '../dtos/ticket';
 
 @Injectable({ providedIn: 'root' })
 export class TicketsService {
@@ -13,8 +12,7 @@ export class TicketsService {
 
   constructor(
     private httpClient: HttpClient,
-    private globals: Globals,
-    private authService: AuthService
+    private globals: Globals
   ) {}
 
   getTickets(): Observable<Ticket[]> {
@@ -25,13 +23,18 @@ export class TicketsService {
     return this.httpClient.get<Ticket>(`${this.ticketsBaseUri}/${id}`);
   }
 
+  hold(ticketId: number): Observable<Ticket> {
+    return this.httpClient.post<Ticket>(`${this.ticketsBaseUri}/${ticketId}/hold`, {});
+  }
+
+releaseHold(ticketId: number): Observable<Ticket> {
+  return this.httpClient.delete<Ticket>(`${this.ticketsBaseUri}/${ticketId}/hold`);
+  }
+
   getTicketsByPerformance(performanceId: number): Observable<Ticket[]> {
     return this.httpClient.get<Ticket[]>(`${this.ticketsBaseUri}/performance/${performanceId}`);
   }
 
-  updateStatus(ticketId: number, body: TicketStatusUpdateDto): Observable<Ticket> {
-    return this.httpClient.put<Ticket>(`${this.ticketsBaseUri}/${ticketId}/status`, body);
-  }
 
   createTicket(ticket: Ticket): Observable<Ticket> {
     return this.httpClient.post<Ticket>(this.ticketsBaseUri, ticket);
