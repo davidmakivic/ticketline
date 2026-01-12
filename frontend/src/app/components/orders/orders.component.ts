@@ -79,7 +79,8 @@ deleteReservation(r: ReservationDto) {
   if (!ids.length) {
     this.reservationsService.delete(r.id).subscribe({
       next: () => this.load(),
-      error: e => { console.error(e); alert('Reservierung konnte nicht gelöscht werden');
+      error: e => {
+ console.error(e); alert('Reservierung konnte nicht gelöscht werden');
         }
     });
     return;
@@ -93,7 +94,8 @@ deleteReservation(r: ReservationDto) {
     next: () => {
       this.reservationsService.delete(r.id).subscribe({
         next: () => this.load(),
-        error: e => { console.error(e); alert('Reservierung konnte nicht gelöscht werden');
+        error: e => {
+ console.error(e); alert('Reservierung konnte nicht gelöscht werden');
           }
       });
     },
@@ -101,7 +103,8 @@ deleteReservation(r: ReservationDto) {
       console.error(e);
       this.reservationsService.delete(r.id).subscribe({
         next: () => this.load(),
-        error: err => { console.error(err); alert('Reservierung konnte nicht gelöscht werden');
+        error: err => {
+ console.error(err); alert('Reservierung konnte nicht gelöscht werden');
           }
       });
     }
