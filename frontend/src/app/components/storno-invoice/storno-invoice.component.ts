@@ -1,6 +1,6 @@
 import { Component, Renderer2, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TicketsService } from '../../services/tickets.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -43,15 +43,21 @@ export class StornoInvoiceComponent implements OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private renderer: Renderer2,
     private ticketsService: TicketsService
   ) {
+    const idFromRoute = Number(this.route.snapshot.paramMap.get('id'));
+
     const state = history.state as State;
+    const cached = this.loadCancellation(idFromRoute);
 
-    this.cancellation = state.cancellation;
+    const effective: State = (state && state.cancellation) ? state : (cached ?? {});
 
-    this.eventTitle = state.eventTitle ?? '';
-    this.seatLabels = state.seats ?? [];
+    this.cancellation = effective.cancellation;
+
+    this.eventTitle = effective.eventTitle ?? '';
+    this.seatLabels = effective.seats ?? [];
 
     const ids = this.cancellation?.cancelledTicketIds ?? [];
 
@@ -67,14 +73,19 @@ export class StornoInvoiceComponent implements OnDestroy {
       ).subscribe(list => this.tickets = list);
     }
 
-    this.customerName = state.customerName ?? 'Kunde';
-    this.originalInvoiceNo = state.originalInvoiceNo ?? '';
+    this.customerName = effective.customerName ?? 'Kunde';
+    this.originalInvoiceNo = effective.originalInvoiceNo ?? '';
 
     const dt = this.cancellation?.createdAt ? new Date(this.cancellation.createdAt) : new Date();
-    this.stornoNo = this.buildStornoNumber(this.cancellation?.orderId ?? 0, dt);
+    this.stornoNo = this.buildStornoNumber(this.cancellation?.orderId ?? idFromRoute ?? 0, dt);
     this.stornoDateStr = this.formatDate(dt);
 
     this.renderer.addClass(document.body, 'invoice-print');
+
+    const shouldPrint = this.route.snapshot.queryParamMap.get('print') === '1';
+    if (shouldPrint) {
+      setTimeout(() => window.print(), 200);
+    }
   }
 
   ngOnDestroy(): void {
@@ -96,6 +107,19 @@ export class StornoInvoiceComponent implements OnDestroy {
 
   toEuro(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
+  }
+
+  private cancellationKey(orderId: number) {
+    return `order-cancel-${orderId}`;
+  }
+
+  private loadCancellation(orderId: number): State | null {
+    try {
+      const raw = localStorage.getItem(this.cancellationKey(orderId));
+      return raw ? (JSON.parse(raw) as State) : null;
+    } catch {
+      return null;
+    }
   }
 
   private buildStornoNumber(orderId: number, date: Date): string {
@@ -128,5 +152,4 @@ export class StornoInvoiceComponent implements OnDestroy {
     if (seat) return seat;
     return 'Freie Platzwahl';
   }
-
 }

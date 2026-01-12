@@ -8,9 +8,11 @@ import { TicketsService } from '../../services/tickets.service';
 import { Ticket } from '../../dtos/ticket';
 
 import { forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 
 type PaymentId = 'card' | 'paypal' | 'klarna' | 'applepay';
+import { ReservationsService } from '../../services/reservations.service';
+
 
 interface PaymentMethod {
   id: PaymentId;
@@ -60,38 +62,105 @@ export class CheckoutComponent {
     private ticketsService: TicketsService,
     private orders: OrdersService,
     private router: Router,
+     private reservationsService: ReservationsService
   ) {}
 
   select(method: PaymentId): void {
     this.selectedPayment = method;
   }
 
-  pay(): void {
-    const items = this.cart.getCartItems();
-    if (items.length === 0) {
-      alert('Warenkorb ist leer');
-      return;
-    }
+ pay(): void {
+   const items = this.cart.getCartItems();
+   if (items.length === 0) {
+     alert('Warenkorb ist leer');
+     return;
+   }
 
-    const boughtItems = items.map(i => ({ ...i }));
+   const boughtItems = items.map(i => ({ ...i }));
+   const ids = items.map(i => i.ticketId);
 
-    this.orders.createFromCart(items).subscribe({
-      next: (order) => {
-        this.cart.clear();
-        this.router.navigate(['/invoice', order.id], {
-          state: {
-            order,
-            items: boughtItems,
-            payment: this.selectedPayment
-          }
-        });
-      },
-      error: err => {
-        console.error(err);
-        alert('Bestellung fehlgeschlagen');
-      }
-    });
-  }
+   const ridRaw = sessionStorage.getItem('reservation.deleteAfterPay');
+   const rid = ridRaw ? Number(ridRaw) : null;
+
+   forkJoin(
+     ids.map(id =>
+       this.ticketsService.getTicketById(id).pipe(
+         catchError(() => of(null))
+       )
+     )
+   ).subscribe({
+     next: (ticketList) => {
+       const tickets = ticketList.filter((t): t is any => t !== null);
+
+       const statusOf = (t: any) =>
+         String(t?.status ?? t?.state ?? t?.ticketStatus ?? '').toUpperCase();
+
+       const purchasedIds = tickets
+         .filter(t => statusOf(t).includes('PURCHASE'))
+         .map(t => t.id);
+
+       const notReservedIds = tickets
+         .filter(t => {
+           const s = statusOf(t);
+           if (!s) return false;
+           const isReserved = s.includes('RESERV') || s.includes('HOLD');
+           const isPurchased = s.includes('PURCHASE');
+           return !isReserved && !isPurchased;
+         })
+         .map(t => t.id);
+
+       const badIds = Array.from(new Set([...purchasedIds, ...notReservedIds]));
+
+       if (badIds.length > 0) {
+         badIds.forEach(id => this.cart.removeTicket(id));
+
+         alert(
+           `Einige Tickets sind nicht mehr reserviert oder bereits gekauft.\n` +
+           `Entfernt aus Warenkorb: ${badIds.join(', ')}\n` +
+           `Bitte Reservierungen neu laden.`
+         );
+         return;
+       }
+
+       this.orders.createFromCart(items).pipe(
+         switchMap(order => {
+           if (rid == null || Number.isNaN(rid)) return of(order);
+
+           return this.reservationsService.delete(rid).pipe(
+             catchError(() => of(null)),
+             tap(() => sessionStorage.removeItem('reservation.deleteAfterPay')),
+             map(() => order)
+           );
+         })
+       ).subscribe({
+         next: (order) => {
+           this.cart.clear();
+
+           this.router.navigate(['/invoice', order.id], {
+             state: {
+               order,
+               items: boughtItems,
+               payment: this.selectedPayment
+             }
+           });
+         },
+         error: err => {
+           console.error(err);
+           const msg =
+             err?.error?.message ??
+             (Array.isArray(err?.error?.errors) ? err.error.errors.join('\n') : null) ??
+             'Bestellung fehlgeschlagen';
+           alert(msg);
+         }
+       });
+     },
+     error: (e) => {
+       console.error(e);
+       alert('Tickets konnten nicht geprüft werden');
+     }
+   });
+ }
+
 
   toEuro(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';

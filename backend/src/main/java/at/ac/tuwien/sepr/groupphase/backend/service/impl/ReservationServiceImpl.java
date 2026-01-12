@@ -16,10 +16,12 @@ import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import at.ac.tuwien.sepr.groupphase.backend.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -71,7 +73,6 @@ public class ReservationServiceImpl implements ReservationService {
         var now = java.time.Instant.now();
         Long currentUserId = user.getUserId();
 
-        // 1) Validieren: Tickets müssen ein gültiger HOLD (RESERVED + von mir + nicht expired) sein
         for (Ticket t : tickets) {
             if (t.getStatus() != TicketStatus.RESERVED) {
                 throw new ConflictException(
@@ -128,5 +129,18 @@ public class ReservationServiceImpl implements ReservationService {
             .map(reservationMapper::reservationToReservationDto)
             .toList();
     }
+
+    @Override
+    public void deleteForUser(long reservationId, String email) {
+        Reservation r = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));
+
+        if (r.getUser() == null || r.getUser().getEmail() == null || !r.getUser().getEmail().equals(email)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+        }
+
+        reservationRepository.delete(r);
+    }
+
 
 }

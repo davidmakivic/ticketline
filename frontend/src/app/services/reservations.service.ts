@@ -21,5 +21,8 @@ export class ReservationsService {
 getAll(): Observable<ReservationDto[]> {
   return this.http.get<ReservationDto[]>(this.baseUri);
 }
+delete(reservationId: number) {
+  return this.http.delete<void>(`${this.baseUri}/${reservationId}`);
+}
 
 }

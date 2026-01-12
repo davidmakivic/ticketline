@@ -13,11 +13,19 @@ import { EventsService } from '../../services/events.service';
 
 import { ReservationsService } from '../../services/reservations.service';
 import { ReservationDto } from '../../dtos/reservation.dto';
+import { CartService } from '../../services/cart.service';
 
 type OrderMetaCache = {
   eventTitle: string;
   seats: string[];
   savedAt: string;
+};
+
+type ReservationTicketLine = {
+  ticketId: number;
+  title: string;
+  seatLabel: string;
+  priceCents: number;
 };
 
 @Component({
@@ -38,8 +46,10 @@ export class OrdersComponent {
 
   reservationSeatsById: Record<number, string[]> = {};
   reservationTicketCountById: Record<number, number> = {};
-
   eventTitleByReservationId: Record<number, string> = {};
+
+  reservationLinesById: Record<number, ReservationTicketLine[]> = {};
+  reservationTotalCentsById: Record<number, number> = {};
 
   loading = false;
   error: string | null = null;
@@ -54,10 +64,65 @@ export class OrdersComponent {
     private ticketsService: TicketsService,
     private performancesService: PerformancesService,
     private eventsService: EventsService,
-    private reservationsService: ReservationsService
+    private reservationsService: ReservationsService,
+    private cart: CartService
   ) {
     this.load();
   }
+
+deleteReservation(r: ReservationDto) {
+  const ids = r.ticketIds ?? [];
+
+  const ok = confirm(`Reservierung #${r.id} wirklich löschen?`);
+  if (!ok) return;
+
+  if (!ids.length) {
+    this.reservationsService.delete(r.id).subscribe({
+      next: () => this.load(),
+      error: e => {
+ console.error(e); alert('Reservierung konnte nicht gelöscht werden');
+        }
+    });
+    return;
+  }
+
+  forkJoin(
+    ids.map(tid => this.ticketsService.releaseHold(tid).pipe(
+      catchError(() => of(null))
+    ))
+  ).subscribe({
+    next: () => {
+      this.reservationsService.delete(r.id).subscribe({
+        next: () => this.load(),
+        error: e => {
+ console.error(e); alert('Reservierung konnte nicht gelöscht werden');
+          }
+      });
+    },
+    error: e => {
+      console.error(e);
+      this.reservationsService.delete(r.id).subscribe({
+        next: () => this.load(),
+        error: err => {
+ console.error(err); alert('Reservierung konnte nicht gelöscht werden');
+          }
+      });
+    }
+  });
+}
+
+  buyReservation(r: ReservationDto) {
+    const ids = r.ticketIds ?? [];
+    if (!ids.length) return;
+
+    sessionStorage.setItem('reservation.deleteAfterPay', String(r.id));
+
+    ids.forEach(tid => this.cart.addTicket(tid));
+    this.router.navigate(['/checkout']);
+  }
+
+
+
 
   load() {
     this.loading = true;
@@ -85,6 +150,8 @@ export class OrdersComponent {
         this.reservations = res ?? [];
         this.loadEventTitlesForReservations(this.reservations);
         this.loadSeatsForReservations(this.reservations);
+
+        this.loadReservationDetails(this.reservations);
       },
       error: () => {
         this.reservations = [];
@@ -197,6 +264,57 @@ export class OrdersComponent {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
   }
 
+  private loadReservationDetails(reservations: ReservationDto[]) {
+    this.reservationLinesById = {};
+    this.reservationTotalCentsById = {};
+
+    const pairs: { rid: number; tid: number }[] = [];
+    for (const r of reservations) {
+      for (const tid of (r.ticketIds ?? [])) {
+        pairs.push({ rid: r.id, tid });
+      }
+    }
+    if (!pairs.length) return;
+
+    forkJoin(
+      pairs.map(p =>
+        this.ticketsService.getTicketById(p.tid).pipe(
+          map(t => ({ rid: p.rid, tid: p.tid, t })),
+          catchError(() => of(null))
+        )
+      )
+    ).pipe(
+      map(list => list.filter((x): x is { rid: number; tid: number; t: any } => x !== null && x.t != null))
+    ).subscribe(list => {
+      for (const x of list) {
+        const t = x.t;
+
+        const title =
+          t?.performanceTitle ??
+          t?.eventTitle ??
+          t?.performance?.title ??
+          t?.performance?.event?.title ??
+          t?.event?.title ??
+          t?.title ??
+          'Ticket';
+
+        const line: ReservationTicketLine = {
+          ticketId: x.tid,
+          title,
+          seatLabel: this.ticketSeatLabel(t),
+          priceCents: t?.priceFinalCents ?? 0
+        };
+
+        (this.reservationLinesById[x.rid] ||= []).push(line);
+      }
+
+      for (const ridStr of Object.keys(this.reservationLinesById)) {
+        const rid = Number(ridStr);
+        const sum = (this.reservationLinesById[rid] ?? []).reduce((s, l) => s + (l.priceCents ?? 0), 0);
+        this.reservationTotalCentsById[rid] = sum;
+      }
+    });
+  }
 
   private cacheKey(orderId: number): string {
     return `order-meta-${orderId}`;
@@ -239,7 +357,6 @@ export class OrdersComponent {
       }
     }
   }
-
 
   private loadEventTitles(orders: OrderDto[]) {
     this.eventTitleByOrderId = {};
@@ -511,4 +628,37 @@ export class OrdersComponent {
     if (seat) return seat;
     return 'Freie Platzwahl';
   }
+openInvoice(o: OrderDto) {
+  if (this.isCancelled(o)) return;
+
+  this.router.navigate(['/invoice', o.id], {
+    state: {
+      order: o,
+      items: (o.ticketIds ?? []).map(id => ({ ticketId: id })),
+      payment: 'card',
+      customerName: 'Kunde',
+      eventTitle: this.eventTitleByOrderId[o.id] ?? this.loadOrderMeta(o.id)?.eventTitle ?? ''
+    }
+  });
+}
+
+openStorno(o: OrderDto) {
+  if (!this.isCancelled(o)) return;
+
+  const meta = this.loadOrderMeta(o.id);
+  this.router.navigate(['/storno-invoice', o.id], {
+    state: {
+      cancellation: {
+        orderId: o.id,
+        cancelledTicketIds: [],
+        refundTotalCents: 0,
+        createdAt: new Date().toISOString()
+      },
+      customerName: 'Kunde',
+      originalInvoiceNo: '',
+      eventTitle: meta?.eventTitle ?? this.eventTitleByOrderId[o.id] ?? '',
+      seats: meta?.seats ?? this.seatsByOrderId[o.id] ?? []
+    }
+  });
+}
 }

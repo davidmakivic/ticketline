@@ -1,11 +1,12 @@
 import { Component, Renderer2, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { OrderDto } from '../../dtos/order.dto';
 import { CartItem } from '../../dtos/cart-item';
 import { TicketsService } from '../../services/tickets.service';
 import { Ticket } from '../../dtos/ticket';
+import { OrdersService } from '../../services/order.service';
 
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -50,8 +51,10 @@ export class InvoiceComponent implements OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private renderer: Renderer2,
-    private ticketsService: TicketsService
+    private ticketsService: TicketsService,
+    private ordersService: OrdersService
   ) {
     const state = history.state as InvoiceState;
 
@@ -72,43 +75,45 @@ export class InvoiceComponent implements OnDestroy {
     this.payment = state.payment;
     this.customerName = state.customerName ?? 'Kunde';
 
-    if (this.order) {
-      const dt = this.order.createdAt ? new Date(this.order.createdAt) : new Date();
-      this.invoiceNo = this.buildInvoiceNumber(this.order.id, dt);
-      this.invoiceDateStr = this.formatDate(dt);
-      this.serviceDateStr = this.formatDate(dt);
-    }
+    const idFromRoute = Number(this.route.snapshot.paramMap.get('id'));
+    if (!this.order && Number.isFinite(idFromRoute) && idFromRoute > 0) {
+      this.ordersService.getAll().pipe(
+        map(list => (list ?? []).find(x => x.id === idFromRoute))
+      ).subscribe({
+        next: (o) => {
+          if (o) {
+            this.order = o;
 
-    if (this.order?.ticketIds?.length) {
-      forkJoin(
-        this.order.ticketIds.map(id =>
-          this.ticketsService.getTicketById(id).pipe(
-            catchError(() => of(null))
-          )
-        )
-      ).pipe(
-        map(list => list.filter((t): t is Ticket => t !== null))
-      ).subscribe(tickets => {
-        this.tickets = tickets;
+            if (!this.payment) {
+              try {
+                this.payment = localStorage.getItem(`order-payment-${o.id}`) ?? undefined;
+              } catch {}
+            }
 
-        // Fallback: Eventtitel aus Ticket-Daten, falls aus Items nichts kam
-        if (!this.eventTitle && tickets.length) {
-          const t: any = tickets[0];
-          this.eventTitle =
-            t?.performanceTitle ??
-            t?.eventTitle ??
-            t?.performance?.title ??
-            t?.performance?.eventTitle ??
-            t?.performance?.event?.title ??
-            t?.event?.title ??
-            t?.title ??
-            'Unbekannte Veranstaltung';
+            if (!this.items.length) {
+              this.items = (o.ticketIds ?? []).map(tid => ({ ticketId: tid } as any));
+            }
+
+            this.initInvoiceDates(o);
+            this.loadTickets(o);
+          }
+        },
+        error: () => {
         }
-
-        tickets.forEach(t =>
-          this.ticketPriceById.set(t.id, t.priceFinalCents ?? 0)
-        );
       });
+    } else if (this.order) {
+      if (!this.payment) {
+        try {
+          this.payment = localStorage.getItem(`order-payment-${this.order.id}`) ?? undefined;
+        } catch {}
+      }
+
+      if (!this.items.length) {
+        this.items = (this.order.ticketIds ?? []).map(tid => ({ ticketId: tid } as any));
+      }
+
+      this.initInvoiceDates(this.order);
+      this.loadTickets(this.order);
     }
 
     this.renderer.addClass(document.body, 'invoice-print');
@@ -169,6 +174,56 @@ export class InvoiceComponent implements OnDestroy {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
   }
 
+  private initInvoiceDates(order: OrderDto) {
+    const dt = order.createdAt ? new Date(order.createdAt) : new Date();
+    this.invoiceNo = this.buildInvoiceNumber(order.id, dt);
+    this.invoiceDateStr = this.formatDate(dt);
+    this.serviceDateStr = this.formatDate(dt);
+  }
+
+  private loadTickets(order: OrderDto) {
+    if (order?.ticketIds?.length) {
+      forkJoin(
+        order.ticketIds.map(id =>
+          this.ticketsService.getTicketById(id).pipe(
+            catchError(() => of(null))
+          )
+        )
+      ).pipe(
+        map(list => list.filter((t): t is Ticket => t !== null))
+      ).subscribe(tickets => {
+        this.tickets = tickets;
+
+        if (!this.eventTitle && tickets.length) {
+          const t: any = tickets[0];
+          this.eventTitle =
+            t?.performanceTitle ??
+            t?.eventTitle ??
+            t?.performance?.title ??
+            t?.performance?.eventTitle ??
+            t?.performance?.event?.title ??
+            t?.event?.title ??
+            t?.title ??
+            'Unbekannte Veranstaltung';
+        }
+
+        tickets.forEach(t =>
+          this.ticketPriceById.set(t.id, t.priceFinalCents ?? 0)
+        );
+
+        const shouldPrint = this.route.snapshot.queryParamMap.get('print') === '1';
+        if (shouldPrint) {
+          setTimeout(() => window.print(), 200);
+        }
+      });
+    } else {
+      const shouldPrint = this.route.snapshot.queryParamMap.get('print') === '1';
+      if (shouldPrint) {
+        setTimeout(() => window.print(), 200);
+      }
+    }
+  }
+
   private buildInvoiceNumber(orderId: number, date: Date): string {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -199,5 +254,4 @@ export class InvoiceComponent implements OnDestroy {
     if (seat) return seat;
     return 'Freie Platzwahl';
   }
-
 }
