@@ -18,24 +18,24 @@
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Veranstaltungstitel</mat-label>
-        <input matInput [(ngModel)]="searchTitle" (keyup)="onSearch()">
+        <input matInput [(ngModel)]="searchTitle" (keyup)="performSearch()">
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Künstler</mat-label>
-        <input matInput [(ngModel)]="searchArtist" (keyup)="onSearch()">
+        <input matInput [(ngModel)]="searchArtist" (keyup)="performSearch()">
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Ort</mat-label>
-        <input matInput [(ngModel)]="searchLocation" (keyup)="onSearch()">
+        <input matInput [(ngModel)]="searchLocation" (keyup)="performSearch()">
       </mat-form-field>
     </div>
 
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Veranstaltungstyp</mat-label>
-        <mat-select [(ngModel)]="selectedEventType" (selectionChange)="onSearch()">
+        <mat-select [(ngModel)]="selectedEventType" (selectionChange)="performSearch()">
           <mat-option [value]="null">Alle</mat-option>
           @for (type of eventTypes; track type) {
             <mat-option [value]="type">{{ getEventTypeLabel(type) }}</mat-option>
@@ -45,19 +45,19 @@
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Datum</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (change)="onSearch()">
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (change)="performSearch()">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Dauer (Minuten)</mat-label>
-        <input matInput type="number" [(ngModel)]="selectedDuration" (keyup.enter)="onSearch()">
+        <input matInput type="number" [(ngModel)]="selectedDuration" (keyup.enter)="performSearch()">
       </mat-form-field>
     </div>
 
     <div class="filter-actions">
-      <button mat-raised-button color="primary" (click)="onSearch()">Suchen</button>
+      <button mat-raised-button color="primary" (click)="performSearch()">Suchen</button>
       <button mat-stroked-button (click)="resetFilters()">Zurücksetzen</button>
     </div>
   </div>
@@ -270,6 +270,7 @@
     <mat-paginator
       [length]="totalEvents"
       [pageSize]="pageSize"
+      [pageIndex]="currentPage"
       [pageSizeOptions]="[5, 10, 25, 50]"
       (page)="onPageChange($event)">
     </mat-paginator>

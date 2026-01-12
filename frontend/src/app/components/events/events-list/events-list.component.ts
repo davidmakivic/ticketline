@@ -71,6 +71,7 @@ export class EventsListComponent implements OnInit {
   pageSize: number = 10;
   totalEvents: number = 0;
   totalPages: number = 0;
+  private isSearchActive: boolean = false;
 
   searchTitle: string = '';
   searchArtist: string = '';
@@ -140,41 +141,10 @@ export class EventsListComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.currentPage = 0;
-    this.isLoading = true;
-    let startDateFormatted: Date | undefined = undefined;
 
-    if (this.selectedStartDate) {
-      startDateFormatted = this.selectedStartDate instanceof Date
-        ? this.selectedStartDate
-        : new Date(this.selectedStartDate);
-    }
-
-    this.eventsService.searchAdvanced({
-      title: this.searchTitle || undefined,
-      artist: this.searchArtist || undefined,
-      location: this.searchLocation || undefined,
-      eventType: this.selectedEventType || undefined,
-      startDate: startDateFormatted,
-      durationMinutes: this.selectedDuration || undefined
-    }, this.currentPage, this.pageSize).subscribe({
-      next: (pagedResult) => {
-        this.events = pagedResult.content;
-        this.totalEvents = pagedResult.totalElements;
-        this.totalPages = pagedResult.totalPages;
-        this.loadImagesForEvents(this.events);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Fehler bei der Suche:', error);
-        this.isLoading = false;
-      }
-    });
-  }
-
-  private performSearch(): void {
-    this.currentPage = 0;
+  performSearch(): void {
+    this.isSearchActive = true;
+    this.currentPage = 0;  // Wichtig: Immer auf Seite 0 zurücksetzen
     this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
 
@@ -210,9 +180,9 @@ export class EventsListComponent implements OnInit {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
 
-    if (this.searchTitle || this.searchArtist || this.searchLocation ||
-      this.selectedEventType || this.selectedStartDate || this.selectedDuration) {
-      this.onSearch();
+    // Einfache Logik: Wenn isSearchActive, dann performSearch, sonst loadEvents
+    if (this.isSearchActive) {
+      this.performSearch();
     } else {
       this.loadEvents();
     }
@@ -226,6 +196,7 @@ export class EventsListComponent implements OnInit {
     this.selectedStartDate = null;
     this.selectedDuration = null;
     this.currentPage = 0;
+    this.isSearchActive = false;
     this.eventImages.clear();
     this.loadEvents();
   }
