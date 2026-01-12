@@ -9,6 +9,7 @@ import {EventDetailComponent} from './components/events/event-detail/event-detai
 import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
 import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
 import {RegisterComponent} from './components/register/register.component';
+import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
 
 
 const routes: Routes = [
@@ -18,6 +19,10 @@ const routes: Routes = [
   {
     path: 'news',
     component: NewsComponent
+  },
+  {
+    path: 'news/:id',
+    component: NewsDetailComponent
   },
 
   {

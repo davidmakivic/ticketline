@@ -32,7 +32,7 @@ export class NewsListComponent implements OnInit {
   }
 
   openNewsDetails(newsId: number): void {
-    this.router.navigate(['/news'], { fragment: `news-${newsId}` });
+    this.router.navigate(['/news', newsId]);
   }
 
   private loadNews(): void {

@@ -1,0 +1,33 @@
+<div class="news-detail-container">
+  <button
+    mat-icon-button
+    class="back-button"
+    [routerLink]="['/news']"
+    [attr.aria-label]="'Zurück zur Übersicht'">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  @if (loading) {
+    <p class="loading">Laden...</p>
+  }
+
+  @if (!loading && news) {
+    <div class="news-detail">
+      <h1 class="news-title">{{ news.title }}</h1>
+      <p class="news-date">{{ news.publishedAt | date:'d. MMMM yyyy' }}</p>
+
+      @if (news.imageUrl) {
+        <div class="image-container">
+          <img [src]="news.imageUrl" [alt]="news.title" class="news-image">
+        </div>
+      }
+
+      <p class="news-summary"><strong>{{ news.summary }}</strong></p>
+      <p class="news-text">{{ news.text }}</p>
+    </div>
+  }
+
+  @if (!loading && !news) {
+    <p class="error-message">News nicht gefunden</p>
+  }
+</div>
