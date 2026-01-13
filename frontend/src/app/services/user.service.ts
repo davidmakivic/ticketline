@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Globals } from '../global/globals';
 import { AuthService } from './auth.service';
-import {User, UserRegisterDto} from "../dtos/user";
+import {UserDto, UserRegisterDto} from "../dtos/user";
+import {PageResponse} from "../dtos/page-response";
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +20,27 @@ export class UserService {
 
   createUser(dto: UserRegisterDto): Observable<void> {
     return this.httpClient.post<void>(this.userBaseUrl,dto)
+  }
+
+  getUsers(page: number, size: number, email?: string): Observable<PageResponse<UserDto>> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (email && email.trim().length > 0) {
+      params = params.set('email', email.trim());
+    }
+
+    return this.httpClient.get<PageResponse<UserDto>>(this.userBaseUrl, { params });
+  }
+
+// block/unblock (void Endpoint => body null!)
+  blockUser(userId: number) {
+    return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/block`, null);
+  }
+
+  unblockUser(userId: number) {
+    return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/unblock`, null);
   }
 
 }

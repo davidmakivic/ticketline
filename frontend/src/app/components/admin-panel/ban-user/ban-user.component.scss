@@ -1,0 +1,99 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+}
+:host ::ng-deep .mat-mdc-cell,
+:host ::ng-deep .mat-mdc-header-cell {
+  border-bottom: none !important;
+}
+
+/* 2) Eine durchgehende Linie pro Zeile */
+:host ::ng-deep .mat-mdc-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+/* Optional: Header-Linie */
+:host ::ng-deep .mat-mdc-header-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* Header */
+.page > h1 {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 750;
+}
+
+/* Search */
+.search {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+/* Loading / Error */
+.state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  color: var(--mat-sys-on-surface-variant);
+
+  &.error {
+    color: var(--mat-sys-error);
+  }
+}
+
+/* Table container feel (weil du keinen extra wrapper im HTML hast) */
+.table {
+  width: 100%;
+  display: table;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--mat-sys-surface-container);
+}
+
+/* Material table header / rows */
+.table th.mat-mdc-header-cell {
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface-container);
+}
+
+.table tr.mat-mdc-row {
+  background: var(--mat-sys-surface-container);
+}
+
+.table td.mat-mdc-cell {
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+}
+
+.table tr.mat-mdc-row:hover td.mat-mdc-cell {
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 85%, transparent);
+}
+
+/* Actions column */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Paginator spacing */
+mat-paginator {
+  margin-top: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 14px;
+  background: var(--mat-sys-surface-container);
+}

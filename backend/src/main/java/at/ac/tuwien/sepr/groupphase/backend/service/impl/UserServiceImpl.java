@@ -26,6 +26,8 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -275,6 +277,21 @@ public class UserServiceImpl implements UserService {
                 throw new ValidationException("Validation for search failed", Collections.singletonList("Unknonw User Status"));
         }
         return userMapper.applicationUserListToUserDetailDtoList(users);
+    }
+
+
+    @Override
+    public Page<UserDetailDto> searchUsers(String email, Pageable pageable) throws ValidationException {
+
+        Page<ApplicationUser> page;
+
+        if (email == null || email.isBlank()) {
+            page = userRepository.findAll(pageable);
+        } else {
+            page = userRepository.findByEmailContainingIgnoreCase(email.trim(), pageable);
+        }
+
+        return page.map(userMapper::applicationUserToUserDetailDto);
     }
 
     @Override

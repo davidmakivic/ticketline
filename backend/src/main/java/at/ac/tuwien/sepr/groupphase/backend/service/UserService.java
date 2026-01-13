@@ -14,6 +14,8 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import jakarta.mail.MessagingException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -107,6 +109,10 @@ public interface UserService extends UserDetailsService {
      * @return a list of users with parameters defined in {@code dto}
      */
     List<UserDetailDto> searchUser(UserSearchDto dto) throws ValidationException;
+
+
+    Page<UserDetailDto> searchUsers(String email, Pageable pageable) throws ValidationException;
+
 
     /**
      * Blocks the user with id {@code id}.
