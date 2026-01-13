@@ -73,3 +73,15 @@ select {
   border: none;
   cursor: pointer;
 }
+
+.quantity input {
+  width: 50px;
+  text-align: center;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: none;
+  padding: 6px;
+  background-color: #2a2a2a;
+  color: white;
+}
+

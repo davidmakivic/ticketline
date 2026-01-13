@@ -1,24 +1,33 @@
 <h2>{{ item.name }}</h2>
-
 <p>{{ item.description }}</p>
 
 <div class="quantity">
   <button (click)="decrease()">−</button>
-  <span>{{ quantity }}</span>
+  <input
+    type="number"
+    [(ngModel)]="quantity"
+    min="1"
+    [max]="item.quantity"
+    (ngModelChange)="onQuantityChange()"
+    (blur)="onQuantityBlur()"
+    placeholder="0"
+  />
   <button (click)="increase()">+</button>
 </div>
 
-@if (item.availableSizes?.length) {
+<!-- Fehlermeldung -->
+<div *ngIf="errorMessage" style="color: #ff6b6b; margin-top: 4px; text-align: center;">
+  {{ errorMessage }}
+</div>
+
+<div *ngIf="item.availableSizes?.length">
   <select [(ngModel)]="selectedSize">
-    @for (s of item.availableSizes; track s.size) {
-      @if (s.quantity > 0) {
-        <option [value]="s.size">{{ s.size }}</option>
-      }
-    }
+    <option *ngFor="let s of item.availableSizes" [value]="s.size" [disabled]="s.quantity === 0">
+      {{ s.size }}
+    </option>
   </select>
-}
+</div>
 
 <button class="add" (click)="addToCart()">
   In den Warenkorb
 </button>
-
