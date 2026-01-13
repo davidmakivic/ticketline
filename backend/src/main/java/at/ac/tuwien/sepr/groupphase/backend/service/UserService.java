@@ -122,4 +122,12 @@ public interface UserService extends UserDetailsService {
      * @param id id of the user to unblock
      */
     void unblockUser(Long id);
+
+    /**
+     * Returns the details of the logged in user.
+     *
+     * @param email the email of the logged in user
+     * @return the logged in user
+     */
+    UserDetailDto getMe(String email);
 }

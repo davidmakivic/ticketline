@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.invoke.MethodHandles;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -46,13 +47,14 @@ public class UserEndpoint {
     }
 
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    @PutMapping(path = "{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public UserDetailDto updateUser(@PathVariable("id") Long id, @RequestBody UserUpdateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("Updating user with id={}", id);
+    @PutMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> updateUser(Principal principal, @RequestBody UserUpdateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Updating user with email={}", principal.getName());
         LOGGER.debug("Request payload: {}", dto);
-        dto.setUserId(id);
-        return userService.update(dto);
+        dto.setAuthenticatedUserEmail(principal.getName());
+        userService.update(dto);
+        return ResponseEntity.noContent().build();
     }
 
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
@@ -75,7 +77,7 @@ public class UserEndpoint {
 
     @PermitAll
     @PostMapping("/resetPassword")
-    public ResponseEntity<Void> requestPasswordReset(@RequestParam("email") String email) {
+    public ResponseEntity<Void> resetPassword(@RequestParam("email") String email) {
         LOGGER.info("Requesting password reset for user with email={}", email);
         try {
             userService.resetPassword(email);
@@ -87,7 +89,7 @@ public class UserEndpoint {
 
     @PermitAll
     @PostMapping("/changePassword")
-    public ResponseEntity<String> showChangePasswordPage(@RequestBody PasswortChangeDto dto) throws ValidationException {
+    public ResponseEntity<String> changePassword(Principal principal, @RequestBody PasswortChangeDto dto) throws ValidationException {
         LOGGER.info("Changing password for user");
         LOGGER.debug("Request payload: {}", dto);
         try {
@@ -106,6 +108,16 @@ public class UserEndpoint {
         LOGGER.debug("Search payload: {}", dto);
         return userService.searchUser(dto);
     }
+
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    @GetMapping("/me")
+    public UserDetailDto getMe(Principal principal) throws NotFoundException {
+        LOGGER.info("Getting user");
+        LOGGER.debug("Request payload: {}", principal.getName());
+
+        return userService.getMe(principal.getName());
+    }
+
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/{id}/block")

@@ -58,7 +58,10 @@ public class ApplicationUser {
 
     @Column(nullable = false)
     @Size(max = 255)
-    private String address;
+    private String street;
+
+    @Column(name = "house_number", nullable = false)
+    private Integer houseNumber;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -97,7 +100,7 @@ public class ApplicationUser {
         this.country = country;
         this.zipCode = zipCode;
         this.city = city;
-        this.address = address;
+        this.street = address;
         this.role = role;
         this.rewardPoints = rewardPoints;
         this.createdAt = createdAt;
@@ -137,8 +140,12 @@ public class ApplicationUser {
         return city;
     }
 
-    public String getAddress() {
-        return address;
+    public String getStreet() {
+        return street;
+    }
+
+    public Integer getHouseNumber() {
+        return houseNumber;
     }
 
     public Roles getRole() {
@@ -193,8 +200,12 @@ public class ApplicationUser {
         this.city = city;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setStreet(String address) {
+        this.street = address;
+    }
+
+    public void setHouseNumber(Integer houseNumber) {
+        this.houseNumber = houseNumber;
     }
 
     public void setRole(Roles role) {
@@ -222,7 +233,8 @@ public class ApplicationUser {
         private String country;
         private String zipCode;
         private String city;
-        private String address;
+        private String street;
+        private Integer houseNumber;
         private Roles role;
         private Integer rewardPoints;
         private UserStatus userStatus;
@@ -275,8 +287,13 @@ public class ApplicationUser {
             return this;
         }
 
-        public ApplicationUser.ApplicationUserBuilder withAddress(String address) {
-            this.address = address;
+        public ApplicationUser.ApplicationUserBuilder withStreet(String address) {
+            this.street = address;
+            return this;
+        }
+
+        public ApplicationUser.ApplicationUserBuilder withHouseNumber(Integer houseNumber) {
+            this.houseNumber = houseNumber;
             return this;
         }
 
@@ -311,7 +328,8 @@ public class ApplicationUser {
             applicationUser.setCountry(country);
             applicationUser.setZipCode(zipCode);
             applicationUser.setCity(city);
-            applicationUser.setAddress(address);
+            applicationUser.setStreet(street);
+            applicationUser.setHouseNumber(houseNumber);
             applicationUser.setRole(role);
             applicationUser.setRewardPoints(rewardPoints);
             applicationUser.setUserStatus(userStatus);

@@ -24,6 +24,7 @@ import {NewsListComponent} from "./components/home/news-list/news-list.component
 import {NgOptimizedImage, registerLocaleData} from "@angular/common";
 import { MatTooltipModule } from '@angular/material/tooltip';
 import localeDe from '@angular/common/locales/de';
+import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
 
 registerLocaleData(localeDe);
 
@@ -48,7 +49,7 @@ registerLocaleData(localeDe);
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent, NgOptimizedImage],
+    MatIconButton, MatAutocomplete, MatOption, MatOptgroup, MatDivider, Top10Component, NewsListComponent, Top10Component, HomeComponent, NgOptimizedImage, MatMenuTrigger, MatMenu, MatMenuItem],
   exports: [
     Top10Component
   ],

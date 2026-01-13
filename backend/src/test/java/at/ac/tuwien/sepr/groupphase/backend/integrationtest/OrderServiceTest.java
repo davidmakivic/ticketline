@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -48,7 +47,8 @@ public class OrderServiceTest {
         user.setPasswordHash("pw");
         user.setRole(Roles.USER);
         user.setUserStatus(UserStatus.UNLOCKED);
-        user.setAddress("Teststraße 1");
+        user.setStreet("Teststraße");
+        user.setHouseNumber(1);
         user.setCity("Wien");
         user.setZipCode("1010");
         user.setCountry("Austria");

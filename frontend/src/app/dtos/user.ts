@@ -6,7 +6,8 @@ export interface User {
   lastName: string;
   country: string;
   zipCode: string;
-  address: string;
+  street: string;
+  houseNumber: number;
   role: string;
   rewardPoints: number;
 }
@@ -19,7 +20,19 @@ export interface UserRegisterDto {
   country: string;
   zipCode: string;
   city: string;
-  address: string;
+  street: string;
+  houseNumber: number;
+}
+
+export interface UserUpdateDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  country: string;
+  zipCode: string;
+  city: string;
+  street: string;
+  houseNumber: number;
 }
 
 export interface UserDto {
@@ -30,12 +43,9 @@ export interface UserDto {
   country: string;
   zipCode: string;
   city: string;
-  address: string;
-  role: Roles;
+  street: string;
+  houseNumber: number;
   rewardPoints: number;
-  createdAt: string;        // ISO string from backend
-  userStatus: UserStatus;
-  failedLoginAttempts: number;
 }
 
 export enum Roles {

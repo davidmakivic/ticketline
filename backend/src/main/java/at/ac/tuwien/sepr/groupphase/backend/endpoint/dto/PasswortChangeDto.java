@@ -5,16 +5,39 @@ import jakarta.validation.constraints.Size;
 
 /**
  * Holds the data to change the password of the user.
- *
- * @param token    token to identify the user.
- * @param password the new password.
  */
-public record PasswortChangeDto(
-    @NotBlank(message = "Token must not be empty")
-    String token,
+public class PasswortChangeDto {
+
+    //Token is used if user is not authenticated
+    String token;
+
+    //Email is used if user is authenticated
+    String authenticatedUserEmail;
+
+    //Used if user is authenticated
+    String oldPassword;
+
 
     @NotBlank(message = "Password must not be empty")
     @Size(min = 8, message = "Password must be at least of length 8")
-    String password
-) {
+    String newPassword;
+
+    public PasswortChangeDto(String token, String password) {
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getAuthenticatedUserEmail() {
+        return authenticatedUserEmail;
+    }
+
+    public String getOldPassword() {
+        return oldPassword;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
 }

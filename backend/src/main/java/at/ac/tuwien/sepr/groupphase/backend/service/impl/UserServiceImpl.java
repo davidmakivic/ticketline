@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -116,7 +115,8 @@ public class UserServiceImpl implements UserService {
             .withCountry(dto.getCountry())
             .withZipCode(dto.getZipCode())
             .withCity(dto.getCity())
-            .withAddress(dto.getAddress())
+            .withStreet(dto.getStreet())
+            .withHouseNumber(dto.getHouseNumber())
             .withRole(dto.getRole())
             .withRewardPoints(0)
             .withUserStatus(UserStatus.UNVERIFIED)
@@ -134,8 +134,6 @@ public class UserServiceImpl implements UserService {
             || !userDetails.isAccountNonExpired()
             || !userDetails.isCredentialsNonExpired()
         ) {
-            LOGGER.debug("accounts not found {}", userDetails == null);
-            LOGGER.debug("account credentials expired {}", !userDetails.isCredentialsNonExpired());
             throw new BadCredentialsException("Username or password is incorrect or account is locked");
         }
         if (!userDetails.isAccountNonLocked()) {
@@ -188,19 +186,22 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void changePassword(PasswortChangeDto dto) throws ValidationException, GoneException, NotFoundException {
         LOGGER.info("Changing password");
-        LOGGER.debug("Payload: tokenPresent={}", dto.token() != null);
+        LOGGER.debug("Payload: tokenPresent={}", dto.getToken() != null);
         //If user is logged in
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        userValidator.validatePassword(dto.password());
-        if (email != null) {
+        String dtoAuthenticatedUserEmail = dto.getAuthenticatedUserEmail();
+        userValidator.validatePassword(dto.getNewPassword());
+        if (dtoAuthenticatedUserEmail != null) {
             //Logged in user can change their own password
-            ApplicationUser user = userRepository.findUserByEmail(email);
-            user.setPasswordHash(passwordEncoder.encode(dto.password()));
+            ApplicationUser user = userRepository.findUserByEmail(dtoAuthenticatedUserEmail);
+            if (!user.getPasswordHash().equals(passwordEncoder.encode(dto.getOldPassword()))) {
+                throw new ValidationException("Validation for password Change failed", Collections.singletonList("Das eingegebene Passwort ist nicht korrekt"));
+            }
+            user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
             user.setFailedLoginAttempts(0);
             userRepository.save(user);
             return;
         }
-        PasswordResetToken token = passwordTokenRepository.findByToken(dto.token());
+        PasswordResetToken token = passwordTokenRepository.findByToken(dto.getToken());
         if (token == null) {
             LOGGER.error("Password change failed because token was not found");
             throw new NotFoundException("Token not found");
@@ -210,7 +211,7 @@ public class UserServiceImpl implements UserService {
             throw new GoneException("Token is expired");
         }
         ApplicationUser user = token.getUser();
-        user.setPasswordHash(passwordEncoder.encode(dto.password()));
+        user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
         user.setFailedLoginAttempts(0);
         userRepository.save(user);
         passwordTokenRepository.removeByUser(user);
@@ -218,17 +219,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailDto update(UserUpdateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("Updating user with id {}", dto.getUserId());
+        LOGGER.info("Updating user with email {}", dto.getAuthenticatedUserEmail());
         LOGGER.debug("Payload: {}", dto);
         userValidator.validateUserForUpdate(dto);
-        ApplicationUser applicationUser = userRepository.findUserByUserId(dto.getUserId());
+        ApplicationUser applicationUser = userRepository.findUserByEmail(dto.getAuthenticatedUserEmail());
         applicationUser.setFirstName(dto.getFirstName());
         applicationUser.setLastName(dto.getLastName());
         applicationUser.setEmail(dto.getEmail());
         applicationUser.setCountry(dto.getCountry());
         applicationUser.setZipCode(dto.getZipCode());
         applicationUser.setCity(dto.getCity());
-        applicationUser.setAddress(dto.getAddress());
+        applicationUser.setStreet(dto.getStreet());
+        applicationUser.setHouseNumber(dto.getHouseNumber());
         applicationUser.setRole(dto.getRole());
 
         return userMapper.applicationUserToUserDetailDto(userRepository.save(applicationUser));
@@ -296,5 +298,10 @@ public class UserServiceImpl implements UserService {
         ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         user.setUserStatus(UserStatus.UNLOCKED);
         userRepository.save(user);
+    }
+
+    @Override
+    public UserDetailDto getMe(String email) {
+        return userMapper.applicationUserToUserDetailDto(userRepository.getApplicationUserByEmail((email)));
     }
 }

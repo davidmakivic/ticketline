@@ -8,13 +8,18 @@ import {EventsListComponent} from './components/events/events-list/events-list.c
 import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
 import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
 import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
-import {RegisterComponent} from './components/register/register.component';
+import {AccountComponent} from "./components/account/account.component";
+import RegisterEditComponent, {
+  RegisterEditMode
+} from "./components/account/register-edit-account/register-edit.component";
 
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'register', component: RegisterComponent},
+  {path: 'account', component: AccountComponent},
+  {path: 'register', component: RegisterEditComponent, data: {mode: RegisterEditMode.register}},
+  {path: 'account/edit', canActivate: mapToCanActivate([AuthGuard]), component: RegisterEditComponent, data: {mode: RegisterEditMode.edit}},
   {
     path: 'news',
     component: NewsComponent

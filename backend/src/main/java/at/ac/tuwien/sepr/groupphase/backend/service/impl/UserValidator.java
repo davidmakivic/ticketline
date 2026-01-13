@@ -82,9 +82,9 @@ public class UserValidator {
             errors.add("Ort darf nicht länger als 255 Zeichen sein");
         }
 
-        if (dto.getAddress() == null || dto.getAddress().isBlank()) {
+        if (dto.getStreet() == null || dto.getStreet().isBlank()) {
             errors.add("Adresse darf nicht leer sein");
-        } else if (dto.getAddress().length() > 255) {
+        } else if (dto.getStreet().length() > 255) {
             errors.add("Adresse darf nicht länger als 255 Zeichen sein");
         }
 
@@ -116,12 +116,12 @@ public class UserValidator {
     }
 
     public void validateUserForUpdate(UserUpdateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("Validating user for update: {}", dto.getUserId());
+        LOGGER.info("Validating user for update: {}", dto.getAuthenticatedUserEmail());
         LOGGER.debug("Payload: {}", dto);
 
-        ApplicationUser userToUpdate = userRepository.findUserByUserId(dto.getUserId());
+        ApplicationUser userToUpdate = userRepository.findUserByEmail(dto.getAuthenticatedUserEmail());
         if (userToUpdate == null) {
-            throw new NotFoundException("User with id " + dto.getUserId() + " does not exist");
+            throw new NotFoundException("User with email " + dto.getAuthenticatedUserEmail() + " does not exist");
         }
         List<String> errors = new ArrayList<>();
 
@@ -137,39 +137,41 @@ public class UserValidator {
                 errors.add("Email must be a valid email address");
             }
         }
-
-
+        
         if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
-            errors.add("First name must not be empty");
+            errors.add("Vorname darf nicht leer sein");
         } else if (dto.getFirstName().length() > 255) {
-            errors.add("First name must not exceed 255 characters");
+            errors.add("Vorname darf nicht länger als 255 Zeichen sein");
         }
 
         if (dto.getLastName() == null || dto.getLastName().isBlank()) {
-            errors.add("Last name must not be empty");
+            errors.add("Nachname darf nicht leer sein");
         } else if (dto.getLastName().length() > 255) {
-            errors.add("Last name must not exceed 255 characters");
+            errors.add("Nachname darf nicht länger als 255 Zeichen sein");
         }
         if (dto.getCountry() == null || dto.getCountry().isBlank()) {
-            if (dto.getZipCode() == null || dto.getZipCode().isBlank()) {
-                errors.add("ZIP code must not be empty");
-            }
+            errors.add("Land darf nicht leer sein");
+        } else if (dto.getCountry().length() > 255) {
+            errors.add("Land darf nicht leer als 255 Zeichen sein");
+        }
+        if (dto.getZipCode() == null || dto.getZipCode().isBlank()) {
+            errors.add("Postleitzahl darf nicht leer sein");
         }
 
         if (dto.getCity() == null || dto.getCity().isBlank()) {
-            errors.add("City must not be empty");
+            errors.add("Ort darf nicht leer sein");
         } else if (dto.getCity().length() > 255) {
-            errors.add("City must not exceed 255 characters");
+            errors.add("Ort darf nicht länger als 255 Zeichen sein");
         }
 
-        if (dto.getAddress() == null || dto.getAddress().isBlank()) {
-            errors.add("Address must not be empty");
-        } else if (dto.getAddress().length() > 255) {
-            errors.add("Address must not exceed 255 characters");
+        if (dto.getStreet() == null || dto.getStreet().isBlank()) {
+            errors.add("Adresse darf nicht leer sein");
+        } else if (dto.getStreet().length() > 255) {
+            errors.add("Adresse darf nicht länger als 255 Zeichen sein");
         }
 
         if (dto.getRole() == null) {
-            errors.add("Role must not be null");
+            errors.add("Rolle darf nicht leer sein");
         }
 
         if (!errors.isEmpty()) {
@@ -195,7 +197,7 @@ public class UserValidator {
         }
 
         ApplicationUser userWithGivenEmail = userRepository.findUserByEmail(dto.getEmail());
-        if (userWithGivenEmail != null && !userWithGivenEmail.getUserId().equals(dto.getUserId())) {
+        if (userWithGivenEmail != null && !userWithGivenEmail.getEmail().equals(dto.getAuthenticatedUserEmail())) {
             errors.add("Email already used by another user");
         }
 
