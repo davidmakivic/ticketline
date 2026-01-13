@@ -11,6 +11,7 @@ import java.util.List;
 public interface PerformanceMapper {
 
     @Mapping(source = "event.id",  target = "eventId")
+    @Mapping(source = "event.title", target = "eventTitle")
     @Mapping(source = "hall.id",   target = "hallId")
     PerformanceDto performanceToPerformanceDto(Performance performance);
 

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Globals } from '../global/globals';
 import { Observable } from 'rxjs';
 import { PerformanceDto } from '../dtos/performanceDto';
+import { PagedResult, EventTypeDto } from '../dtos/event';
 
 @Injectable({ providedIn: 'root' })
 export class PerformancesService {
@@ -15,5 +16,37 @@ export class PerformancesService {
 
   create(performance: Partial<PerformanceDto>): Observable<PerformanceDto> {
     return this.http.post<PerformanceDto>(this.baseUri, performance);
+  }
+
+  getAll(page: number = 0, size: number = 10): Observable<PagedResult<PerformanceDto>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PagedResult<PerformanceDto>>(this.baseUri, { params });
+  }
+
+  searchAdvanced(filters: {
+    title?: string;
+    location?: string;
+    eventType?: EventTypeDto;
+    startDate?: Date;
+  }, page: number = 0, size: number = 10): Observable<PagedResult<PerformanceDto>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (filters.title) params = params.set('title', filters.title);
+    if (filters.location) params = params.set('location', filters.location);
+    if (filters.eventType) params = params.set('eventType', filters.eventType);
+    if (filters.startDate) params = params.set('startDate', this.formatDate(filters.startDate));
+
+    return this.http.get<PagedResult<PerformanceDto>>(`${this.baseUri}/query`, { params });
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
