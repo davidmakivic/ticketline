@@ -54,7 +54,7 @@ export enum Roles {
 }
 
 export enum UserStatus{
-  UNLOCKED,
-  LOCKED,
-  UNVERIFIED
+  UNLOCKED='UNLOCKED',
+  LOCKED='LOCKED',
+  UNVERIFIED='UNVERIFIED'
 }

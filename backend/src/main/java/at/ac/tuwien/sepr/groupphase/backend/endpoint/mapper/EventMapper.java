@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -32,4 +33,8 @@ public interface EventMapper {
     @Mapping(target = "imageContentType", ignore = true)
     @Mapping(target = "artists", ignore = true)
     void updateEntityFromDto(EventDto dto, @MappingTarget Event entity);
+
+    default Page<EventDto> eventPageToEventDtoPage(Page<Event> events) {
+        return events.map(this::eventToEventDto);
+    }
 }

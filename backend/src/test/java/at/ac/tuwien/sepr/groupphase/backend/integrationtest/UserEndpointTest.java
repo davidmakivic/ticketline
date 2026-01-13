@@ -107,7 +107,7 @@ public class UserEndpointTest {
 
 
         UserUpdateDto updateDto = new UserUpdateDto(
-            "updated@email.com",
+            "testuser@email.com",
             "updated@email.com",
             "UpdatedFirst",
             "UpdatedLast",

@@ -41,7 +41,10 @@
           <h2>Aufführungen</h2>
           <div class="performances-list">
             @for (performance of event.performances; track performance.id) {
-              <app-performance-card [performance]="performance"></app-performance-card>
+              <app-performance-card
+                [performance]="performance"
+                [showEventTitle]="false">
+              </app-performance-card>
             }
           </div>
         </div>

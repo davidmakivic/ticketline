@@ -8,10 +8,15 @@ import {EventsListComponent} from './components/events/events-list/events-list.c
 import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
 import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
 import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
+import {RegisterComponent} from './components/register/register.component';
 import {AccountComponent} from "./components/account/account.component";
 import RegisterEditComponent, {
   RegisterEditMode
 } from "./components/account/register-edit-account/register-edit.component";
+import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
+import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
+import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
+import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
 
 
 const routes: Routes = [
@@ -23,6 +28,10 @@ const routes: Routes = [
   {
     path: 'news',
     component: NewsComponent
+  },
+  {
+    path: 'news/:id',
+    component: NewsDetailComponent
   },
 
   {
@@ -78,10 +87,27 @@ const routes: Routes = [
   },
 
   {
+    path: 'performances',
+    component: PerformancesListComponent
+  },
+
+  {
     path: 'performances/:performanceId/seats',
     loadComponent: () =>
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
+  },
+
+
+
+  {
+    path: 'panel',
+    component: AdminPanelComponent
+  },
+
+  {
+    path: 'panel/ban-users',
+    component: BanUsersComponent
   },
 
   {

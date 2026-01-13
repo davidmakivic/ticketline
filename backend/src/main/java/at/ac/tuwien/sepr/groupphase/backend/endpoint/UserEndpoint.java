@@ -16,6 +16,9 @@ import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -101,12 +104,16 @@ public class UserEndpoint {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @Secured("ROLE_ADMIN")
+    //@Secured("ROLE_ADMIN")
+    @PermitAll
     @GetMapping
-    public List<UserDetailDto> searchUsers(@RequestBody UserSearchDto dto) throws ValidationException {
+    public Page<UserDetailDto> searchUsers(
+        @RequestParam(required = false) String email,
+        @PageableDefault(size = 25, sort = "email") Pageable pageable
+    ) throws ValidationException {
         LOGGER.info("Searching users");
-        LOGGER.debug("Search payload: {}", dto);
-        return userService.searchUser(dto);
+        LOGGER.debug("email={}, pageable={}", email, pageable);
+        return userService.searchUsers(email, pageable);
     }
 
     @Secured({"ROLE_USER", "ROLE_ADMIN"})

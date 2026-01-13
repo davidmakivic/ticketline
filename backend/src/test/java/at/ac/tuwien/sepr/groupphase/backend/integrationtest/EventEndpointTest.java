@@ -163,9 +163,9 @@ public class EventEndpointTest {
 
         mockMvc.perform(get("/api/v1/events"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(2))
-            .andExpect(jsonPath("$[0].category").exists())
-            .andExpect(jsonPath("$[1].category").exists());
+            .andExpect(jsonPath("$.content.length()").value(2))
+            .andExpect(jsonPath("$.content[0].category").exists())
+            .andExpect(jsonPath("$.content[1].category").exists());
     }
 
 

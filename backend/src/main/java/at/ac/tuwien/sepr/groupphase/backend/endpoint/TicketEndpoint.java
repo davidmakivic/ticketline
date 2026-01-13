@@ -99,16 +99,21 @@ public class TicketEndpoint {
 
     @DeleteMapping("/{id}/hold")
     @Secured("ROLE_USER")
-    public ResponseEntity<TicketDto> release(@PathVariable Long id) throws ConflictException {
+    public ResponseEntity<TicketDto> release(@PathVariable Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         ApplicationUser user = userRepository.findUserByEmail(email);
 
-        TicketDto dto = ticketService.release(id, user.getUserId());
-
-        dto.setReservedByMe(false);
-
-        return ResponseEntity.ok(dto);
+        try {
+            TicketDto dto = ticketService.release(id, user.getUserId());
+            dto.setReservedByMe(false);
+            return ResponseEntity.ok(dto);
+        } catch (ConflictException e) {
+            TicketDto dto = ticketService.findById(id);
+            dto.setReservedByMe(false);
+            return ResponseEntity.ok(dto);
+        }
     }
+
 
 
     @PermitAll

@@ -8,16 +8,20 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
+import java.util.Date;
 
 @Service
 public class PerformanceServiceImpl implements PerformanceService {
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final PerformanceRepository performanceRepository;
@@ -45,7 +49,6 @@ public class PerformanceServiceImpl implements PerformanceService {
         return performanceMapper.performanceToPerformanceDto(saved);
     }
 
-
     @Override
     public PerformanceDto update(Long id, PerformanceDto dto) {
         LOGGER.info("Updating performance with id={}", id);
@@ -64,7 +67,6 @@ public class PerformanceServiceImpl implements PerformanceService {
         return performanceMapper.performanceToPerformanceDto(saved);
     }
 
-
     @Override
     public PerformanceDto findById(Long id) {
         LOGGER.info("Fetching performance with id={}", id);
@@ -75,11 +77,19 @@ public class PerformanceServiceImpl implements PerformanceService {
     }
 
     @Override
-    public List<PerformanceDto> findAll() {
-        LOGGER.info("Fetching all performances");
-        return performanceMapper.performanceListToPerformanceDtoList(
-            performanceRepository.findAll()
-        );
+    public Page<PerformanceDto> findAll(int page, int size) {
+        LOGGER.info("Fetching all performances with pagination");
+        Pageable pageable = PageRequest.of(page, size, Sort.by("event.id").ascending().and(Sort.by("startTime").ascending()));
+        return performanceRepository.findAllWithDetails(pageable)
+            .map(performanceMapper::performanceToPerformanceDto);
+    }
+
+    @Override
+    public Page<PerformanceDto> findByAdvancedFilters(String title, String location, EventType eventType, Date startDate, int page, int size) {
+        LOGGER.info("Searching performances with filters: title={}, location={}, eventType={}, startDate={}", title, location, eventType, startDate);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("event.id").ascending().and(Sort.by("startTime").ascending()));
+        return performanceRepository.findByAdvancedFilters(title, location, eventType, startDate, pageable)
+            .map(performanceMapper::performanceToPerformanceDto);
     }
 
     @Override
@@ -91,5 +101,4 @@ public class PerformanceServiceImpl implements PerformanceService {
 
         performanceRepository.deleteById(id);
     }
-
 }

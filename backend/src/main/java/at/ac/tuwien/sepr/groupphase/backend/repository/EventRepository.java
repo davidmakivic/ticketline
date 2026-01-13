@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -64,14 +65,18 @@ public interface EventRepository extends JpaRepository<Event, Long> {
       AND (:durationMinutes IS NULL
         OR (e.durationMinutes >= :durationMinutes - 30
             AND e.durationMinutes <= :durationMinutes + 30))""")
-    List<Event> findByAdvancedFilters(
+    Page<Event> findByAdvancedFilters(
         @Param("title") String title,
         @Param("artist") String artist,
         @Param("location") String location,
         @Param("eventType") EventType eventType,
         @Param("startDate") Date startDate,
-        @Param("durationMinutes") Integer durationMinutes
+        @Param("durationMinutes") Integer durationMinutes,
+        Pageable pageable
     );
+
+    @Query("SELECT e FROM Event e ORDER BY e.id")
+    Page<Event> findAllPaginated(Pageable pageable);
 
 
 

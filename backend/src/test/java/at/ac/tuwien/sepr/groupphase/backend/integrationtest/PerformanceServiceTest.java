@@ -15,11 +15,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -148,9 +148,10 @@ public class PerformanceServiceTest {
         performanceService.create(dto1);
         performanceService.create(dto2);
 
-        List<PerformanceDto> result = performanceService.findAll();
+        Page<PerformanceDto> result = performanceService.findAll(0, 10);
 
-        assertThat(result).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(result.getTotalElements()).isGreaterThanOrEqualTo(2);
     }
 
     @Transactional
