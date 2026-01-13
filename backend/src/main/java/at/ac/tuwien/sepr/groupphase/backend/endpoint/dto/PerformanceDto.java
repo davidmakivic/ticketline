@@ -15,6 +15,7 @@ public class PerformanceDto {
     private Date startTime;
     private Date endTime;
     private Long basePriceCents;
+    private String eventTitle;
 
     public PerformanceDto() {
     }
@@ -65,5 +66,13 @@ public class PerformanceDto {
 
     public void setBasePriceCents(Long basePriceCents) {
         this.basePriceCents = basePriceCents;
+    }
+
+    public String getEventTitle() {
+        return eventTitle;
+    }
+
+    public void setEventTitle(String eventTitle) {
+        this.eventTitle = eventTitle;
     }
 }

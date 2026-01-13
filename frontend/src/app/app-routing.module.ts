@@ -80,11 +80,18 @@ const routes: Routes = [
   },
 
   {
+    path: 'performances',
+    component: PerformancesListComponent
+  },
+
+  {
     path: 'performances/:performanceId/seats',
     loadComponent: () =>
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
   },
+
+
 
   {
     path: 'panel',
