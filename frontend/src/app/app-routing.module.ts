@@ -10,6 +10,7 @@ import {ArtistDetailComponent} from './components/artists/artist-detail/artist-d
 import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
 import {RegisterComponent} from './components/register/register.component';
 import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
+import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
 
 
 const routes: Routes = [
@@ -78,11 +79,18 @@ const routes: Routes = [
   },
 
   {
+    path: 'performances',
+    component: PerformancesListComponent
+  },
+
+  {
     path: 'performances/:performanceId/seats',
     loadComponent: () =>
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
   },
+
+
 
   {
     path: 'tickets',

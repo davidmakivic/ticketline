@@ -5,4 +5,5 @@ export interface PerformanceDto {
   startTime: string;
   endTime: string;
   basePriceCents: number;
+  eventTitle?: string;
 }
