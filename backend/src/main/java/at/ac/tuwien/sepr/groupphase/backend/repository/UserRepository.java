@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.groupphase.backend.repository;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +23,8 @@ public interface UserRepository extends JpaRepository<ApplicationUser, Long> {
     ApplicationUser findUserByUserId(Long userId);
 
     List<ApplicationUser> findAllByUserStatus(UserStatus userStatus);
+
+    Page<ApplicationUser> findByEmailContainingIgnoreCase(String email, Pageable pageable);
 
     List<ApplicationUser> findAllByUserStatusNot(UserStatus userStatus);
 
