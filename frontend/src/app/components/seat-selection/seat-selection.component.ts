@@ -1,7 +1,8 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { forkJoin, switchMap } from 'rxjs';
+import { forkJoin, of, switchMap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { PerformancesService } from '../../services/performances.service';
 import { HallsService } from '../../services/halls.service';
@@ -563,8 +564,49 @@ addSelectedToCart() {
   }
 
   clearSelection() {
+    if (this.selectedSeatIds.size === 0) return;
+
+    if (!this.authService.isLoggedIn()) {
+      this.selectedSeatIds.clear();
+      return;
+    }
+
+    const ticketIds: number[] = [];
+    for (const seatId of this.selectedSeatIds) {
+      const t = this.ticketBySeatId.get(seatId);
+      if (!t) continue;
+
+      if (t.status === TicketStatus.RESERVED && t.reservedByMe) {
+        ticketIds.push(t.id);
+      }
+    }
+
     this.selectedSeatIds.clear();
+
+    if (ticketIds.length === 0) {
+      this.refreshTicketsOnce();
+      return;
+    }
+
+    forkJoin(
+      ticketIds.map(id =>
+        this.ticketsService.releaseHold(id).pipe(
+          catchError(() => of(null as Ticket | null))
+        )
+      )
+    ).subscribe({
+      next: (updatedList: Array<Ticket | null>) => {
+        for (const updated of updatedList) {
+          if (!updated || updated.seatId == null) continue;
+          this.ticketBySeatId.set(updated.seatId, updated);
+        }
+        this.refreshTicketsOnce();
+      },
+      error: () => this.refreshTicketsOnce()
+    });
   }
+
+
 
   range(n: number): number[] {
     return Array.from({ length: Math.max(0, n) }, (_, i) => i);
