@@ -41,6 +41,13 @@ export class OrdersComponent {
   seatsByOrderId: Record<number, string[]> = {};
   ticketCountByOrderId: Record<number, number> = {};
 
+  orders: OrderDto[] = [];
+  loading = false;
+  error: string | null = null;
+
+  confirmOpen = false;
+  confirmOrder: OrderDto | null = null;
+
   reservations: ReservationDto[] = [];
   showReservations = true;
 
@@ -51,12 +58,7 @@ export class OrdersComponent {
   reservationLinesById: Record<number, ReservationTicketLine[]> = {};
   reservationTotalCentsById: Record<number, number> = {};
 
-  loading = false;
-  error: string | null = null;
-  orders: OrderDto[] = [];
-
-  confirmOpen = false;
-  confirmOrder: OrderDto | null = null;
+  reservationSelectedById: Record<number, Record<number, boolean>> = {};
 
   constructor(
     private orderService: OrdersService,
@@ -70,60 +72,6 @@ export class OrdersComponent {
     this.load();
   }
 
-deleteReservation(r: ReservationDto) {
-  const ids = r.ticketIds ?? [];
-
-  const ok = confirm(`Reservierung #${r.id} wirklich löschen?`);
-  if (!ok) return;
-
-  if (!ids.length) {
-    this.reservationsService.delete(r.id).subscribe({
-      next: () => this.load(),
-      error: e => {
- console.error(e); alert('Reservierung konnte nicht gelöscht werden');
-        }
-    });
-    return;
-  }
-
-  forkJoin(
-    ids.map(tid => this.ticketsService.releaseHold(tid).pipe(
-      catchError(() => of(null))
-    ))
-  ).subscribe({
-    next: () => {
-      this.reservationsService.delete(r.id).subscribe({
-        next: () => this.load(),
-        error: e => {
- console.error(e); alert('Reservierung konnte nicht gelöscht werden');
-          }
-      });
-    },
-    error: e => {
-      console.error(e);
-      this.reservationsService.delete(r.id).subscribe({
-        next: () => this.load(),
-        error: err => {
- console.error(err); alert('Reservierung konnte nicht gelöscht werden');
-          }
-      });
-    }
-  });
-}
-
-  buyReservation(r: ReservationDto) {
-    const ids = r.ticketIds ?? [];
-    if (!ids.length) return;
-
-    sessionStorage.setItem('reservation.deleteAfterPay', String(r.id));
-
-    ids.forEach(tid => this.cart.addTicket(tid));
-    this.router.navigate(['/checkout']);
-  }
-
-
-
-
   load() {
     this.loading = true;
     this.error = null;
@@ -131,6 +79,8 @@ deleteReservation(r: ReservationDto) {
     this.orderService.getAll().subscribe({
       next: data => {
         this.orders = data ?? [];
+
+        this.cleanupMetaForActiveOrders(this.orders);
 
         this.loadEventTitles(this.orders);
         this.loadSeatsForOrders(this.orders);
@@ -148,9 +98,25 @@ deleteReservation(r: ReservationDto) {
     this.reservationsService.getAll().subscribe({
       next: res => {
         this.reservations = res ?? [];
+
+        for (const r of this.reservations) {
+          this.reservationSelectedById[r.id] ||= {};
+          for (const tid of (r.ticketIds ?? [])) {
+            if (this.reservationSelectedById[r.id][tid] === undefined) {
+              this.reservationSelectedById[r.id][tid] = true;
+            }
+          }
+        }
+
+        for (const ridStr of Object.keys(this.reservationSelectedById)) {
+          const rid = Number(ridStr);
+          if (!this.reservations.some(r => r.id === rid)) {
+            delete this.reservationSelectedById[rid];
+          }
+        }
+
         this.loadEventTitlesForReservations(this.reservations);
         this.loadSeatsForReservations(this.reservations);
-
         this.loadReservationDetails(this.reservations);
       },
       error: () => {
@@ -159,12 +125,29 @@ deleteReservation(r: ReservationDto) {
     });
   }
 
+
   isCancelled(o: OrderDto): boolean {
     return (o.ticketIds?.length ?? 0) === 0 || (o.totalPriceCents ?? 0) === 0;
   }
 
   statusLabel(o: OrderDto): string {
     return this.isCancelled(o) ? 'Storniert' : 'Gekauft';
+  }
+
+  orderTitle(o: OrderDto): string {
+    return this.eventTitleByOrderId[o.id]
+      ?? (this.isCancelled(o) ? this.loadOrderMeta(o.id)?.eventTitle : null)
+      ?? 'Unbekannte Veranstaltung';
+  }
+
+  orderSeats(o: OrderDto): string[] {
+    const direct = this.seatsByOrderId[o.id];
+    if (direct && direct.length) return direct;
+
+    if (this.isCancelled(o)) {
+      return this.loadOrderMeta(o.id)?.seats ?? [];
+    }
+    return [];
   }
 
   cancelOrder(o: OrderDto) {
@@ -183,20 +166,6 @@ deleteReservation(r: ReservationDto) {
   closeCancelConfirm() {
     this.confirmOpen = false;
     this.confirmOrder = null;
-  }
-
-  orderTitle(o: OrderDto): string {
-    return this.eventTitleByOrderId[o.id]
-      ?? this.loadOrderMeta(o.id)?.eventTitle
-      ?? 'Unbekannte Veranstaltung';
-  }
-
-  orderSeats(o: OrderDto): string[] {
-    const direct = this.seatsByOrderId[o.id];
-    if (direct && direct.length) return direct;
-
-    const cached = this.loadOrderMeta(o.id)?.seats ?? [];
-    return cached;
   }
 
   doCancelConfirmed() {
@@ -260,9 +229,128 @@ deleteReservation(r: ReservationDto) {
     });
   }
 
+  openInvoice(o: OrderDto) {
+    if (this.isCancelled(o)) return;
+
+    this.router.navigate(['/invoice', o.id], {
+      state: {
+        order: o,
+        items: (o.ticketIds ?? []).map(id => ({ ticketId: id })),
+        payment: 'card',
+        customerName: 'Kunde',
+        eventTitle: this.eventTitleByOrderId[o.id] ?? ''
+      }
+    });
+  }
+
+  openStorno(o: OrderDto) {
+    if (!this.isCancelled(o)) return;
+
+    const meta = this.loadOrderMeta(o.id);
+    this.router.navigate(['/storno-invoice', o.id], {
+      state: {
+        cancellation: {
+          orderId: o.id,
+          cancelledTicketIds: [],
+          refundTotalCents: 0,
+          createdAt: new Date().toISOString()
+        },
+        customerName: 'Kunde',
+        originalInvoiceNo: '',
+        eventTitle: meta?.eventTitle ?? this.eventTitleByOrderId[o.id] ?? '',
+        seats: meta?.seats ?? this.seatsByOrderId[o.id] ?? []
+      }
+    });
+  }
+
+
+  buyReservation(r: ReservationDto) {
+    const allIds = r.ticketIds ?? [];
+    if (!allIds.length) return;
+
+    const selMap = this.reservationSelectedById[r.id] ?? {};
+
+    const selectedIds = allIds.filter(tid => (selMap[tid] ?? true) === true);
+
+    if (selectedIds.length === 0) {
+      alert('Bitte wähle mindestens ein Ticket aus.');
+      return;
+    }
+
+    this.cart.clear();
+
+    sessionStorage.setItem('reservation.pay.rid', String(r.id));
+    sessionStorage.setItem('reservation.pay.allIds', JSON.stringify(allIds));
+    sessionStorage.setItem('reservation.pay.selectedIds', JSON.stringify(selectedIds));
+
+    selectedIds.forEach(tid => this.cart.addTicket(tid));
+    this.router.navigate(['/checkout']);
+  }
+
+  deleteReservation(r: ReservationDto) {
+    const ids = r.ticketIds ?? [];
+
+    const ok = confirm(`Reservierung #${r.id} wirklich löschen?`);
+    if (!ok) return;
+
+    if (!ids.length) {
+      this.reservationsService.delete(r.id).subscribe({
+        next: () => this.load(),
+        error: e => {
+          console.error(e);
+          alert('Reservierung konnte nicht gelöscht werden');
+        }
+      });
+      return;
+    }
+
+    forkJoin(
+      ids.map(tid => this.ticketsService.releaseHold(tid).pipe(
+        catchError(() => of(null))
+      ))
+    ).subscribe({
+      next: () => {
+        this.reservationsService.delete(r.id).subscribe({
+          next: () => this.load(),
+          error: e => {
+            console.error(e);
+            alert('Reservierung konnte nicht gelöscht werden');
+          }
+        });
+      },
+      error: e => {
+        console.error(e);
+        this.reservationsService.delete(r.id).subscribe({
+          next: () => this.load(),
+          error: err => {
+            console.error(err);
+            alert('Reservierung konnte nicht gelöscht werden');
+          }
+        });
+      }
+    });
+  }
+
+
   toEuro(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
   }
+
+  ticketSeatLabel(t: any): string {
+    const sector = t?.sectorName ?? t?.seat?.sector?.name ?? null;
+
+    const row = t?.seatRow ?? t?.seat?.row ?? t?.row ?? null;
+    const number = t?.seatNumber ?? t?.seat?.number ?? t?.number ?? null;
+
+    const seat = (row != null && number != null)
+      ? `Reihe ${row}, Sitz ${number}`
+      : (t?.seatId != null ? `Sitz #${t.seatId}` : null);
+
+    if (sector && seat) return `${sector} • ${seat}`;
+    if (seat) return seat;
+    return 'Freie Platzwahl';
+  }
+
 
   private loadReservationDetails(reservations: ReservationDto[]) {
     this.reservationLinesById = {};
@@ -306,6 +394,11 @@ deleteReservation(r: ReservationDto) {
         };
 
         (this.reservationLinesById[x.rid] ||= []).push(line);
+
+        this.reservationSelectedById[x.rid] ||= {};
+        if (this.reservationSelectedById[x.rid][x.tid] === undefined) {
+          this.reservationSelectedById[x.rid][x.tid] = true;
+        }
       }
 
       for (const ridStr of Object.keys(this.reservationLinesById)) {
@@ -315,6 +408,7 @@ deleteReservation(r: ReservationDto) {
       }
     });
   }
+
 
   private cacheKey(orderId: number): string {
     return `order-meta-${orderId}`;
@@ -344,6 +438,8 @@ deleteReservation(r: ReservationDto) {
 
   private applyCachedMeta(orders: OrderDto[]) {
     for (const o of orders) {
+      if (!this.isCancelled(o)) continue;
+
       const meta = this.loadOrderMeta(o.id);
       if (!meta) continue;
 
@@ -357,6 +453,17 @@ deleteReservation(r: ReservationDto) {
       }
     }
   }
+
+  private cleanupMetaForActiveOrders(orders: OrderDto[]) {
+    for (const o of orders) {
+      if (this.isCancelled(o)) continue;
+      try {
+        localStorage.removeItem(this.cacheKey(o.id));
+      } catch {
+      }
+    }
+  }
+
 
   private loadEventTitles(orders: OrderDto[]) {
     this.eventTitleByOrderId = {};
@@ -400,7 +507,6 @@ deleteReservation(r: ReservationDto) {
           )
         )
       ).subscribe(perfs => {
-
         const titleByPerf = new Map<number, string>();
         const perfToEvent = new Map<number, number>();
 
@@ -453,6 +559,42 @@ deleteReservation(r: ReservationDto) {
     });
   }
 
+  private loadSeatsForOrders(orders: OrderDto[]) {
+    this.seatsByOrderId = {};
+    this.ticketCountByOrderId = {};
+
+    const pairs: { orderId: number; ticketId: number }[] = [];
+
+    for (const o of orders) {
+      const ids = (o.ticketIds ?? []);
+      this.ticketCountByOrderId[o.id] = ids.length;
+
+      for (const tid of ids) {
+        pairs.push({ orderId: o.id, ticketId: tid });
+      }
+    }
+
+    if (pairs.length === 0) return;
+
+    forkJoin(
+      pairs.map(p =>
+        this.ticketsService.getTicketById(p.ticketId).pipe(
+          map(t => ({ orderId: p.orderId, ticket: t })),
+          catchError(() => of(null))
+        )
+      )
+    ).pipe(
+      map(list => list.filter((x): x is { orderId: number; ticket: any } => x !== null))
+    ).subscribe(list => {
+      for (const x of list) {
+        const seat = this.ticketSeatLabel(x.ticket);
+        const arr = (this.seatsByOrderId[x.orderId] ||= []);
+        if (!arr.includes(seat)) arr.push(seat);
+      }
+    });
+  }
+
+
   private loadEventTitlesForReservations(reservations: ReservationDto[]) {
     this.eventTitleByReservationId = {};
 
@@ -495,7 +637,6 @@ deleteReservation(r: ReservationDto) {
           )
         )
       ).subscribe(perfs => {
-
         const titleByPerf = new Map<number, string>();
         const perfToEvent = new Map<number, number>();
 
@@ -548,41 +689,6 @@ deleteReservation(r: ReservationDto) {
     });
   }
 
-  private loadSeatsForOrders(orders: OrderDto[]) {
-    this.seatsByOrderId = {};
-    this.ticketCountByOrderId = {};
-
-    const pairs: { orderId: number; ticketId: number }[] = [];
-
-    for (const o of orders) {
-      const ids = (o.ticketIds ?? []);
-      this.ticketCountByOrderId[o.id] = ids.length;
-
-      for (const tid of ids) {
-        pairs.push({ orderId: o.id, ticketId: tid });
-      }
-    }
-
-    if (pairs.length === 0) return;
-
-    forkJoin(
-      pairs.map(p =>
-        this.ticketsService.getTicketById(p.ticketId).pipe(
-          map(t => ({ orderId: p.orderId, ticket: t })),
-          catchError(() => of(null))
-        )
-      )
-    ).pipe(
-      map(list => list.filter((x): x is { orderId: number; ticket: any } => x !== null))
-    ).subscribe(list => {
-      for (const x of list) {
-        const seat = this.ticketSeatLabel(x.ticket);
-        const arr = (this.seatsByOrderId[x.orderId] ||= []);
-        if (!arr.includes(seat)) arr.push(seat);
-      }
-    });
-  }
-
   private loadSeatsForReservations(reservations: ReservationDto[]) {
     this.reservationSeatsById = {};
     this.reservationTicketCountById = {};
@@ -613,52 +719,4 @@ deleteReservation(r: ReservationDto) {
       }
     });
   }
-
-  ticketSeatLabel(t: any): string {
-    const sector = t?.sectorName ?? t?.seat?.sector?.name ?? null;
-
-    const row = t?.seatRow ?? t?.seat?.row ?? t?.row ?? null;
-    const number = t?.seatNumber ?? t?.seat?.number ?? t?.number ?? null;
-
-    const seat = (row != null && number != null)
-      ? `Reihe ${row}, Sitz ${number}`
-      : (t?.seatId != null ? `Sitz #${t.seatId}` : null);
-
-    if (sector && seat) return `${sector} • ${seat}`;
-    if (seat) return seat;
-    return 'Freie Platzwahl';
-  }
-openInvoice(o: OrderDto) {
-  if (this.isCancelled(o)) return;
-
-  this.router.navigate(['/invoice', o.id], {
-    state: {
-      order: o,
-      items: (o.ticketIds ?? []).map(id => ({ ticketId: id })),
-      payment: 'card',
-      customerName: 'Kunde',
-      eventTitle: this.eventTitleByOrderId[o.id] ?? this.loadOrderMeta(o.id)?.eventTitle ?? ''
-    }
-  });
-}
-
-openStorno(o: OrderDto) {
-  if (!this.isCancelled(o)) return;
-
-  const meta = this.loadOrderMeta(o.id);
-  this.router.navigate(['/storno-invoice', o.id], {
-    state: {
-      cancellation: {
-        orderId: o.id,
-        cancelledTicketIds: [],
-        refundTotalCents: 0,
-        createdAt: new Date().toISOString()
-      },
-      customerName: 'Kunde',
-      originalInvoiceNo: '',
-      eventTitle: meta?.eventTitle ?? this.eventTitleByOrderId[o.id] ?? '',
-      seats: meta?.seats ?? this.seatsByOrderId[o.id] ?? []
-    }
-  });
-}
 }
