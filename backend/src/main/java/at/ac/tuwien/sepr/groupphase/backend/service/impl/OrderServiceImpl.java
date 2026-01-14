@@ -214,12 +214,12 @@ public class OrderServiceImpl implements OrderService {
         List<Long> cancelled = new ArrayList<>();
 
         for (Ticket t : tickets) {
-
-
             if (t.getStatus() == TicketStatus.PURCHASED) {
                 refund += (t.getPriceFinalCents() == null ? 0 : t.getPriceFinalCents());
                 t.setStatus(TicketStatus.AVAILABLE);
+                cancelled.add(t.getId());
             } else if (t.getStatus() == TicketStatus.AVAILABLE) {
+                cancelled.add(t.getId());
             } else {
                 try {
                     throw new ConflictException("Ticket not purchased",
@@ -228,12 +228,9 @@ public class OrderServiceImpl implements OrderService {
                     throw new RuntimeException(e);
                 }
             }
-
-            cancelled.add(t.getId());
         }
 
         ticketRepository.saveAll(tickets);
-
         ticketRepository.detachFromOrder(ticketIds);
 
         long newTotal = Math.max(0, order.getTotalPriceCents() - refund);
