@@ -46,6 +46,9 @@ export interface UserDto {
   street: string;
   houseNumber: number;
   rewardPoints: number;
+  createdAt: string;        // ISO string from backend
+  userStatus: UserStatus;
+  failedLoginAttempts: number;
 }
 
 export enum Roles {
@@ -56,5 +59,4 @@ export enum Roles {
 export enum UserStatus{
   UNLOCKED='UNLOCKED',
   LOCKED='LOCKED',
-  UNVERIFIED='UNVERIFIED'
 }

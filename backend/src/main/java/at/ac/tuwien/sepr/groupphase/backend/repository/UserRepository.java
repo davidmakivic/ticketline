@@ -32,7 +32,13 @@ public interface UserRepository extends JpaRepository<ApplicationUser, Long> {
     @Modifying
     @Query("""
             UPDATE ApplicationUser u
-            SET u.failedLoginAttempts = u.failedLoginAttempts + 1
+            SET
+                u.failedLoginAttempts = u.failedLoginAttempts + 1,
+                u.userStatus =
+                    CASE
+                        WHEN (u.failedLoginAttempts + 1) >= 4 THEN 'LOCKED'
+                        ELSE 'UNLOCKED'
+                    END
             WHERE u.email = :email
         """)
     void incrementFailedLoginAttempts(@Param("email") String email);
@@ -41,8 +47,9 @@ public interface UserRepository extends JpaRepository<ApplicationUser, Long> {
     @Transactional
     @Modifying
     @Query("""
-            UPDATE ApplicationUser u
-            SET u.failedLoginAttempts = 0
+            UPDATE ApplicationUser u SET
+                    u.failedLoginAttempts = 0,
+                    u.userStatus = 'UNLOCKED'
             WHERE u.email = :email
         """)
     void setFailedLoginAttemptsToZero(@Param("email") String email);

@@ -8,7 +8,6 @@ import {EventsListComponent} from './components/events/events-list/events-list.c
 import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
 import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
 import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
-import {RegisterComponent} from './components/register/register.component';
 import {AccountComponent} from "./components/account/account.component";
 import RegisterEditComponent, {
   RegisterEditMode

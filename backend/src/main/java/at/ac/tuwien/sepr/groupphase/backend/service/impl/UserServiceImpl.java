@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
                 .username(applicationUser.getEmail())
                 .password(applicationUser.getPasswordHash())
                 .authorities(grantedAuthorities)
-                .accountLocked(applicationUser.getFailedLoginAttempts() >= 5)
+                .accountLocked(applicationUser.getUserStatus() == UserStatus.LOCKED)
                 .build();
         } catch (NotFoundException e) {
             throw new UsernameNotFoundException(e.getMessage(), e);
@@ -131,19 +131,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(UserLoginDto userLoginDto) throws UnauthorizedException {
         LOGGER.info("Attempting login for {}", userLoginDto.getEmail());
-        UserDetails userDetails = loadUserByUsername(userLoginDto.getEmail());
-        if (userDetails == null
-            || !userDetails.isAccountNonExpired()
-            || !userDetails.isCredentialsNonExpired()
+        UserDetails storedUser = loadUserByUsername(userLoginDto.getEmail());
+        if (storedUser == null
+            || !storedUser.isAccountNonExpired()
+            || !storedUser.isCredentialsNonExpired()
         ) {
             throw new BadCredentialsException("Username or password is incorrect or account is locked");
         }
-        if (!userDetails.isAccountNonLocked()) {
+        if (!storedUser.isAccountNonLocked()) {
             throw new UnauthorizedException("Dieser Account wurde gesperrt.");
         }
-        if (!passwordEncoder.matches(userLoginDto.getPassword(), userDetails.getPassword())) {
+        if (!passwordEncoder.matches(userLoginDto.getPassword(), storedUser.getPassword())) {
 
-            boolean isAdmin = userDetails.getAuthorities().stream()
+            boolean isAdmin = storedUser.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
 
@@ -152,12 +152,12 @@ public class UserServiceImpl implements UserService {
             }
             throw new BadCredentialsException("Username or password is incorrect or account is locked");
         }
-        List<String> roles = userDetails.getAuthorities()
+        List<String> roles = storedUser.getAuthorities()
             .stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
         userRepository.setFailedLoginAttemptsToZero(userLoginDto.getEmail());
-        return jwtTokenizer.getAuthToken(userDetails.getUsername(), roles);
+        return jwtTokenizer.getAuthToken(storedUser.getUsername(), roles);
     }
 
     @Override
@@ -314,6 +314,7 @@ public class UserServiceImpl implements UserService {
 
         ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         user.setUserStatus(UserStatus.UNLOCKED);
+        user.setFailedLoginAttempts(0);
         userRepository.save(user);
     }
 
