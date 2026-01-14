@@ -11,16 +11,33 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="filter-field">
-        <mat-label>Ort</mat-label>
-        <input matInput [(ngModel)]="searchLocation" (keyup)="onSearchInputChange()">
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Veranstaltungstyp</mat-label>
         <mat-select [(ngModel)]="selectedEventType" (selectionChange)="onEventTypeChange()">
           <mat-option [value]="null">Alle</mat-option>
           @for (type of eventTypes; track type) {
             <mat-option [value]="type">{{ getEventTypeLabel(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Ort</mat-label>
+        <input matInput [(ngModel)]="searchLocation" (keyup)="onSearchInputChange()">
+      </mat-form-field>
+
+
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Künstler</mat-label>
+        <input matInput [(ngModel)]="searchArtist" (keyup)="onSearchInputChange()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Dauer (Minuten)</mat-label>
+        <mat-select [(ngModel)]="selectedDuration" (selectionChange)="onEventTypeChange()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (duration of durationOptions; track duration) {
+            <mat-option [value]="duration">{{ duration }} Min (±30)</mat-option>
           }
         </mat-select>
       </mat-form-field>

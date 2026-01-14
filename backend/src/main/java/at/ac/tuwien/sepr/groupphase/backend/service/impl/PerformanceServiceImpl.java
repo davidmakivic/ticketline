@@ -79,18 +79,23 @@ public class PerformanceServiceImpl implements PerformanceService {
     @Override
     public Page<PerformanceDto> findAll(int page, int size) {
         LOGGER.info("Fetching all performances with pagination");
-        Pageable pageable = PageRequest.of(page, size, Sort.by("event.id").ascending().and(Sort.by("startTime").ascending()));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
         return performanceRepository.findAllWithDetails(pageable)
             .map(performanceMapper::performanceToPerformanceDto);
     }
 
     @Override
-    public Page<PerformanceDto> findByAdvancedFilters(String title, String location, EventType eventType, Date startDate, int page, int size) {
-        LOGGER.info("Searching performances with filters: title={}, location={}, eventType={}, startDate={}", title, location, eventType, startDate);
-        Pageable pageable = PageRequest.of(page, size, Sort.by("event.id").ascending().and(Sort.by("startTime").ascending()));
-        return performanceRepository.findByAdvancedFilters(title, location, eventType, startDate, pageable)
+    public Page<PerformanceDto> findByAdvancedFilters(
+        String title, String artist, String location,
+        EventType eventType, Date startDate, Integer durationMinutes,
+        int page, int size) {
+        LOGGER.info("Searching performances with filters: title={}, artist={}, location={}, eventType={}, startDate={}, duration={}",
+            title, artist, location, eventType, startDate, durationMinutes);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
+        return performanceRepository.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, pageable)
             .map(performanceMapper::performanceToPerformanceDto);
     }
+
 
     @Override
     public void delete(Long id) {

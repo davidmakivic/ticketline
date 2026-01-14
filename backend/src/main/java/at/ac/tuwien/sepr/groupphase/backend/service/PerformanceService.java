@@ -17,7 +17,10 @@ public interface PerformanceService {
 
     Page<PerformanceDto> findAll(int page, int size);
 
-    Page<PerformanceDto> findByAdvancedFilters(String title, String location, EventType eventType, Date startDate, int page, int size);
+    Page<PerformanceDto> findByAdvancedFilters(
+        String title, String artist, String location,
+        EventType eventType, Date startDate, Integer durationMinutes,
+        int page, int size);
 
     void delete(Long id);
 }
