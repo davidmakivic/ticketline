@@ -255,7 +255,6 @@ addSelectedToCart() {
   }
 
   if (calls.length === 0) {
-    this.clearSelection();
     this.router.navigate(['/cart']);
     return;
   }
@@ -266,7 +265,6 @@ addSelectedToCart() {
   forkJoin(calls).subscribe({
     next: () => {
       this.loading = false;
-      this.clearSelection();
       this.router.navigate(['/cart']);
     },
     error: (e) => {
