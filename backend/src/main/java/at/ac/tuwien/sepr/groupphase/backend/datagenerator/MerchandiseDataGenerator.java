@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
+import at.ac.tuwien.sepr.groupphase.backend.entity.MerchandiseVariant;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,68 +38,87 @@ public class MerchandiseDataGenerator {
 
         LOGGER.debug("Generating merchandise entries");
 
+        // Poster (kein Größenartikel)
         Merchandise poster = new Merchandise();
         poster.setName("Band Poster");
         poster.setDescription("High quality poster of the band");
         poster.setPrice(1000);
-        poster.setQuantity(50);
+        poster.getVariants().add(createVariant(poster, null, 50));
         loadImageFromFile(poster, "src/main/resources/images/bandPoster.png");
         merchandiseRepository.save(poster);
 
-
+        // T-Shirt (Größen S, M, L, XL)
         Merchandise tshirt = new Merchandise();
         tshirt.setName("T-Shirt");
         tshirt.setDescription("Official band T-shirt");
         tshirt.setPrice(2500);
-        tshirt.setQuantity(100);
+        tshirt.getVariants().add(createVariant(tshirt, "S", 25));
+        tshirt.getVariants().add(createVariant(tshirt, "M", 30));
+        tshirt.getVariants().add(createVariant(tshirt, "L", 25));
+        tshirt.getVariants().add(createVariant(tshirt, "XL", 20));
         loadImageFromFile(tshirt, "src/main/resources/images/bandTshirt.png");
         merchandiseRepository.save(tshirt);
 
-
+        // Hoodie (Größen S, M, L, XL)
         Merchandise hoodie = new Merchandise();
         hoodie.setName("Hoodie");
         hoodie.setDescription("Official band hoodie");
         hoodie.setPrice(5000);
-        hoodie.setQuantity(100);
+        hoodie.getVariants().add(createVariant(hoodie, "S", 20));
+        hoodie.getVariants().add(createVariant(hoodie, "M", 30));
+        hoodie.getVariants().add(createVariant(hoodie, "L", 30));
+        hoodie.getVariants().add(createVariant(hoodie, "XL", 20));
         loadImageFromFile(hoodie, "src/main/resources/images/bandHoodie.png");
         merchandiseRepository.save(hoodie);
 
+        // Cup (kein Größenartikel)
         Merchandise cup = new Merchandise();
         cup.setName("Cup");
         cup.setDescription("Cup with band Logo on it");
         cup.setPrice(1000);
-        cup.setQuantity(100);
+        cup.getVariants().add(createVariant(cup, null, 100));
         loadImageFromFile(cup, "src/main/resources/images/bandCup.png");
         merchandiseRepository.save(cup);
 
-
+        // Vinyl (kein Größenartikel)
         Merchandise vinyl = new Merchandise();
         vinyl.setName("Vinyl Album");
         vinyl.setDescription("Limited edition vinyl album");
         vinyl.setPrice(4000);
-        vinyl.setQuantity(20);
+        vinyl.getVariants().add(createVariant(vinyl, null, 20));
         loadImageFromFile(vinyl, "src/main/resources/images/bandVinyl.png");
         merchandiseRepository.save(vinyl);
 
-
+        // Coffee Mug (kein Größenartikel)
         Merchandise mug = new Merchandise();
         mug.setName("Coffee Mug");
         mug.setDescription("Ceramic mug with band logo");
         mug.setPrice(1500);
-        mug.setQuantity(75);
+        mug.getVariants().add(createVariant(mug, null, 75));
         loadImageFromFile(mug, "src/main/resources/images/coffeeMug.png");
         merchandiseRepository.save(mug);
 
-
+        // Tank Top (Größen S, M, L, XL)
         Merchandise tankTop = new Merchandise();
         tankTop.setName("Tank Top");
         tankTop.setDescription("Tank top with band logo");
         tankTop.setPrice(1500);
-        tankTop.setQuantity(100);
+        tankTop.getVariants().add(createVariant(tankTop, "S", 20));
+        tankTop.getVariants().add(createVariant(tankTop, "M", 30));
+        tankTop.getVariants().add(createVariant(tankTop, "L", 30));
+        tankTop.getVariants().add(createVariant(tankTop, "XL", 20));
         loadImageFromFile(tankTop, "src/main/resources/images/bandTankTop.png");
         merchandiseRepository.save(tankTop);
 
         LOGGER.debug("Merchandise data generated successfully");
+    }
+
+    private MerchandiseVariant createVariant(Merchandise merchandise, String size, int quantity) {
+        MerchandiseVariant variant = new MerchandiseVariant();
+        variant.setMerchandise(merchandise);
+        variant.setSize(size);
+        variant.setQuantity(quantity);
+        return variant;
     }
 
     private void loadImageFromFile(Merchandise merchandise, String filePath) {
@@ -113,5 +133,4 @@ public class MerchandiseDataGenerator {
             LOGGER.warn("Could not load image from {}: {}", filePath, e.getMessage());
         }
     }
-
 }

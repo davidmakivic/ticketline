@@ -1,18 +1,19 @@
-import {NgModule} from '@angular/core';
-import {mapToCanActivate, RouterModule, Routes} from '@angular/router';
-import {HomeComponent} from './components/home/home.component';
-import {LoginComponent} from './components/login/login.component';
-import {AuthGuard} from './guards/auth.guard';
-import {NewsComponent} from './components/news/news.component';
-import {EventsListComponent} from './components/events/events-list/events-list.component';
-import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
-import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
-import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
-import {RegisterComponent} from './components/register/register.component';
 import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
 import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
 import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
 import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
+import { ShopComponent } from './components/shop/shop.component';
+import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-detail.component";
+import {ArtistsListComponent} from "./components/artists/artists-list/artists-list.component";
+import {mapToCanActivate, RouterModule, Routes} from "@angular/router";
+import {HomeComponent} from "./components/home/home.component";
+import {LoginComponent} from "./components/login/login.component";
+import RegisterComponent from "./components/register/register.component";
+import {NewsComponent} from "./components/news/news.component";
+import {AuthGuard} from "./guards/auth.guard";
+import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
+import {EventsListComponent} from "./components/events/events-list/events-list.component";
+import {NgModule} from "@angular/core";
 
 
 const routes: Routes = [
@@ -68,6 +69,11 @@ const routes: Routes = [
   {
     path: 'events/:id',
     component: EventDetailComponent
+  },
+
+  {
+    path: 'shop',
+    component: ShopComponent
   },
 
   {

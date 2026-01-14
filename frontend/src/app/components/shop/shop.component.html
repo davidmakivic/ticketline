@@ -1,0 +1,24 @@
+<div class="shop-container">
+  <div class="grid">
+    @for (item of pagedItems; track item.id) {
+      <div class="card" (click)="openDialog(item)">
+        <img
+          [src]="getImage(item.id)"
+          alt="{{ item.name }}"
+        />
+
+        <div class="overlay">
+          <h3>{{ item.name }}</h3>
+          <span>€ {{ item.price / 100 | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <mat-paginator
+    [length]="merchandise.length"
+    [pageSize]="pageSize"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+</div>
+
