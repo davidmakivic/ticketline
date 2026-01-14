@@ -4,9 +4,11 @@
     <div class="header">
       <div class="brand">Ticketline</div>
       <h1 class="title">RECHNUNG</h1>
-      <p class="subtitle">
-        Vielen Dank für Ihren Einkauf – wir wünschen Ihnen viel Freude bei der Veranstaltung!
+
+      <p class="subtitle" *ngIf="eventTitle">
+        Veranstaltung: <strong>{{ eventTitle }}</strong>
       </p>
+
       <button class="btn no-print" (click)="print()">PDF drucken</button>
     </div>
 
@@ -33,18 +35,15 @@
           <th>#</th>
           <th>Ticket / Veranstaltung</th>
           <th>Informationen</th>
-          <th class="right">Menge</th>
           <th class="right">Einzelpreis</th>
-          <th class="right">Gesamt</th>
         </tr>
         </thead>
         <tbody>
         <tr *ngFor="let it of items; let i = index">
           <td>{{ i + 1 }}</td>
+          <td>{{ itemTitle(it) }}</td>
           <td class="muted">{{ itemDetails(it) }}</td>
-          <td class="right">{{ itemQuantity(it) }}</td>
           <td class="right">{{ toEuro(itemUnitPriceCents(it)) }}</td>
-          <td class="right">{{ toEuro(itemTotalCents(it)) }}</td>
         </tr>
         </tbody>
       </table>

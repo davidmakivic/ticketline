@@ -101,15 +101,14 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setTickets(tickets);
         Reservation saved = reservationRepository.save(reservation);
 
+
         for (Ticket t : tickets) {
             t.setReservedUntil(null);
-            t.setReservedByUserId(null);
         }
         ticketRepository.saveAll(tickets);
 
         return reservationMapper.reservationToReservationDto(saved);
     }
-
 
     private String generateReservationNumber() {
         return "R-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
@@ -139,8 +138,16 @@ public class ReservationServiceImpl implements ReservationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
         }
 
+        List<Ticket> tickets = r.getTickets();
+        if (tickets != null && !tickets.isEmpty()) {
+            for (Ticket t : tickets) {
+                t.setStatus(TicketStatus.AVAILABLE);
+                t.setReservedByUserId(null);
+                t.setReservedUntil(null);
+            }
+            ticketRepository.saveAll(tickets);
+        }
+
         reservationRepository.delete(r);
     }
-
-
 }
