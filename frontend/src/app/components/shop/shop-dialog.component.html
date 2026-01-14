@@ -1,31 +1,35 @@
 <h2>{{ item.name }}</h2>
 <p>{{ item.description }}</p>
 
+
+<!-- Dropdown nur für Artikel mit echten Größen -->
+<div *ngIf="hasSizes()" class="select-wrapper">
+  <select [(ngModel)]="selectedSize" (change)="onSizeChange()">
+    <option
+      *ngFor="let v of item.variants"
+      [ngValue]="v"
+      [disabled]="v.quantity === 0"
+    >
+      {{ v.size }}
+    </option>
+  </select>
+</div>
+
 <div class="quantity">
   <button (click)="decrease()">−</button>
   <input
     type="number"
     [(ngModel)]="quantity"
     min="1"
-    [max]="item.quantity"
+    [max]="maxQuantity"
     (ngModelChange)="onQuantityChange()"
     (blur)="onQuantityBlur()"
-    placeholder="0"
   />
   <button (click)="increase()">+</button>
 </div>
 
-<!-- Fehlermeldung -->
-<div *ngIf="errorMessage" style="color: #ff6b6b; margin-top: 4px; text-align: center;">
+<div *ngIf="errorMessage" style="color:#ff6b6b; text-align:center">
   {{ errorMessage }}
-</div>
-
-<div *ngIf="item.availableSizes?.length">
-  <select [(ngModel)]="selectedSize">
-    <option *ngFor="let s of item.availableSizes" [value]="s.size" [disabled]="s.quantity === 0">
-      {{ s.size }}
-    </option>
-  </select>
 </div>
 
 <button class="add" (click)="addToCart()">

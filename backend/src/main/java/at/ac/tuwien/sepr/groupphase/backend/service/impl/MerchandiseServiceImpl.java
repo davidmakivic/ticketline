@@ -11,10 +11,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
+@Transactional(readOnly = true)
 @Service
 public class MerchandiseServiceImpl implements MerchandiseService {
 
@@ -40,8 +42,14 @@ public class MerchandiseServiceImpl implements MerchandiseService {
     }
 
     @Override
-    public MerchandiseDto save(MerchandiseDto merchandiseDto) {
-        Merchandise entity = mapper.merchandiseDtoToMerchandise(merchandiseDto);
+    public MerchandiseDto save(MerchandiseDto dto) {
+        Merchandise entity = mapper.merchandiseDtoToMerchandise(dto);
+
+        // Varianten korrekt setzen für JPA Cascade
+        if (entity.getVariants() != null) {
+            entity.getVariants().forEach(v -> v.setMerchandise(entity));
+        }
+
         Merchandise saved = repository.save(entity);
         return mapper.merchandiseToMerchandiseDto(saved);
     }
@@ -55,7 +63,7 @@ public class MerchandiseServiceImpl implements MerchandiseService {
     public ResponseEntity<byte[]> getMerchandiseImage(Long id) {
         LOGGER.info("Fetching merchandise image for id={}", id);
         Merchandise merchandise = repository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Merchandise not found: " + id));
+            .orElseThrow(() -> new RuntimeException("Merchandise not found: " + id));
 
         if (merchandise.getImageData() == null || merchandise.getImageData().length == 0) {
             return ResponseEntity.noContent().build();
@@ -65,5 +73,4 @@ public class MerchandiseServiceImpl implements MerchandiseService {
             .contentType(MediaType.parseMediaType(merchandise.getImageContentType()))
             .body(merchandise.getImageData());
     }
-
 }

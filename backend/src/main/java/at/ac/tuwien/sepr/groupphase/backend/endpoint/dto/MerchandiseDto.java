@@ -1,5 +1,8 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MerchandiseDto {
 
     private Long id;
@@ -8,16 +11,19 @@ public class MerchandiseDto {
     private Integer price;
     private Integer quantity;
     private String imageContentType;
+    private List<MerchandiseVariantDto> variants = new ArrayList<>(); // Varianten nach Größe
 
 
 
-    public MerchandiseDto(Long id, String name, String description, Integer price, Integer quantity,  String imageContentType) {
+    public MerchandiseDto() {}
+
+    public MerchandiseDto(Long id, String name, String description, Integer price, String imageContentType, List<MerchandiseVariantDto> variants) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
-        this.quantity = quantity;
         this.imageContentType = imageContentType;
+        this.variants = variants != null ? variants : new ArrayList<>();
     }
 
     public Long getId() {
@@ -66,6 +72,14 @@ public class MerchandiseDto {
 
     public void setImageContentType(String imageContentType) {
         this.imageContentType = imageContentType;
+    }
+
+    public List<MerchandiseVariantDto> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<MerchandiseVariantDto> variants) {
+        this.variants = variants;
     }
 
 }

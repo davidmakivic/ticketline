@@ -3,12 +3,12 @@ export interface MerchandiseDto {
   name: string;
   description: string;
   price: number; // in cents
-  quantity: number;
+  quantity: number; // Gesamtmenge (Backend summiert Varianten)
   imageContentType: string;
-  availableSizes?: MerchandiseSize[];
+  variants: MerchandiseVariantDto[];
 }
 
-export interface MerchandiseSize {
-  size: string;      // z.B. "S", "M", "L"
-  quantity: number;  // Lagerbestand pro Größe
+export interface MerchandiseVariantDto {
+  size: string | null;
+  quantity: number;
 }

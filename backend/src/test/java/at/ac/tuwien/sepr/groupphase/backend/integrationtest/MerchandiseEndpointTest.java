@@ -1,7 +1,9 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseVariantDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
+import at.ac.tuwien.sepr.groupphase.backend.entity.MerchandiseVariant;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
@@ -52,12 +54,8 @@ public class MerchandiseEndpointTest {
 
     @BeforeEach
     void setup() {
-        // Alle Merchandise-Einträge löschen
         merchandiseRepository.deleteAll();
-
-        // Token für Admin erzeugen
-        adminToken = jwtTokenizer.getAuthToken(
-            ADMIN_USER, ADMIN_ROLES);
+        adminToken = jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES);
     }
 
     @Test
@@ -68,8 +66,7 @@ public class MerchandiseEndpointTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        MockHttpServletResponse response = mvcResult.getResponse();
-        MerchandiseDto[] dtos = objectMapper.readValue(response.getContentAsString(), MerchandiseDto[].class);
+        MerchandiseDto[] dtos = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), MerchandiseDto[].class);
         assertEquals(0, dtos.length);
     }
 
@@ -79,7 +76,14 @@ public class MerchandiseEndpointTest {
         merchandise.setName("T-Shirt");
         merchandise.setDescription("Band T-Shirt");
         merchandise.setPrice(25);
-        merchandise.setQuantity(100);
+
+        // Variante hinzufügen
+        MerchandiseVariant variant = new MerchandiseVariant();
+        variant.setSize("M");
+        variant.setQuantity(100);
+        variant.setMerchandise(merchandise);
+        merchandise.getVariants().add(variant);
+
         merchandiseRepository.save(merchandise);
 
         MvcResult mvcResult = mockMvc.perform(get("/api/v1/merchandise")
@@ -92,11 +96,15 @@ public class MerchandiseEndpointTest {
         assertEquals(1, dtos.length);
         assertEquals("T-Shirt", dtos[0].getName());
         assertEquals(25, dtos[0].getPrice());
+        assertEquals(1, dtos[0].getVariants().size());
+        assertEquals("M", dtos[0].getVariants().get(0).getSize());
+        assertEquals(100, dtos[0].getVariants().get(0).getQuantity());
     }
 
     @Test
     void givenMerchandise_whenCreate_thenReturnsCreatedMerchandise() throws Exception {
-        MerchandiseDto dto = new MerchandiseDto(null, "Poster", "Band Poster", 10, 50, null);
+        MerchandiseVariantDto variantDto = new MerchandiseVariantDto("M", 50);
+        MerchandiseDto dto = new MerchandiseDto(null, "Poster", "Band Poster", 10, null, List.of(variantDto));
 
         String body = objectMapper.writeValueAsString(dto);
 
@@ -112,5 +120,8 @@ public class MerchandiseEndpointTest {
         MerchandiseDto returned = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), MerchandiseDto.class);
         assertEquals("Poster", returned.getName());
         assertEquals(10, returned.getPrice());
+        assertEquals(1, returned.getVariants().size());
+        assertEquals("M", returned.getVariants().get(0).getSize());
+        assertEquals(50, returned.getVariants().get(0).getQuantity());
     }
 }

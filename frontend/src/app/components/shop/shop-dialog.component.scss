@@ -51,15 +51,23 @@ p {
   }
 }
 
-/* Dropdown (Größe auswählen) */
+/* Dropdown-Wrapper, zentriert und passend zur Stückzahl */
+.select-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
 select {
-  margin-top: 8px;
   padding: 6px 12px;
   border-radius: 16px;
   border: none;
   background-color: #2a2a2a;
   color: white;
   text-align: center;
+  font-size: 1.1rem;
+  min-width: 100px; /* optional: gleiche Breite wie Input */
+  cursor: pointer;
 }
 
 /* Add-to-cart Button */
@@ -84,4 +92,5 @@ select {
   background-color: #2a2a2a;
   color: white;
 }
+
 
