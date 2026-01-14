@@ -37,7 +37,6 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
 
-
     public OrderServiceImpl(
         OrderRepository orderRepository,
         UserRepository userRepository,
@@ -49,7 +48,6 @@ public class OrderServiceImpl implements OrderService {
         this.ticketRepository = ticketRepository;
         this.orderMapper = orderMapper;
     }
-
 
     @Override
     public List<OrderDto> getAllOrders() {
@@ -92,7 +90,6 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.findAllByUser_UserIdOrderByCreatedAtDesc(userId)
         );
     }
-
 
     @Override
     public OrderDto createOrder(OrderCreateDto createDto) throws ValidationException, ConflictException {
@@ -151,7 +148,6 @@ public class OrderServiceImpl implements OrderService {
 
         List<Ticket> tickets = ticketRepository.findAllById(updateDto.getTicketIds());
 
-        // Set new tickets
         order.setTickets(tickets);
 
         order.setTotalPriceCents(
@@ -201,7 +197,8 @@ public class OrderServiceImpl implements OrderService {
         for (Long tid : ticketIds) {
             if (!orderTicketIds.contains(tid)) {
                 try {
-                    throw new ConflictException("Ticket not in order", List.of("Ticket " + tid + " not part of order " + orderId));
+                    throw new ConflictException("Ticket not in order",
+                        List.of("Ticket " + tid + " not part of order " + orderId));
                 } catch (ConflictException e) {
                     throw new RuntimeException(e);
                 }
@@ -217,17 +214,21 @@ public class OrderServiceImpl implements OrderService {
         List<Long> cancelled = new ArrayList<>();
 
         for (Ticket t : tickets) {
-            if (t.getStatus() != TicketStatus.PURCHASED) {
+
+
+            if (t.getStatus() == TicketStatus.PURCHASED) {
+                refund += (t.getPriceFinalCents() == null ? 0 : t.getPriceFinalCents());
+                t.setStatus(TicketStatus.AVAILABLE);
+            } else if (t.getStatus() == TicketStatus.AVAILABLE) {
+            } else {
                 try {
-                    throw new ConflictException("Ticket not purchased", List.of("Ticket " + t.getId() + " is " + t.getStatus()));
+                    throw new ConflictException("Ticket not purchased",
+                        List.of("Ticket " + t.getId() + " is " + t.getStatus()));
                 } catch (ConflictException e) {
                     throw new RuntimeException(e);
                 }
             }
 
-            refund += (t.getPriceFinalCents() == null ? 0 : t.getPriceFinalCents());
-
-            t.setStatus(TicketStatus.AVAILABLE);
             cancelled.add(t.getId());
         }
 
@@ -241,5 +242,4 @@ public class OrderServiceImpl implements OrderService {
 
         return new CancellationResultDto(order.getId(), cancelled, refund, Instant.now());
     }
-
 }
