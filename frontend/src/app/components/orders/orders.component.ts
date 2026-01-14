@@ -247,14 +247,9 @@ export class OrdersComponent {
     if (!this.isCancelled(o)) return;
 
     const meta = this.loadOrderMeta(o.id);
+
     this.router.navigate(['/storno-invoice', o.id], {
       state: {
-        cancellation: {
-          orderId: o.id,
-          cancelledTicketIds: [],
-          refundTotalCents: 0,
-          createdAt: new Date().toISOString()
-        },
         customerName: 'Kunde',
         originalInvoiceNo: '',
         eventTitle: meta?.eventTitle ?? this.eventTitleByOrderId[o.id] ?? '',
@@ -262,6 +257,7 @@ export class OrdersComponent {
       }
     });
   }
+
 
 
   buyReservation(r: ReservationDto) {
