@@ -126,22 +126,13 @@ public class UserEndpointTest {
 
 
         mockMvc.perform(
-                put("/api/v1/users/" + user.getUserId())
+                put("/api/v1/users/me")
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(securityProperties.getAuthHeader(), token)
                     .content(toJson(updateDto))
             )
             // --- Assert (Response Body) ---
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.userId").value(user.getUserId()))
-            .andExpect(jsonPath("$.email").value(updateDto.getEmail()))
-            .andExpect(jsonPath("$.firstName").value(updateDto.getFirstName()))
-            .andExpect(jsonPath("$.lastName").value(updateDto.getLastName()))
-            .andExpect(jsonPath("$.zipCode").value(updateDto.getZipCode()))
-            .andExpect(jsonPath("$.city").value(updateDto.getCity()))
-            .andExpect(jsonPath("$.street").value(updateDto.getStreet()))
-            .andExpect(jsonPath("$.houseNumber").value(updateDto.getHouseNumber()))
-            .andExpect(jsonPath("$.role").value("USER"));
+            .andExpect(status().isNoContent());
 
         // --- Assert (Database State) ---
         ApplicationUser updated = userRepository.getReferenceById(user.getUserId());
