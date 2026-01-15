@@ -89,7 +89,7 @@ public class UserEndpointTest {
     @Test
     void givenUserUpdateDto_whenUpdateUser_thenReturnAndStoreUser() throws Exception {
         ApplicationUser user = new ApplicationUser();
-        user.setEmail("testuser@email.com");
+        user.setEmail("testuser-" + System.currentTimeMillis() + "@email.com");
         user.setPasswordHash(passwordEncoder.encode("password1"));
         user.setFirstName("first");
         user.setLastName("last");
@@ -106,7 +106,7 @@ public class UserEndpointTest {
 
         UserUpdateDto updateDto = new UserUpdateDto(
             user.getUserId(),
-            "updated@email.com",
+            "updated-" + System.currentTimeMillis() + "@email.com",
             "UpdatedFirst",
             "UpdatedLast",
             "Austria",

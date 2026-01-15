@@ -44,7 +44,7 @@ public class OrderServiceTest {
         user = new ApplicationUser();
         user.setFirstName("Test");
         user.setLastName("User");
-        user.setEmail("test@test.com");
+        user.setEmail("test-" + System.currentTimeMillis() + "@test.com"); // Eindeutige E-Mail
         user.setPasswordHash("pw");
         user.setRole(Roles.USER);
         user.setUserStatus(UserStatus.UNLOCKED);

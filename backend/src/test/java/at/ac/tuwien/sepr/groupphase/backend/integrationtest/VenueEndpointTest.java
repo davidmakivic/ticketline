@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
+import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.util.VenueTestDataFactory;
@@ -44,12 +45,16 @@ public class VenueEndpointTest {
     @Autowired
     private VenueRepository venueRepository;
 
+    @Autowired
+    private PerformanceRepository performanceRepository;
+
     private String toJson(Object o) throws Exception {
         return objectMapper.writeValueAsString(o);
     }
 
     @BeforeEach
     public void beforeEach() {
+        performanceRepository.deleteAll();
         venueRepository.deleteAll();
     }
 
