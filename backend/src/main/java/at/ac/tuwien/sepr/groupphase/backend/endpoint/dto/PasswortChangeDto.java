@@ -19,11 +19,13 @@ public class PasswortChangeDto {
 
 
     @NotBlank(message = "Password must not be empty")
+    @Size(max = 32, message = "Password must be at max of length 32")
     @Size(min = 8, message = "Password must be at least of length 8")
     String newPassword;
 
     public PasswortChangeDto(String token, String password) {
     }
+
 
     public String getToken() {
         return token;
@@ -39,5 +41,9 @@ public class PasswortChangeDto {
 
     public String getNewPassword() {
         return newPassword;
+    }
+
+    public void setAuthenticatedUserEmail(String authenticatedUserEmail) {
+        this.authenticatedUserEmail = authenticatedUserEmail;
     }
 }

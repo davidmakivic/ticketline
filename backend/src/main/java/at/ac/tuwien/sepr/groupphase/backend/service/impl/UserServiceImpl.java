@@ -194,19 +194,21 @@ public class UserServiceImpl implements UserService {
         userValidator.validatePassword(dto.getNewPassword());
         if (dtoAuthenticatedUserEmail != null) {
             //Logged in user can change their own password
-            ApplicationUser user = userRepository.findUserByEmail(dtoAuthenticatedUserEmail);
-            if (!user.getPasswordHash().equals(passwordEncoder.encode(dto.getOldPassword()))) {
-                throw new ValidationException("Validation for password Change failed", Collections.singletonList("Das eingegebene Passwort ist nicht korrekt"));
+            ApplicationUser storedUser = userRepository.findUserByEmail(dtoAuthenticatedUserEmail);
+            LOGGER.debug("Changing password for {}", dtoAuthenticatedUserEmail);
+            if (!passwordEncoder.matches(dto.getOldPassword(), storedUser.getPasswordHash())) {
+                throw new ValidationException("Fehler beim Ändern des Passworts", Collections.singletonList("Das aktuelle Passwort ist nicht korrekt"));
             }
-            user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
-            user.setFailedLoginAttempts(0);
-            userRepository.save(user);
+            storedUser.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+            storedUser.setFailedLoginAttempts(0);
+            userRepository.save(storedUser);
+            userRepository.flush();
             return;
         }
         PasswordResetToken token = passwordTokenRepository.findByToken(dto.getToken());
         if (token == null) {
             LOGGER.error("Password change failed because token was not found");
-            throw new NotFoundException("Token not found");
+            throw new NotFoundException("Token wurde nicht gefunden");
         }
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             LOGGER.error("Password change failed because token expired");
@@ -322,4 +324,5 @@ public class UserServiceImpl implements UserService {
     public UserDetailDto getMe(String email) {
         return userMapper.applicationUserToUserDetailDto(userRepository.getApplicationUserByEmail((email)));
     }
+
 }

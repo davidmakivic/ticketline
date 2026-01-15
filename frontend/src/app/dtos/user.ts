@@ -51,6 +51,11 @@ export interface UserDto {
   failedLoginAttempts: number;
 }
 
+export interface PasswordChangeDto {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export enum Roles {
   ADMIN='ADMIN',
   USER='USER'

@@ -16,6 +16,7 @@ import {NewsDetailComponent} from "./components/news/news-detail/news-detail.com
 import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
 import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
 import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
+import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
 
 
 const routes: Routes = [
@@ -23,7 +24,17 @@ const routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: 'account', component: AccountComponent},
   {path: 'register', component: RegisterEditComponent, data: {mode: RegisterEditMode.register}},
-  {path: 'account/edit', canActivate: mapToCanActivate([AuthGuard]), component: RegisterEditComponent, data: {mode: RegisterEditMode.edit}},
+  {
+    path: 'account/edit',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: RegisterEditComponent,
+    data: {mode: RegisterEditMode.edit}
+  },
+  {
+    path: 'account/change-password',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: ChangePasswordComponent,
+  },
   {
     path: 'news',
     component: NewsComponent
@@ -96,7 +107,6 @@ const routes: Routes = [
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
   },
-
 
 
   {

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Globals } from '../global/globals';
 import { AuthService } from './auth.service';
 import {PageResponse} from "../dtos/page-response";
-import {User, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
+import {PasswordChangeDto, User, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +41,10 @@ export class UserService {
 
   unblockUser(userId: number) {
     return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/unblock`, null);
+  }
+
+  changePassword(dto: PasswordChangeDto) {
+    return this.httpClient.post<void>(`${this.userBaseUrl}/changePassword`, dto);
   }
 
   getUser(): Observable<UserDto> {

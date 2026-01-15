@@ -3,7 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserSearchDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.invoke.MethodHandles;
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/users")
@@ -93,8 +91,13 @@ public class UserEndpoint {
     @PermitAll
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(Principal principal, @RequestBody PasswortChangeDto dto) throws ValidationException {
-        LOGGER.info("Changing password for user");
+        LOGGER.info("Changing password for user:{}", principal.getName());
         LOGGER.debug("Request payload: {}", dto);
+        String email = principal.getName();
+        if (email != null) {
+            dto.setAuthenticatedUserEmail(email);
+        }
+
         try {
             userService.changePassword(dto);
         } catch (GoneException e) {
