@@ -162,7 +162,13 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public void delete(Long id) {
         LOGGER.info("Deleting artist with id={}", id);
-        artistRepository.deleteById(id);
+        Artist artist = artistRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Artist not found: " + id));
+
+        artist.getEvents().forEach(event -> event.getArtists().remove(artist));
+        artist.getEvents().clear();
+
+        artistRepository.delete(artist);
     }
 
     @Override
