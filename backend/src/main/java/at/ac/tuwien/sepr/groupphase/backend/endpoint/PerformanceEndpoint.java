@@ -7,6 +7,7 @@ import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 
@@ -54,14 +55,18 @@ public class PerformanceEndpoint {
     @Operation(summary = "Search performances with filters", security = @SecurityRequirement(name = "apiKey"))
     public Page<PerformanceDto> searchAdvanced(
         @RequestParam(required = false) String title,
+        @RequestParam(required = false) String artist,
         @RequestParam(required = false) String location,
         @RequestParam(required = false) EventType eventType,
-        @RequestParam(required = false) Date startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+        @RequestParam(required = false) Integer durationMinutes,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
-        LOGGER.info("Searching performances: title={}, location={}, eventType={}, startDate={}", title, location, eventType, startDate);
-        return performanceService.findByAdvancedFilters(title, location, eventType, startDate, page, size);
+        LOGGER.info("Searching performances: title={}, artist={}, location={}, eventType={}, startDate={}, duration={}",
+            title, artist, location, eventType, startDate, durationMinutes);
+        return performanceService.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, page, size);
     }
+
 
     @PermitAll
     @GetMapping("/{id}")

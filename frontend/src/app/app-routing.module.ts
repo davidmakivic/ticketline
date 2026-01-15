@@ -18,6 +18,7 @@ import {AdminPanelComponent} from "./components/admin-panel/admin-panel.componen
 import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
 import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
 import {ForgotPasswordComponent} from "./components/account/forgot-password/forgot-password.component";
+import { ShopComponent } from './components/shop/shop.component';
 
 
 const routes: Routes = [
@@ -91,6 +92,11 @@ const routes: Routes = [
   },
 
   {
+    path: 'shop',
+    component: ShopComponent
+  },
+
+  {
     path: 'artists',
     component: ArtistsListComponent
   },
@@ -111,6 +117,7 @@ const routes: Routes = [
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
   },
+
 
 
   {

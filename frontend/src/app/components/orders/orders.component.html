@@ -71,15 +71,15 @@
       </div>
 
       <div class="order-actions">
-        <button class="btn-outline" (click)="openInvoice(o)" [disabled]="isCancelled(o)">
+        <button class="btn-outline" *ngIf="!isCancelled(o)" (click)="openInvoice(o)">
           Rechnung drucken
         </button>
 
-        <button class="btn-outline" (click)="openStorno(o)" [disabled]="!isCancelled(o)">
+        <button class="btn-outline" *ngIf="isCancelled(o)" (click)="openStorno(o)">
           Stornorechnung drucken
         </button>
 
-        <button class="btn-danger" (click)="cancelOrder(o)" [disabled]="isCancelled(o)">
+        <button class="btn-danger" *ngIf="!isCancelled(o)" (click)="cancelOrder(o)">
           Stornieren
         </button>
       </div>
@@ -102,6 +102,11 @@
 
   <div *ngIf="showReservations" style="margin-top:18px;">
     <h2 class="orders-title">Reservierungen</h2>
+
+    <p class="orders-subtitle" style="margin-top:6px;">
+      Hinweis: Bitte holen Sie Ihre Tickets spätestens 30 Minuten vor Beginn der Aufführung ab,
+      sonst verfällt die Reservierung.
+    </p>
 
     <div class="orders-grid" *ngIf="reservations.length > 0; else noRes">
       <div class="order-card" *ngFor="let r of reservations">
@@ -132,8 +137,17 @@
         <div class="res-details" *ngIf="reservationLinesById[r.id]?.length">
           <div class="res-line" *ngFor="let line of reservationLinesById[r.id]">
             <div class="res-left">
-              <div class="res-title">{{ line.title }}</div>
-              <div class="res-seat">{{ line.seatLabel }}</div>
+              <label style="display:flex; gap:10px; align-items:flex-start;">
+                <input
+                  type="checkbox"
+                  [checked]="reservationSelectedById[r.id]?.[line.ticketId] ?? true"
+                  (change)="reservationSelectedById[r.id][line.ticketId] = $any($event.target).checked"
+                />
+                <div>
+                  <div class="res-title">{{ line.title }}</div>
+                  <div class="res-seat">{{ line.seatLabel }}</div>
+                </div>
+              </label>
             </div>
 
             <div class="res-price">{{ toEuro(line.priceCents) }}</div>
@@ -154,7 +168,7 @@
           </button>
 
           <button class="btn-danger" (click)="deleteReservation(r)">
-            Löschen
+            Stornieren
           </button>
         </div>
 

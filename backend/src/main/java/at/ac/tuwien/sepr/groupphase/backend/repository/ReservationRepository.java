@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.repository;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Reservation;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         """
     )
     List<Reservation> findAllByUserEmail(@Param("email") String email);
+
+    @Override
+    @EntityGraph(attributePaths = "tickets")
+    Optional<Reservation> findById(Long id);
 }

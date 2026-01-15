@@ -27,26 +27,32 @@ export class PerformancesService {
 
   searchAdvanced(filters: {
     title?: string;
+    artist?: string;
     location?: string;
     eventType?: EventTypeDto;
     startDate?: Date;
+    durationMinutes?: number;
   }, page: number = 0, size: number = 10): Observable<PagedResult<PerformanceDto>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
     if (filters.title) params = params.set('title', filters.title);
+    if (filters.artist) params = params.set('artist', filters.artist);
     if (filters.location) params = params.set('location', filters.location);
     if (filters.eventType) params = params.set('eventType', filters.eventType);
     if (filters.startDate) params = params.set('startDate', this.formatDate(filters.startDate));
+    if (filters.durationMinutes) params = params.set('durationMinutes', filters.durationMinutes.toString());
 
     return this.http.get<PagedResult<PerformanceDto>>(`${this.baseUri}/query`, { params });
   }
 
   private formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
 }

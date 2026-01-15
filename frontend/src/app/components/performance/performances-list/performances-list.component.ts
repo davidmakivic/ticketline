@@ -52,6 +52,10 @@ export class PerformancesListComponent implements OnInit {
   selectedStartDate: Date | null = null;
   eventTypes = Object.values(EventTypeDto);
 
+  searchArtist: string = '';
+  selectedDuration: number | null = null;
+  durationOptions = [30, 60, 90, 120, 150, 180];
+
   private isSearchActive = false;
   protected searchSubject = new Subject<void>();
 
@@ -61,7 +65,7 @@ export class PerformancesListComponent implements OnInit {
     this.loadPerformances();
 
     this.searchSubject.pipe(
-      debounceTime(1000)
+      debounceTime(500)
     ).subscribe(() => {
       this.performSearch();
     });
@@ -110,25 +114,22 @@ export class PerformancesListComponent implements OnInit {
   }
 
   performSearch(): void {
-    if (!this.isSearchActive) {
-      this.loadPerformances();
-      return;
-    }
-
     this.loading = true;
     let startDateFormatted: Date | undefined = undefined;
 
     if (this.selectedStartDate) {
-      startDateFormatted = this.selectedStartDate instanceof Date
-        ? this.selectedStartDate
-        : new Date(this.selectedStartDate);
+      const normalizedDate = new Date(this.selectedStartDate);
+      normalizedDate.setHours(12, 0, 0, 0);
+      startDateFormatted = normalizedDate;
     }
 
     this.performancesService.searchAdvanced({
       title: this.searchTitle?.trim() || undefined,
+      artist: this.searchArtist?.trim() || undefined,
       location: this.searchLocation?.trim() || undefined,
       eventType: this.selectedEventType || undefined,
-      startDate: startDateFormatted
+      startDate: startDateFormatted,
+      durationMinutes: this.selectedDuration || undefined
     }, this.pageIndex, this.pageSize).subscribe({
       next: (pagedResult: PagedResult<PerformanceDto>) => {
         this.performances = pagedResult.content;
@@ -142,6 +143,7 @@ export class PerformancesListComponent implements OnInit {
     });
   }
 
+
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
@@ -153,11 +155,14 @@ export class PerformancesListComponent implements OnInit {
     }
   }
 
+// resetFilters() anpassen
   resetFilters(): void {
     this.searchTitle = '';
+    this.searchArtist = '';
     this.searchLocation = '';
     this.selectedEventType = null;
     this.selectedStartDate = null;
+    this.selectedDuration = null;
     this.pageIndex = 0;
     this.isSearchActive = false;
     this.loadPerformances();
