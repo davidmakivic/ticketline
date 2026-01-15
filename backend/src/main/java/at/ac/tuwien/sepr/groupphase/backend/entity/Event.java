@@ -47,7 +47,7 @@ public class Event {
     @Column(name = "image_content_type")
     private String imageContentType;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "event_artists",
         joinColumns = @JoinColumn(name = "event_id"),
@@ -56,7 +56,7 @@ public class Event {
     @JsonBackReference
     private Set<Artist> artists = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Performance> performances = new HashSet<>();
 
     public Event(String title, String description, EventType category, Integer durationMinutes) {

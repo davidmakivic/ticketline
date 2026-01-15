@@ -14,12 +14,19 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE LOWER(e.title) LIKE LOWER(CONCAT('%', :title, '%'))")
     List<Event> findByAnyTitle(@Param("title") String title);
+
+    @Query("SELECT DISTINCT e FROM Event e LEFT JOIN FETCH e.artists")
+    List<Event> findAllWithArtists();
+
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.performances WHERE e.id = :id")
+    Optional<Event> findByIdWithPerformances(@Param("id") Long id);
 
 
     @Query("""

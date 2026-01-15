@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.List;
 
 @Profile("generateData")
@@ -61,11 +62,10 @@ public class TicketDataGenerator {
         LOGGER.debug("Generating tickets: one ticket per seat & performance");
 
         int created = 0;
+        int batchSize = 50; // Batch-Verarbeitung
 
         for (Performance performance : performances) {
-
             Long hallId = performance.getHall().getId();
-
             List<Seat> seatsForHall = seatRepository.findByHallIdWithSector(hallId);
 
             if (seatsForHall.isEmpty()) {
@@ -74,30 +74,43 @@ public class TicketDataGenerator {
                 continue;
             }
 
-            for (Seat seat : seatsForHall) {
+            List<Ticket> batch = new ArrayList<>(batchSize);
 
+            for (Seat seat : seatsForHall) {
                 Ticket ticket = new Ticket();
                 ticket.setPerformance(performance);
                 ticket.setSeat(seat);
                 ticket.setStatus(TicketStatus.AVAILABLE);
 
                 SectorType sectorType = seat.getSector().getType();
-
                 Long basePrice = performance.getBasePriceCents();
                 double multiplier = sectorMultiplier(sectorType);
-
                 Long finalPrice = Math.round(basePrice * multiplier);
 
                 ticket.setPriceFinalCents(finalPrice);
+                batch.add(ticket);
 
+                // Batch speichern und Speicher freigeben
+                if (batch.size() >= batchSize) {
+                    ticketRepository.saveAll(batch);
+                    ticketRepository.flush();
+                    batch.clear();
+                    created += batchSize;
+                }
+            }
 
-                ticketRepository.save(ticket);
-                created++;
+            // Restliche Tickets speichern
+            if (!batch.isEmpty()) {
+                ticketRepository.saveAll(batch);
+                ticketRepository.flush();
+                created += batch.size();
+                batch.clear();
             }
         }
 
         LOGGER.debug("Ticket generation complete – created {} tickets", created);
     }
+
 
     private double sectorMultiplier(SectorType sectorType) {
         return switch (sectorType) {

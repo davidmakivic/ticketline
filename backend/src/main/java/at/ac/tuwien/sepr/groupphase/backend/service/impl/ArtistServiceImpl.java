@@ -105,7 +105,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public List<ArtistDto> findAll() {
         LOGGER.info("Fetching all artists");
-        return artistMapper.artistToArtistDto(artistRepository.findAll());
+        return artistMapper.artistToArtistDtoList(artistRepository.findAll());
     }
 
     @Override

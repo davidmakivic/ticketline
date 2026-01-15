@@ -83,10 +83,9 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventDto findById(Long id) {
         LOGGER.info("Fetching event with id={}", id);
-        Event event = eventRepository.findById(id)
+        Event event = eventRepository.findByIdWithPerformances(id)
             .orElseThrow(() -> new NotFoundException("Event not found with id " + id));
-
-        return eventMapper.eventToEventDto(event);
+        return eventMapper.eventToEventDtoWithPerformances(event);
     }
 
     @Override
@@ -107,7 +106,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventDto> findByAnyTitle(String title) {
         LOGGER.info("Searching events by title: {}", title);
-        return eventMapper.eventToEventDto(eventRepository.findByAnyTitle(title));
+        return eventMapper.eventToEventDtoList(eventRepository.findByAnyTitle(title));
     }
 
     @Override
@@ -123,7 +122,7 @@ public class EventServiceImpl implements EventService {
                                                 int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         return eventRepository.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, pageable)
-            .map(eventMapper::eventToEventDto);
+            .map(eventMapper::eventToEventDtoWithPerformances);
     }
 
     @Override
