@@ -17,6 +17,7 @@ import {PerformancesListComponent} from "./components/performance/performances-l
 import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
 import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
 import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
+import {ForgotPasswordComponent} from "./components/account/forgot-password/forgot-password.component";
 
 
 const routes: Routes = [
@@ -32,8 +33,11 @@ const routes: Routes = [
   },
   {
     path: 'account/change-password',
-    canActivate: mapToCanActivate([AuthGuard]),
     component: ChangePasswordComponent,
+  },
+  {
+    path: 'account/forgot-password',
+    component: ForgotPasswordComponent
   },
   {
     path: 'news',

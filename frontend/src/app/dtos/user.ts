@@ -54,6 +54,7 @@ export interface UserDto {
 export interface PasswordChangeDto {
   oldPassword: string;
   newPassword: string;
+  resetToken: string;
 }
 
 export enum Roles {

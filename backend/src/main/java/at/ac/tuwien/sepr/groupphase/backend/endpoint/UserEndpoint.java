@@ -91,11 +91,12 @@ public class UserEndpoint {
     @PermitAll
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(Principal principal, @RequestBody PasswortChangeDto dto) throws ValidationException {
-        LOGGER.info("Changing password for user:{}", principal.getName());
+        LOGGER.info("Changing password");
         LOGGER.debug("Request payload: {}", dto);
-        String email = principal.getName();
-        if (email != null) {
-            dto.setAuthenticatedUserEmail(email);
+
+        if (principal != null && principal.getName() != null) {
+            LOGGER.info("Changing password for user:{}", principal.getName());
+            dto.setAuthenticatedUserEmail(principal.getName());
         }
 
         try {

@@ -54,4 +54,11 @@ export class UserService {
   updateUser(payload: UserUpdateDto): Observable<void> {
     return this.httpClient.put<void>(this.userBaseUrl + '/me', payload)
   }
+
+  resetPassword(emailValue: string):Observable<void> {
+    console.log('emailValue', emailValue);
+    const params = new HttpParams()
+      .set('email', emailValue);
+    return this.httpClient.post<void>(`${this.userBaseUrl}/resetPassword`, null, {params})
+  }
 }

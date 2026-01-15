@@ -188,7 +188,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void changePassword(PasswortChangeDto dto) throws ValidationException, GoneException, NotFoundException {
         LOGGER.info("Changing password");
-        LOGGER.debug("Payload: tokenPresent={}", dto.getToken() != null);
+        LOGGER.debug("Payload: tokenPresent={}", dto.getResetToken() != null);
         //If user is logged in
         String dtoAuthenticatedUserEmail = dto.getAuthenticatedUserEmail();
         userValidator.validatePassword(dto.getNewPassword());
@@ -205,20 +205,23 @@ public class UserServiceImpl implements UserService {
             userRepository.flush();
             return;
         }
-        PasswordResetToken token = passwordTokenRepository.findByToken(dto.getToken());
+        PasswordResetToken token = passwordTokenRepository.findByToken(dto.getResetToken());
+        LOGGER.debug("ResetToken= {} ", dto.getResetToken());
+        LOGGER.debug("Token= {}", dto.getResetToken());
         if (token == null) {
-            LOGGER.error("Password change failed because token was not found");
-            throw new NotFoundException("Token wurde nicht gefunden");
+            LOGGER.error("Password change failed, token was not found");
+            throw new NotFoundException("Reset-Link ist ungültig");
         }
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             LOGGER.error("Password change failed because token expired");
-            throw new GoneException("Token is expired");
+            throw new GoneException("Reset-Link ist abgelaufen");
         }
         ApplicationUser user = token.getUser();
+        passwordTokenRepository.deleteTokenByUserId(user.getUserId());
+        passwordTokenRepository.flush();
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
         user.setFailedLoginAttempts(0);
         userRepository.save(user);
-        passwordTokenRepository.removeByUser(user);
     }
 
     @Override

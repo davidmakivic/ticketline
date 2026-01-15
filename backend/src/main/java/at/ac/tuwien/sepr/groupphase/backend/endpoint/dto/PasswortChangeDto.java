@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public class PasswortChangeDto {
 
     //Token is used if user is not authenticated
-    String token;
+    String resetToken;
 
     //Email is used if user is authenticated
     String authenticatedUserEmail;
@@ -23,12 +23,15 @@ public class PasswortChangeDto {
     @Size(min = 8, message = "Password must be at least of length 8")
     String newPassword;
 
-    public PasswortChangeDto(String token, String password) {
+    public PasswortChangeDto(String resetToken, String password) {
+    }
+
+    public PasswortChangeDto() {
     }
 
 
-    public String getToken() {
-        return token;
+    public String getResetToken() {
+        return resetToken;
     }
 
     public String getAuthenticatedUserEmail() {
@@ -45,5 +48,27 @@ public class PasswortChangeDto {
 
     public void setAuthenticatedUserEmail(String authenticatedUserEmail) {
         this.authenticatedUserEmail = authenticatedUserEmail;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+
+    @Override
+    public String toString() {
+        return "PasswortChangeDto{"
+            + "resetToken='" + resetToken + '\''
+            + ", authenticatedUserEmail='" + authenticatedUserEmail + '\''
+            + ", oldPassword='" + oldPassword + '\''
+            + ", newPassword='" + newPassword + '\''
+            + '}';
     }
 }
