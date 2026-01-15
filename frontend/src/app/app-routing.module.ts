@@ -1,25 +1,45 @@
+import {NgModule} from '@angular/core';
+import {mapToCanActivate, RouterModule, Routes} from '@angular/router';
+import {HomeComponent} from './components/home/home.component';
+import {LoginComponent} from './components/login/login.component';
+import {AuthGuard} from './guards/auth.guard';
+import {NewsComponent} from './components/news/news.component';
+import {EventsListComponent} from './components/events/events-list/events-list.component';
+import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
+import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
+import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
+import {AccountComponent} from "./components/account/account.component";
+import RegisterEditComponent, {
+  RegisterEditMode
+} from "./components/account/register-edit-account/register-edit.component";
 import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
 import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
 import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
 import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
+import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
+import {ForgotPasswordComponent} from "./components/account/forgot-password/forgot-password.component";
 import { ShopComponent } from './components/shop/shop.component';
-import {ArtistDetailComponent} from "./components/artists/artist-detail/artist-detail.component";
-import {ArtistsListComponent} from "./components/artists/artists-list/artists-list.component";
-import {mapToCanActivate, RouterModule, Routes} from "@angular/router";
-import {HomeComponent} from "./components/home/home.component";
-import {LoginComponent} from "./components/login/login.component";
-import RegisterComponent from "./components/register/register.component";
-import {NewsComponent} from "./components/news/news.component";
-import {AuthGuard} from "./guards/auth.guard";
-import {EventDetailComponent} from "./components/events/event-detail/event-detail.component";
-import {EventsListComponent} from "./components/events/events-list/events-list.component";
-import {NgModule} from "@angular/core";
 
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'register', component: RegisterComponent},
+  {path: 'account', component: AccountComponent},
+  {path: 'register', component: RegisterEditComponent, data: {mode: RegisterEditMode.register}},
+  {
+    path: 'account/edit',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: RegisterEditComponent,
+    data: {mode: RegisterEditMode.edit}
+  },
+  {
+    path: 'account/change-password',
+    component: ChangePasswordComponent,
+  },
+  {
+    path: 'account/forgot-password',
+    component: ForgotPasswordComponent
+  },
   {
     path: 'news',
     component: NewsComponent
