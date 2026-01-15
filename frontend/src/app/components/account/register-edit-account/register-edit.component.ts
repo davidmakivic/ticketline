@@ -223,8 +223,8 @@ export class RegisterEditComponent implements OnInit {
   }
 
 
-  protected cancel() {
-    this.router.navigate(['/']);
+  protected cancel()  {
+    this.router.navigate(['/account']);
   }
 
   protected readonly count = count;
