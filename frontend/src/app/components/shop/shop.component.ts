@@ -69,4 +69,8 @@ export class ShopComponent implements OnInit {
   getImage(id: number): SafeUrl | undefined {
     return this.images.get(id);
   }
+
+  hasSizes(item: MerchandiseDto): boolean {
+    return (item.variants ?? []).some(v => v.size !== null);
+  }
 }

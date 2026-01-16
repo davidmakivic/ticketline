@@ -1,18 +1,27 @@
 <div class="shop-container">
   <div class="grid">
-    @for (item of pagedItems; track item.id) {
-      <div class="card" (click)="openDialog(item)">
-        <img
-          [src]="getImage(item.id)"
-          alt="{{ item.name }}"
-        />
+    <div class="card" *ngFor="let item of pagedItems" (click)="openDialog(item)">
+      <div class="image-wrapper">
+        <img [src]="getImage(item.id)" alt="{{ item.name }}" />
 
-        <div class="overlay">
-          <h3>{{ item.name }}</h3>
-          <span>€ {{ item.price / 100 | number:'1.2-2' }}</span>
+        <!-- Größen Overlay nur bei Artikeln mit echten Größen -->
+        <div class="sizes-overlay" *ngIf="hasSizes(item)">
+          <span
+            class="size-chip"
+            *ngFor="let v of item.variants"
+            [class.disabled]="v.quantity === 0"
+            [hidden]="v.size === null"
+          >
+            {{ v.size }}
+          </span>
         </div>
       </div>
-    }
+
+      <div class="info">
+        <h3>{{ item.name }}</h3>
+        <span class="price">€ {{ item.price / 100 | number:'1.2-2' }}</span>
+      </div>
+    </div>
   </div>
 
   <mat-paginator
@@ -21,4 +30,3 @@
     (page)="onPageChange($event)">
   </mat-paginator>
 </div>
-
