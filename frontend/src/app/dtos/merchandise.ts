@@ -2,13 +2,14 @@ export interface MerchandiseDto {
   id: number;
   name: string;
   description: string;
-  price: number; // in cents
-  quantity: number; // Gesamtmenge (Backend summiert Varianten)
+  price: number;
+  quantity: number;
   imageContentType: string;
   variants: MerchandiseVariantDto[];
 }
 
 export interface MerchandiseVariantDto {
+  id: number;
   size: string | null;
   quantity: number;
 }

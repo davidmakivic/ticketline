@@ -1,37 +1,38 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 import { MerchandiseDto, MerchandiseVariantDto } from '../../dtos/merchandise';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatSnackBarModule],
   templateUrl: './shop-dialog.component.html',
   styleUrls: ['./shop-dialog.component.scss']
 })
 export class MerchandiseDialogComponent {
   quantity: number | null = 1;
-  selectedSize!: MerchandiseVariantDto; // wird beim Laden gesetzt
+  selectedSize!: MerchandiseVariantDto;
   errorMessage?: string;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public item: MerchandiseDto) {
-    // Artikel mit Größen -> automatisch erste Variante auswählen
-    if (this.hasSizes()) {
-      this.selectedSize = this.item.variants[0];
-    } else {
-      // One-Size Artikel -> erste und einzige Variante auswählen
-      this.selectedSize = this.item.variants[0];
-    }
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public item: MerchandiseDto,
+    private cart: CartService,
+    private snack: MatSnackBar,
+    private ref: MatDialogRef<MerchandiseDialogComponent>
+  ) {
+    this.selectedSize = this.item.variants?.[0]!;
   }
 
-  /** Gibt true zurück, wenn der Artikel echte Größen hat */
   hasSizes(): boolean {
-    return this.item.variants.some(v => v.size !== null);
+    return (this.item.variants ?? []).some(v => v.size !== null);
   }
 
   get maxQuantity(): number {
-    return this.selectedSize.quantity;
+    return this.selectedSize?.quantity ?? 0;
   }
 
   onSizeChange(): void {
@@ -79,10 +80,17 @@ export class MerchandiseDialogComponent {
     this.validateQuantity();
     if (this.errorMessage) return;
 
-    console.log('Add to cart', {
-      itemId: this.item.id,
-      size: this.selectedSize.size,
-      quantity: this.quantity
+    const v = this.selectedSize;
+    this.cart.addMerch({
+      merchandiseId: this.item.id,
+      variantId: v.id,
+      name: this.item.name,
+      size: v.size ?? null,
+      unitPriceCents: this.item.price ?? 0,
+      quantity: this.quantity ?? 1
     });
+
+    this.snack.open('In den Warenkorb hinzugefügt', 'OK', { duration: 1800 });
+    this.ref.close(true);
   }
 }

@@ -8,13 +8,15 @@
     </div>
     }
 
-    @if (!loading && tickets.length === 0) {
+    @if (!loading && tickets.length === 0 && merchItems.length === 0) {
     <p class="empty">Dein Warenkorb ist leer.</p>
     }
   </div>
 
-  @if (!loading && tickets.length > 0) {
+  @if (!loading && (tickets.length > 0 || merchItems.length > 0)) {
   <div class="cart-content">
+
+    @if (tickets.length > 0) {
     <div class="cart-list">
       @for (t of tickets; track t.id) {
       <app-ticket-cart-item
@@ -23,6 +25,72 @@
       </app-ticket-cart-item>
       }
     </div>
+    }
+
+    @if (merchItems.length > 0) {
+    <div class="merch-section">
+      <h2 class="merch-title">Merchandise</h2>
+
+      <div class="merch-list">
+        @for (m of merchItems; track ($any(m).variantId ?? $any(m).merchandiseId ?? $any(m).id ?? $index)) {
+
+        <div class="merch-card">
+          <div class="merch-thumb">
+            @if (merchImage($any(m).merchandiseId)) {
+            <img
+              [src]="merchImage($any(m).merchandiseId)!"
+              [alt]="$any(m).merchandiseName ?? $any(m).name ?? 'Merchandise'"
+            />
+            } @else {
+            <div class="thumb-placeholder"></div>
+            }
+          </div>
+
+          <div class="merch-info">
+            <div class="merch-name">
+              {{ $any(m).merchandiseName ?? $any(m).name ?? 'Merchandise' }}
+            </div>
+
+            <div class="merch-meta">
+              Größe: {{ $any(m).size ?? '-' }} · Menge: {{ $any(m).quantity ?? 1 }}
+            </div>
+          </div>
+
+          <div class="merch-right">
+            <div class="merch-price">
+              {{
+              (
+              (
+              ($any(m).unitPriceCents ?? $any(m).priceCents ?? $any(m).price ?? 0)
+              * ($any(m).quantity ?? 1)
+              ) / 100
+              ) | currency:'EUR'
+              }}
+            </div>
+
+            <div class="qty-controls" aria-label="Menge ändern">
+              <button class="qty-btn" type="button" (click)="decMerchQty(m)" [disabled]="merchQty(m) <= 1">
+                <mat-icon>remove</mat-icon>
+              </button>
+
+              <span class="qty-value">{{ merchQty(m) }}</span>
+
+              <button class="qty-btn" type="button" (click)="incMerchQty(m)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <button class="trash-btn" type="button" (click)="removeMerch(m)" aria-label="Entfernen">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        }
+      </div>
+    </div>
+    }
+
   </div>
 
   <div class="cart-footer">
@@ -38,11 +106,10 @@
         mat-raised-button
         color="primary"
         (click)="onBuy()"
-        [disabled]="loading || tickets.length === 0">
+        [disabled]="loading || !hasAnyItems">
         Kaufen
       </button>
     </div>
   </div>
   }
 </div>
-
