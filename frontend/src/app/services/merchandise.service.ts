@@ -17,6 +17,10 @@ export class MerchandiseService {
     return this.http.get<MerchandiseDto[]>(this.baseUri);
   }
 
+  getById(id: number): Observable<MerchandiseDto> {
+    return this.http.get<MerchandiseDto>(`${this.baseUri}/${id}`);
+  }
+
   getImage(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUri}/${id}/image`, {
       responseType: 'blob'

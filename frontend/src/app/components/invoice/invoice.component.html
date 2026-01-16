@@ -3,9 +3,20 @@
 
     <div class="header">
       <div class="brand">Ticketline</div>
-      <h1 class="title">RECHNUNG</h1>
 
-      <p class="subtitle" *ngIf="eventTitle">
+      <h1 class="title">
+        RECHNUNG
+        <span style="font-weight:600; opacity:.8;">
+          – {{ viewType === 'merch' ? 'Merchandise' : 'Tickets' }}
+        </span>
+      </h1>
+
+      <div class="no-print" style="display:flex; gap:10px; margin-top:10px;" *ngIf="hasTickets() && hasMerch()">
+        <button class="btn secondary" (click)="setType('tickets')">Ticket-Rechnung</button>
+        <button class="btn secondary" (click)="setType('merch')">Merch-Rechnung</button>
+      </div>
+
+      <p class="subtitle" *ngIf="viewType === 'tickets' && eventTitle">
         Veranstaltung: <strong>{{ eventTitle }}</strong>
       </p>
 
@@ -26,7 +37,7 @@
       </div>
     </div>
 
-    <div class="content-box">
+    <div class="content-box" *ngIf="viewType === 'tickets'">
       <h2>Ihre Tickets</h2>
 
       <table class="table">
@@ -39,7 +50,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let it of items; let i = index">
+        <tr *ngFor="let it of ticketItems(); let i = index">
           <td>{{ i + 1 }}</td>
           <td>{{ itemTitle(it) }}</td>
           <td class="muted">{{ itemDetails(it) }}</td>
@@ -49,8 +60,35 @@
       </table>
     </div>
 
+    <div class="content-box" *ngIf="viewType === 'merch'">
+      <h2>Merchandise</h2>
+
+      <table class="table">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Artikel</th>
+          <th>Größe</th>
+          <th class="right">Menge</th>
+          <th class="right">Einzelpreis</th>
+          <th class="right">Summe</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let m of merchItems(); let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ m.merchandiseName }}</td>
+          <td class="muted">{{ m.size ?? 'One Size' }}</td>
+          <td class="right">{{ m.quantity }}</td>
+          <td class="right">{{ toEuro(m.unitPriceCents) }}</td>
+          <td class="right">{{ toEuro((m.unitPriceCents ?? 0) * (m.quantity ?? 0)) }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="summary-grid">
-      <div class="content-box">
+      <div class="content-box" *ngIf="viewType === 'tickets'">
         <h3>Plätze</h3>
         <div *ngFor="let t of tickets">
           {{ ticketSeatLabel(t) }}
@@ -60,7 +98,9 @@
       <div class="content-box total-box">
         <div class="total-row">
           <span>Gesamtbetrag </span>
-          <strong>{{ toEuro(order.totalPriceCents) }}</strong>
+          <strong>
+            {{ viewType === 'merch' ? toEuro(merchTotalCents()) : toEuro(ticketTotalCents()) }}
+          </strong>
         </div>
       </div>
     </div>

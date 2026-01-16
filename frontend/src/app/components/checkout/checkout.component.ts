@@ -10,8 +10,10 @@ import { Ticket } from '../../dtos/ticket';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 
-type PaymentId = 'card' | 'paypal' | 'klarna' | 'applepay';
 import { ReservationsService } from '../../services/reservations.service';
+import { CartItem, isMerchItem, isTicketItem } from '../../dtos/cart-item';
+
+type PaymentId = 'card' | 'paypal' | 'klarna' | 'applepay';
 
 interface PaymentMethod {
   id: PaymentId;
@@ -38,22 +40,23 @@ export class CheckoutComponent {
   ];
 
   readonly totalCents$ = this.cart.cartItems$.pipe(
-    map(items => items.map(i => i.ticketId)),
-    switchMap(ids => {
-      if (ids.length === 0) return of([] as Ticket[]);
+    switchMap(items => {
+      const ticketIds = items.filter(isTicketItem).map(i => i.ticketId);
+      const merchSum = items
+        .filter(isMerchItem)
+        .reduce((s, m) => s + (m.unitPriceCents ?? 0) * (m.quantity ?? 0), 0);
+
+      if (ticketIds.length === 0) return of(merchSum);
+
       return forkJoin(
-        ids.map(id =>
-          this.ticketsService.getTicketById(id).pipe(
-            catchError(() => of(null))
-          )
+        ticketIds.map(id =>
+          this.ticketsService.getTicketById(id).pipe(catchError(() => of(null)))
         )
       ).pipe(
-        map(list => list.filter((t): t is Ticket => t !== null))
+        map(list => list.filter((t): t is Ticket => t !== null)),
+        map(tickets => merchSum + tickets.reduce((sum, t) => sum + (t.priceFinalCents ?? 0), 0))
       );
-    }),
-    map(tickets =>
-      tickets.reduce((sum, t) => sum + (t.priceFinalCents ?? 0), 0)
-    )
+    })
   );
 
   constructor(
@@ -75,9 +78,11 @@ export class CheckoutComponent {
       return;
     }
 
-    const boughtItems = items.map(i => ({ ...i }));
-    const ids = items.map(i => i.ticketId);
+    const boughtItems = items.map(i => ({ ...i })) as CartItem[];
 
+    const ticketIds = items.filter(isTicketItem).map(i => i.ticketId);
+    const hasTickets = ticketIds.length > 0;
+    const hasMerch = items.some(isMerchItem);
 
     const ridRaw = sessionStorage.getItem('reservation.pay.rid');
     const rid = ridRaw ? Number(ridRaw) : null;
@@ -99,13 +104,65 @@ export class CheckoutComponent {
       sessionStorage.removeItem('reservation.pay.selectedIds');
     };
 
+    const doCreateOrder = () => {
+      this.orders.createFromCart(items).pipe(
+        switchMap(order => {
+          if (!hasTickets || rid == null || Number.isNaN(rid)) {
+            cleanupReservationPayFlags();
+            return of(order);
+          }
+
+          const boughtIds = (selectedIds?.length ? selectedIds : ticketIds);
+          const all = (allIds?.length ? allIds : ticketIds);
+          const unboughtIds = all.filter(tid => !boughtIds.includes(tid));
+
+          const release$ = unboughtIds.length
+            ? forkJoin(unboughtIds.map(tid => this.ticketsService.releaseHold(tid).pipe(catchError(() => of(null)))))
+            : of([]);
+
+          const deleteReservation$ = this.reservationsService.delete(rid).pipe(catchError(() => of(null)));
+
+          return forkJoin({ release: release$, del: deleteReservation$ }).pipe(
+            tap(() => cleanupReservationPayFlags()),
+            map(() => order)
+          );
+        })
+      ).subscribe({
+        next: (order) => {
+          this.cart.clear();
+
+          const type =
+            hasTickets && !hasMerch ? 'tickets' :
+            !hasTickets && hasMerch ? 'merch' :
+            'tickets';
+
+          this.router.navigate(['/invoice', order.id], {
+            queryParams: { type },
+            state: {
+              order,
+              items: boughtItems,
+              payment: this.selectedPayment
+            }
+          });
+        },
+        error: err => {
+          console.error(err);
+          const msg =
+            err?.error?.message ??
+            (Array.isArray(err?.error?.errors) ? err.error.errors.join('\n') : null) ??
+            'Bestellung fehlgeschlagen';
+          alert(msg);
+        }
+      });
+    };
+
+    if (!hasTickets) {
+      doCreateOrder();
+      return;
+    }
 
     forkJoin(
-      ids.map(id =>
-        this.ticketsService.getTicketById(id).pipe(
-          catchError(() => of(null))
-        )
-      )
+      ticketIds.map(id => this.ticketsService.getTicketById(id).pipe(catchError(() => of(null))))
     ).subscribe({
       next: (ticketList) => {
         const tickets = ticketList.filter((t): t is any => t !== null);
@@ -140,63 +197,7 @@ export class CheckoutComponent {
           return;
         }
 
-
-        this.orders.createFromCart(items).pipe(
-
-
-          switchMap(order => {
-            if (rid == null || Number.isNaN(rid)) {
-              cleanupReservationPayFlags();
-              return of(order);
-            }
-
-
-            const boughtIds = (selectedIds?.length ? selectedIds : ids);
-            const all = (allIds?.length ? allIds : ids);
-
-            const unboughtIds = all.filter(tid => !boughtIds.includes(tid));
-
-            const release$ = unboughtIds.length
-              ? forkJoin(
-                  unboughtIds.map(tid =>
-                    this.ticketsService.releaseHold(tid).pipe(
-                      catchError(() => of(null))
-                    )
-                  )
-                )
-              : of([]);
-
-            const deleteReservation$ = this.reservationsService.delete(rid).pipe(
-              catchError(() => of(null))
-            );
-
-            return forkJoin({ release: release$, del: deleteReservation$ }).pipe(
-              tap(() => cleanupReservationPayFlags()),
-              map(() => order)
-            );
-          })
-
-        ).subscribe({
-          next: (order) => {
-            this.cart.clear();
-
-            this.router.navigate(['/invoice', order.id], {
-              state: {
-                order,
-                items: boughtItems,
-                payment: this.selectedPayment
-              }
-            });
-          },
-          error: err => {
-            console.error(err);
-            const msg =
-              err?.error?.message ??
-              (Array.isArray(err?.error?.errors) ? err.error.errors.join('\n') : null) ??
-              'Bestellung fehlgeschlagen';
-            alert(msg);
-          }
-        });
+        doCreateOrder();
       },
       error: (e) => {
         console.error(e);
