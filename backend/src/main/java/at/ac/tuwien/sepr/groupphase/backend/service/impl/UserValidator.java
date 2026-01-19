@@ -137,7 +137,7 @@ public class UserValidator {
                 errors.add("Email must be a valid email address");
             }
         }
-        
+
         if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
             errors.add("Vorname darf nicht leer sein");
         } else if (dto.getFirstName().length() > 255) {
@@ -217,15 +217,15 @@ public class UserValidator {
             throw new NotFoundException("User not found");
         }
 
-        boolean isAdmin = currentUser.getRole() == Roles.ADMIN;
+        boolean userIsAdmin = currentUser.getRole() == Roles.ADMIN;
         boolean isSelf = currentUser.getUserId().equals(userToDelete.getUserId());
 
-        if (isAdmin && isSelf) {
-            throw new ForbiddenException("Admins cannot delete their own account");
+        if (userToDelete.getRole() == Roles.ADMIN) {
+            throw new ForbiddenException("Admins können nicht gelöscht werden");
         }
 
-        if (!isAdmin && !isSelf) {
-            throw new NotFoundException("User not found");
+        if (!userIsAdmin && !isSelf) {
+            throw new NotFoundException("Account wurde nicht gefunden");
         }
 
     }
@@ -240,4 +240,6 @@ public class UserValidator {
             throw new ValidationException("Validation for password failed", Collections.singletonList("Password must be at least 8 characters"));
         }
     }
+
+
 }
