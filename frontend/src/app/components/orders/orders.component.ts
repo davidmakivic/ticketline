@@ -125,20 +125,35 @@ export class OrdersComponent {
     });
   }
 
+ isCancelled(o: any): boolean {
+   const merchCount = (o?.merchItems?.length ?? 0);
+   const ticketCount = (o?.ticketIds?.length ?? 0);
 
-  isCancelled(o: OrderDto): boolean {
-    return (o.ticketIds?.length ?? 0) === 0 || (o.totalPriceCents ?? 0) === 0;
-  }
+   return merchCount === 0 && ticketCount === 0;
+ }
+
 
   statusLabel(o: OrderDto): string {
     return this.isCancelled(o) ? 'Storniert' : 'Gekauft';
   }
 
-  orderTitle(o: OrderDto): string {
-    return this.eventTitleByOrderId[o.id]
-      ?? (this.isCancelled(o) ? this.loadOrderMeta(o.id)?.eventTitle : null)
-      ?? 'Unbekannte Veranstaltung';
-  }
+ orderTitle(o: any): string {
+   const merch = (o?.merchItems ?? []) as any[];
+   const hasMerch = merch.length > 0;
+   const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
+
+   if (!hasTickets && hasMerch) {
+     const names = Array.from(new Set(
+       merch.map(m => m?.merchandiseName ?? m?.name).filter(Boolean)
+     ));
+     return names.length ? names.join(' • ') : `Merchandise #${o.id}`;
+   }
+
+   return this.eventTitleByOrderId[o.id]
+     ?? (this.isCancelled(o) ? this.loadOrderMeta(o.id)?.eventTitle : null)
+     ?? 'Unbekannte Veranstaltung';
+ }
+
 
   orderSeats(o: OrderDto): string[] {
     const direct = this.seatsByOrderId[o.id];
@@ -258,14 +273,11 @@ export class OrdersComponent {
     });
   }
 
-
-
   buyReservation(r: ReservationDto) {
     const allIds = r.ticketIds ?? [];
     if (!allIds.length) return;
 
     const selMap = this.reservationSelectedById[r.id] ?? {};
-
     const selectedIds = allIds.filter(tid => (selMap[tid] ?? true) === true);
 
     if (selectedIds.length === 0) {
@@ -327,7 +339,6 @@ export class OrdersComponent {
     });
   }
 
-
   toEuro(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
   }
@@ -346,7 +357,6 @@ export class OrdersComponent {
     if (seat) return seat;
     return 'Freie Platzwahl';
   }
-
 
   private loadReservationDetails(reservations: ReservationDto[]) {
     this.reservationLinesById = {};
@@ -405,7 +415,6 @@ export class OrdersComponent {
     });
   }
 
-
   private cacheKey(orderId: number): string {
     return `order-meta-${orderId}`;
   }
@@ -418,8 +427,7 @@ export class OrdersComponent {
     };
     try {
       localStorage.setItem(this.cacheKey(orderId), JSON.stringify(payload));
-    } catch {
-    }
+    } catch {}
   }
 
   private loadOrderMeta(orderId: number): OrderMetaCache | null {
@@ -455,11 +463,9 @@ export class OrdersComponent {
       if (this.isCancelled(o)) continue;
       try {
         localStorage.removeItem(this.cacheKey(o.id));
-      } catch {
-      }
+      } catch {}
     }
   }
-
 
   private loadEventTitles(orders: OrderDto[]) {
     this.eventTitleByOrderId = {};
@@ -589,7 +595,6 @@ export class OrdersComponent {
       }
     });
   }
-
 
   private loadEventTitlesForReservations(reservations: ReservationDto[]) {
     this.eventTitleByReservationId = {};
