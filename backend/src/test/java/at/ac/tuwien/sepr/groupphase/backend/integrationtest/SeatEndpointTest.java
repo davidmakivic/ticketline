@@ -71,8 +71,8 @@ public class SeatEndpointTest implements TestData {
 
     @BeforeEach
     void setup() {
-        performanceRepository.deleteAll(); // Add this
         ticketRepository.deleteAll();
+        performanceRepository.deleteAll();
         seatRepository.deleteAll();
         sectorRepository.deleteAll();
         hallRepository.deleteAll();
@@ -103,6 +103,7 @@ public class SeatEndpointTest implements TestData {
         seatRepository.deleteAll();
         seatCreateDto = new SeatCreateDto(1, 1, sector.getId());
     }
+
 
     @Test
     void testCreateSeat() throws Exception {
