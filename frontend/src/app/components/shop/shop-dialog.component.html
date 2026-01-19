@@ -36,6 +36,10 @@
   {{ errorMessage }}
 </div>
 
-<button class="add" (click)="addToCart()">
+<button
+  class="add"
+  (click)="addToCart()"
+  [disabled]="!!errorMessage || !quantity || quantity <= 0 || maxQuantity <= 0 || quantity > maxQuantity">
   In den Warenkorb
 </button>
+

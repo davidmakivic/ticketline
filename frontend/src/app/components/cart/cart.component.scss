@@ -70,11 +70,11 @@
     color: var(--mat-sys-on-surface-variant);
   }
 
-  .data {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--mat-sys-on-surface);
-  }
+ .value {
+   font-size: 18px;
+   font-weight: 800;
+   color: var(--mat-sys-on-surface);
+ }
 }
 
 @media (max-width: 900px) {
