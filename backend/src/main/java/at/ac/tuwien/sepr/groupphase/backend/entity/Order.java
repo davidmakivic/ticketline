@@ -1,6 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,7 +17,9 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "orders")
@@ -37,6 +39,8 @@ public class Order {
     @JoinColumn(name = "order_id")
     private List<Ticket> tickets = new ArrayList<>();
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<OrderMerchItem> merchItems = new LinkedHashSet<>();
 
     @Column(name = "total_price_cents", nullable = false)
     private long totalPriceCents;
@@ -56,16 +60,16 @@ public class Order {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public ApplicationUser getUser() {
         return user;
     }
 
     public List<Ticket> getTickets() {
         return tickets;
+    }
+
+    public Set<OrderMerchItem> getMerchItems() {
+        return merchItems;
     }
 
     public long getTotalPriceCents() {
@@ -76,15 +80,28 @@ public class Order {
         return createdAt;
     }
 
-    public void setTickets(List<Ticket> tickets) {
-        this.tickets = tickets;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setUser(ApplicationUser user) {
         this.user = user;
     }
 
+    public void setTickets(List<Ticket> tickets) {
+        this.tickets = tickets;
+    }
+
+    public void setMerchItems(Set<OrderMerchItem> merchItems) {
+        this.merchItems = merchItems != null ? merchItems : new LinkedHashSet<>();
+    }
+
     public void setTotalPriceCents(long totalPriceCents) {
         this.totalPriceCents = totalPriceCents;
+    }
+
+    public void addMerchItem(OrderMerchItem item) {
+        item.setOrder(this);
+        this.merchItems.add(item);
     }
 }

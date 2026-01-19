@@ -1,6 +1,10 @@
 <h2>{{ item.name }}</h2>
-<p>{{ item.description }}</p>
 
+<p class="price">
+  € {{ item.price / 100 | number:'1.2-2' }}
+</p>
+
+<p>{{ item.description }}</p>
 
 <!-- Dropdown nur für Artikel mit echten Größen -->
 <div *ngIf="hasSizes()" class="select-wrapper">

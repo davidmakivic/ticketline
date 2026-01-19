@@ -11,21 +11,28 @@ import java.util.List;
 public interface OrderMapper {
 
     /**
-     * Converts an Order entity to its corresponding OrderDto.
+     * Converts an {@link Order} entity to an {@link OrderDto}.
      *
-     * @param order the Order entity to convert
-     * @return the corresponding OrderDto
+     * @param order the entity to convert
+     * @return the converted DTO
      */
     @Mapping(target = "userId", source = "user.userId")
-    @Mapping(target = "ticketIds",
-        expression = "java(order.getTickets() == null ? java.util.Collections.emptyList() : order.getTickets().stream().map(t -> t.getId()).toList())")
+    @Mapping(
+        target = "ticketIds",
+        expression = "java(order.getTickets() == null"
+            + " ? java.util.List.of()"
+            + " : order.getTickets().stream()"
+            + "     .map(at.ac.tuwien.sepr.groupphase.backend.entity.Ticket::getId)"
+            + "     .toList())"
+    )
+    @Mapping(target = "merchItems", expression = "java(java.util.List.of())")
     OrderDto orderToOrderDto(Order order);
 
     /**
-     * Converts a list of Order entities to a list of OrderDto objects.
+     * Converts a list of {@link Order} entities to a list of {@link OrderDto}.
      *
-     * @param orders the list of Order entities to convert
-     * @return the corresponding list of OrderDto objects
+     * @param orders the entities to convert
+     * @return the converted DTO list
      */
     List<OrderDto> orderListToOrderDtoList(List<Order> orders);
 }

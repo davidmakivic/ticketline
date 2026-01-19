@@ -11,19 +11,35 @@ public class MerchandiseDto {
     private Integer price;
     private Integer quantity;
     private String imageContentType;
-    private List<MerchandiseVariantDto> variants = new ArrayList<>(); // Varianten nach Größe
 
+    private List<MerchandiseVariantDto> variants = new ArrayList<>();
 
+    public MerchandiseDto() {
+    }
 
-    public MerchandiseDto() {}
-
-    public MerchandiseDto(Long id, String name, String description, Integer price, String imageContentType, List<MerchandiseVariantDto> variants) {
+    public MerchandiseDto(Long id,
+                          String name,
+                          String description,
+                          Integer price,
+                          Integer quantity,
+                          String imageContentType,
+                          List<MerchandiseVariantDto> variants) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
+        this.quantity = quantity;
         this.imageContentType = imageContentType;
         this.variants = variants != null ? variants : new ArrayList<>();
+    }
+
+    public MerchandiseDto(Long id,
+                          String name,
+                          String description,
+                          Integer price,
+                          String imageContentType,
+                          List<MerchandiseVariantDto> variants) {
+        this(id, name, description, price, null, imageContentType, variants);
     }
 
     public Long getId() {
@@ -79,7 +95,6 @@ public class MerchandiseDto {
     }
 
     public void setVariants(List<MerchandiseVariantDto> variants) {
-        this.variants = variants;
+        this.variants = variants != null ? variants : new ArrayList<>();
     }
-
 }

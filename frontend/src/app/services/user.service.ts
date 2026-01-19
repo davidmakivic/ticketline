@@ -3,8 +3,8 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Globals } from '../global/globals';
 import { AuthService } from './auth.service';
-import {UserDto, UserRegisterDto} from "../dtos/user";
 import {PageResponse} from "../dtos/page-response";
+import {PasswordChangeDto, User, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
 
 @Injectable({
   providedIn: 'root'
@@ -43,4 +43,22 @@ export class UserService {
     return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/unblock`, null);
   }
 
+  changePassword(dto: PasswordChangeDto) {
+    return this.httpClient.post<void>(`${this.userBaseUrl}/changePassword`, dto);
+  }
+
+  getUser(): Observable<UserDto> {
+    return this.httpClient.get<UserDto>(this.userBaseUrl + '/me');
+  }
+
+  updateUser(payload: UserUpdateDto): Observable<void> {
+    return this.httpClient.put<void>(this.userBaseUrl + '/me', payload)
+  }
+
+  resetPassword(emailValue: string):Observable<void> {
+    console.log('emailValue', emailValue);
+    const params = new HttpParams()
+      .set('email', emailValue);
+    return this.httpClient.post<void>(`${this.userBaseUrl}/resetPassword`, null, {params})
+  }
 }

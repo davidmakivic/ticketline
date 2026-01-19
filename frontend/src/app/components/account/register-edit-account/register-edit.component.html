@@ -1,23 +1,26 @@
 <div class="register-container mt-5">
   <div class="login-title-wrapper d-flex justify-content-between">
-    <h1 class="title">Register</h1>
+    <h1 class="title">{{ modeText() }}</h1>
 
-    <div class="login-action gap-2 d-flex align-items-center">
-      <span class="login-hint">Schon ein Konto?</span>
-      <button
-        mat-button
-        routerLink="/login">
-        Login
-      </button>
-    </div>
+    @if (mode === RegisterEditMode.register) {
+      <div class="login-action gap-2 d-flex align-items-center">
+        <span class="login-hint">Schon ein Konto?</span>
+        <button
+          mat-button
+          routerLink="/login">
+          Login
+        </button>
+      </div>
+    }
+
   </div>
-  <div class="register-error-container">
-    @for (error of registerErrors ;track error) {
+  <div class="error-container">
+    @for (error of errors; track error) {
       <p class="register-error-message">{{ error }}</p>
     }
   </div>
 
-  <form [formGroup]="registerForm" (ngSubmit)="registerUser()" class="mt-4">
+  <form [formGroup]="registerForm" (ngSubmit)="makeRequest()" class="mt-4 pb-4">
 
     <div class="row g-3">
 
@@ -99,10 +102,10 @@
 
       <div class="col-9">
         <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Straße</mat-label>
+          <mat-label>Adresse</mat-label>
           <input matInput [formControl]="street">
           @if (street.hasError('required')) {
-            <mat-error>Straße ist erforderlich</mat-error>
+            <mat-error>Adresse ist erforderlich</mat-error>
           }
         </mat-form-field>
       </div>
@@ -110,39 +113,42 @@
       <div class="col-3">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Hausnummer</mat-label>
-          <input matInput [formControl]="houseNumber">
+          <input matInput type="number" [formControl]="houseNumber">
           @if (houseNumber.hasError('required')) {
             <mat-error>Nummer ist erforderlich</mat-error>
           }
         </mat-form-field>
       </div>
 
-      <div class="col-12">
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Passwort</mat-label>
-          <input matInput type="password" [formControl]="password">
-          @if (password.hasError('required')) {
-            <mat-error>Passwort ist erforderlich</mat-error>
-          }
-          @if (password.hasError('minlength')) {
-            <mat-error>Mind. 8 Zeichen</mat-error>
-          }
-        </mat-form-field>
-      </div>
+      @if (mode === RegisterEditMode.register) {
+        <div class="col-12">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Passwort</mat-label>
+            <input matInput type="password" [formControl]="password">
+            @if (password.hasError('required')) {
+              <mat-error>Passwort ist erforderlich</mat-error>
+            }
+            @if (password.hasError('minlength')) {
+              <mat-error>Mind. 8 Zeichen</mat-error>
+            }
+          </mat-form-field>
+        </div>
 
-      <div class="col-12">
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Passwort wiederholen</mat-label>
-          <input
-            matInput
-            type="password"
-            [formControl]="confirmPassword">
+        <div class="col-12">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Passwort wiederholen</mat-label>
+            <input
+              matInput
+              type="password"
+              [formControl]="confirmPassword">
 
-          @if (confirmPassword.hasError('passwordMismatch')) {
-            <mat-error>Passwörter stimmen nicht überein</mat-error>
-          }
-        </mat-form-field>
-      </div>
+            @if (confirmPassword.hasError('passwordMismatch')) {
+              <mat-error>Passwörter stimmen nicht überein</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+      }
 
       <!-- Buttons -->
       <div class="col-6 d-flex justify-content-start">
@@ -154,7 +160,7 @@
 
       <div class="col-6 d-flex justify-content-end">
         <button mat-flat-button type="submit" [disabled]="registerForm.invalid">
-          Registrieren
+          {{ modeText() }}
         </button>
       </div>
 

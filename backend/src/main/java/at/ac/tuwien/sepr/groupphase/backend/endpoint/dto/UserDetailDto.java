@@ -13,7 +13,8 @@ public class UserDetailDto {
     private String country;
     private String zipCode;
     private String city;
-    private String address;
+    private String street;
+    private Integer houseNumber;
     private Roles role;
     private Integer rewardPoints;
     private LocalDateTime createdAt;
@@ -48,8 +49,12 @@ public class UserDetailDto {
         return city;
     }
 
-    public String getAddress() {
-        return address;
+    public String getStreet() {
+        return street;
+    }
+
+    public Integer getHouseNumber() {
+        return houseNumber;
     }
 
     public Roles getRole() {
@@ -100,8 +105,12 @@ public class UserDetailDto {
         this.city = city;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public void setHouseNumber(Integer houseNumber) {
+        this.houseNumber = houseNumber;
     }
 
     public void setRole(Roles role) {

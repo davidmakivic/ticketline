@@ -31,7 +31,8 @@ public class UserMapperTest {
         user.setCountry("Austria");
         user.setZipCode("1222");
         user.setCity("city");
-        user.setAddress("street 12");
+        user.setStreet("street");
+        user.setHouseNumber(12);
         user.setRole(Roles.USER);
         user.setRewardPoints(10);
         user.setUserStatus(UserStatus.UNVERIFIED);
@@ -47,7 +48,8 @@ public class UserMapperTest {
             () -> assertEquals("Austria", dto.getCountry()),
             () -> assertEquals("1222", dto.getZipCode()),
             () -> assertEquals("city", dto.getCity()),
-            () -> assertEquals("street 12", dto.getAddress()),
+            () -> assertEquals("street", dto.getStreet()),
+            () -> assertEquals(12, dto.getHouseNumber()),
             () -> assertEquals(Roles.USER, dto.getRole()),
             () -> assertEquals(10, dto.getRewardPoints()),
             () -> assertEquals(UserStatus.UNVERIFIED, dto.getUserStatus()),
