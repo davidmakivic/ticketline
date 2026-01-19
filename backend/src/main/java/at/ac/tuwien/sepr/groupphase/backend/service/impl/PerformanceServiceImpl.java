@@ -6,6 +6,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.specification.PerformanceSpecifications;
 import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
@@ -43,8 +45,10 @@ public class PerformanceServiceImpl implements PerformanceService {
         LOGGER.debug("Payload: {}", dto);
         Performance performance = performanceMapper.performanceDtoToPerformance(dto);
 
-        performance.setEvent(eventRepository.getReferenceById(dto.getEventId()));
-        performance.setHall(hallRepository.getReferenceById(dto.getHallId()));
+        performance.setEvent(eventRepository.findById(dto.getEventId())
+            .orElseThrow(() -> new NotFoundException("Event " + dto.getEventId() + " not found")));
+        performance.setHall(hallRepository.findById(dto.getHallId())
+            .orElseThrow(() -> new NotFoundException("Hall " + dto.getHallId() + " not found")));
 
         Performance saved = performanceRepository.save(performance);
         return performanceMapper.performanceToPerformanceDto(saved);
@@ -60,11 +64,12 @@ public class PerformanceServiceImpl implements PerformanceService {
         performance.setStartTime(dto.getStartTime());
         performance.setEndTime(dto.getEndTime());
         performance.setBasePriceCents(dto.getBasePriceCents());
-        performance.setEvent(eventRepository.getReferenceById(dto.getEventId()));
-        performance.setHall(hallRepository.getReferenceById(dto.getHallId()));
+        performance.setEvent(eventRepository.findById(dto.getEventId())
+            .orElseThrow(() -> new NotFoundException("Event " + dto.getEventId() + " not found")));
+        performance.setHall(hallRepository.findById(dto.getHallId())
+            .orElseThrow(() -> new NotFoundException("Hall " + dto.getHallId() + " not found")));
 
         Performance saved = performanceRepository.save(performance);
-
         return performanceMapper.performanceToPerformanceDto(saved);
     }
 
@@ -93,8 +98,20 @@ public class PerformanceServiceImpl implements PerformanceService {
         int page, int size) {
         LOGGER.info("Searching performances with filters: title={}, artist={}, location={}, eventType={}, startDate={}, duration={}",
             title, artist, location, eventType, startDate, durationMinutes);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
-        return performanceRepository.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, pageable)
+
+        Specification<Performance> spec = Specification.allOf(
+            PerformanceSpecifications.hasEventTitle(title),
+            PerformanceSpecifications.hasArtist(artist),
+            PerformanceSpecifications.hasLocation(location),
+            PerformanceSpecifications.hasEventType(eventType),
+            PerformanceSpecifications.hasStartDateAfter(startDate),
+            PerformanceSpecifications.hasDuration(durationMinutes),
+            PerformanceSpecifications.fetchDetails()
+        );
+
+        return performanceRepository.findAll(spec, pageable)
             .map(performanceMapper::performanceToPerformanceDto);
     }
 
