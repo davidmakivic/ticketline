@@ -22,7 +22,7 @@ public class Performance {
     @Column(name = "performance_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER,  optional = false)
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "event_id", nullable = false)
     @JsonBackReference
     private Event event;

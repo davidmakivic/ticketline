@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -33,6 +34,7 @@ public class ArtistDataGenerator {
         this.eventRepository = eventRepository;
     }
 
+    @Transactional
     @PostConstruct
     public void generateArtistData() {
         if (!artistRepository.findAll().isEmpty()) {
@@ -82,31 +84,19 @@ public class ArtistDataGenerator {
         loadImageFromFile(mickJagger, "src/main/resources/images/mick-jagger.jpg");
         artistRepository.save(mickJagger);
 
-        // Events laden und Verbindungen setzen
-        List<Event> allEvents = eventRepository.findAll();
+        List<Event> allEvents = eventRepository.findAllWithArtists();
+
 
         if (allEvents.size() >= 3) {
-            allEvents.get(2).getArtists().add(freddie); // Rock am Ring
+            // Nur die Owner-Seite (Event) aktualisieren
+            allEvents.get(2).getArtists().add(freddie);
             allEvents.get(2).getArtists().add(mickJagger);
-            freddie.getEvents().add(allEvents.get(2));
-            mickJagger.getEvents().add(allEvents.get(2));
 
-            allEvents.get(3).getArtists().add(bono); // Vienna Jazz Classics
-            bono.getEvents().add(allEvents.get(3));
-
-            allEvents.get(4).getArtists().add(elvis); // Sommer Festival
-            elvis.getEvents().add(allEvents.get(4));
-
-            allEvents.get(5).getArtists().add(davidBowie); // Elektro Beats Festival
-            davidBowie.getEvents().add(allEvents.get(5));
-
-            allEvents.get(6).getArtists().add(freddie); // Symphonic Rock Night
+            allEvents.get(3).getArtists().add(bono);
+            allEvents.get(4).getArtists().add(elvis);
+            allEvents.get(5).getArtists().add(davidBowie);
+            allEvents.get(6).getArtists().add(freddie);
             allEvents.get(6).getArtists().add(bono);
-            freddie.getEvents().add(allEvents.get(6));
-            bono.getEvents().add(allEvents.get(6));
-
-            allEvents.get(8).getArtists().add(elvis); // Pop Legends Live
-            elvis.getEvents().add(allEvents.get(8));
         }
 
         artistRepository.saveAll(List.of(freddie, elvis, bono, davidBowie, mickJagger));

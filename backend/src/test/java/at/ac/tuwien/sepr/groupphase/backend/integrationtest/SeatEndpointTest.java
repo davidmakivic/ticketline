@@ -50,6 +50,12 @@ public class SeatEndpointTest implements TestData {
     private PriceCategoryRepository priceCategoryRepository;
 
     @Autowired
+    private PerformanceRepository performanceRepository;
+
+    @Autowired
+    private TicketRepository ticketRepository;
+
+    @Autowired
     private JwtTokenizer jwtTokenizer;
 
     @Autowired
@@ -65,10 +71,12 @@ public class SeatEndpointTest implements TestData {
 
     @BeforeEach
     void setup() {
+        ticketRepository.deleteAll();
+        performanceRepository.deleteAll();
+        seatRepository.deleteAll();
         sectorRepository.deleteAll();
         hallRepository.deleteAll();
         venueRepository.deleteAll();
-        sectorRepository.deleteAll();
 
         venue = new Venue();
         venue.setName("Venue");
@@ -95,6 +103,7 @@ public class SeatEndpointTest implements TestData {
         seatRepository.deleteAll();
         seatCreateDto = new SeatCreateDto(1, 1, sector.getId());
     }
+
 
     @Test
     void testCreateSeat() throws Exception {

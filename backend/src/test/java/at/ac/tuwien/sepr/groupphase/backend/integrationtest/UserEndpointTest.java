@@ -90,7 +90,7 @@ public class UserEndpointTest {
     @Test
     void givenUserUpdateDto_whenUpdateUser_thenReturnAndStoreUser() throws Exception {
         ApplicationUser user = new ApplicationUser();
-        user.setEmail("testuser@email.com");
+        user.setEmail("updatetest@email.com");
         user.setPasswordHash(passwordEncoder.encode("password1"));
         user.setFirstName("first");
         user.setLastName("last");
@@ -105,9 +105,8 @@ public class UserEndpointTest {
         user.setFailedLoginAttempts(0);
         userRepository.save(user);
 
-
         UserUpdateDto updateDto = new UserUpdateDto(
-            "testuser@email.com",
+            "updatetest@email.com",
             "updated@email.com",
             "UpdatedFirst",
             "UpdatedLast",
@@ -124,17 +123,14 @@ public class UserEndpointTest {
             List.of("ROLE_USER")
         );
 
-
         mockMvc.perform(
                 put("/api/v1/users/me")
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(securityProperties.getAuthHeader(), token)
                     .content(toJson(updateDto))
             )
-            // --- Assert (Response Body) ---
             .andExpect(status().isNoContent());
 
-        // --- Assert (Database State) ---
         ApplicationUser updated = userRepository.getReferenceById(user.getUserId());
 
         assertAll(
@@ -147,8 +143,8 @@ public class UserEndpointTest {
             () -> assertEquals(updateDto.getHouseNumber(), updated.getHouseNumber()),
             () -> assertEquals(Roles.USER, updated.getRole())
         );
-
     }
+
 
 
     @Test
