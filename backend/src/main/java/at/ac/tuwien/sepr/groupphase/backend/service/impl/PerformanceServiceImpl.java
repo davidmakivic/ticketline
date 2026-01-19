@@ -2,6 +2,8 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PerformanceDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.PerformanceMapper;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
@@ -9,6 +11,7 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.specification.PerformanceSpecifications;
 import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.service.TicketGenerationService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -31,28 +34,40 @@ public class PerformanceServiceImpl implements PerformanceService {
     private final PerformanceMapper performanceMapper;
     private final EventRepository eventRepository;
     private final HallRepository hallRepository;
+    private final TicketGenerationService ticketGenerationService;
 
-    public PerformanceServiceImpl(PerformanceRepository performanceRepository, PerformanceMapper performanceMapper, EventRepository eventRepository, HallRepository hallRepository) {
+    public PerformanceServiceImpl(PerformanceRepository performanceRepository, PerformanceMapper performanceMapper, EventRepository eventRepository, HallRepository hallRepository, TicketGenerationService ticketGenerationService) {
         this.performanceRepository = performanceRepository;
         this.performanceMapper = performanceMapper;
         this.eventRepository = eventRepository;
         this.hallRepository = hallRepository;
+        this.ticketGenerationService = ticketGenerationService;
     }
 
     @Override
+    @Transactional
     public PerformanceDto create(PerformanceDto dto) {
-        LOGGER.info("Creating performance");
+        LOGGER.info("Creating performance for event {}", dto.getEventId());
         LOGGER.debug("Payload: {}", dto);
-        Performance performance = performanceMapper.performanceDtoToPerformance(dto);
 
-        performance.setEvent(eventRepository.findById(dto.getEventId())
-            .orElseThrow(() -> new NotFoundException("Event " + dto.getEventId() + " not found")));
-        performance.setHall(hallRepository.findById(dto.getHallId())
-            .orElseThrow(() -> new NotFoundException("Hall " + dto.getHallId() + " not found")));
+        Event event = eventRepository.findById(dto.getEventId())
+            .orElseThrow(() -> new NotFoundException("Event not found with id: " + dto.getEventId()));
 
-        Performance saved = performanceRepository.save(performance);
+        Hall hall = hallRepository.findById(dto.getHallId())
+            .orElseThrow(() -> new NotFoundException("Hall not found with id: " + dto.getHallId()));
+
+        Performance entity = performanceMapper.performanceDtoToPerformance(dto);
+        entity.setEvent(event);
+        entity.setHall(hall);
+
+        Performance saved = performanceRepository.save(entity);
+
+        // Tickets automatisch generieren
+        ticketGenerationService.generateTicketsForPerformance(saved);
+
         return performanceMapper.performanceToPerformanceDto(saved);
     }
+
 
     @Override
     public PerformanceDto update(Long id, PerformanceDto dto) {
