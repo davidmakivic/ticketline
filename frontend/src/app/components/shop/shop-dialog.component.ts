@@ -76,21 +76,40 @@ export class MerchandiseDialogComponent {
     }
   }
 
-  addToCart(): void {
-    this.validateQuantity();
-    if (this.errorMessage) return;
+addToCart(): void {
+  const q = Math.floor(Number(this.quantity));
 
-    const v = this.selectedSize;
-    this.cart.addMerch({
-      merchandiseId: this.item.id,
-      variantId: v.id,
-      name: this.item.name,
-      size: v.size ?? null,
-      unitPriceCents: this.item.price ?? 0,
-      quantity: this.quantity ?? 1
-    });
-
-    this.snack.open('In den Warenkorb hinzugefügt', 'OK', { duration: 1800 });
-    this.ref.close(true);
+  if (!Number.isFinite(q) || q <= 0) {
+    this.errorMessage = 'Die Stückzahl muss mindestens 1 sein.';
+    this.quantity = 1;
+    return;
   }
+
+  if (q > this.maxQuantity) {
+    this.errorMessage = `Es sind maximal ${this.maxQuantity} Stück verfügbar.`;
+    this.quantity = this.maxQuantity > 0 ? this.maxQuantity : 1;
+    return;
+  }
+
+  if (this.maxQuantity <= 0) {
+    this.errorMessage = 'Dieser Artikel ist aktuell nicht verfügbar.';
+    return;
+  }
+
+  this.errorMessage = undefined;
+
+  const v = this.selectedSize;
+  this.cart.addMerch({
+    merchandiseId: this.item.id,
+    variantId: v.id,
+    name: this.item.name,
+    size: v.size ?? null,
+    unitPriceCents: this.item.price ?? 0,
+    quantity: q
+  });
+
+  this.snack.open('In den Warenkorb hinzugefügt', 'OK', { duration: 1800 });
+  this.ref.close(true);
+}
+
 }
