@@ -77,6 +77,19 @@
 
   <div class="d-flex gap-1 align-items-center nav-items">
 
+    @if (isAdmin()) {
+      <button
+        mat-icon-button
+        aria-label="Admin Panel"
+        routerLink="/panel"
+        matTooltip="Benutzerverwaltung"
+        matTooltipPosition="below"
+        class="admin-btn"
+      >
+        <mat-icon>manage_accounts</mat-icon>
+      </button>
+    }
+
     <button
       mat-icon-button
       aria-label="Warenkorb" routerLink="cart" matTooltip="Warenkorb">

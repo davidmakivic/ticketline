@@ -10,8 +10,10 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { UserService } from '../../services/user.service';
 import {Roles, UserDto, UserStatus} from '../../dtos/user';
-import {MatTooltip} from "@angular/material/tooltip";
+import {MatTooltip, MatTooltipModule} from "@angular/material/tooltip";
 import {RouterModule} from "@angular/router";
+import {MatSnackBar, MatSnackBarModule} from "@angular/material/snack-bar";
+import {MatIconModule} from "@angular/material/icon";
 
 @Component({
   selector: 'app-ban-users',
@@ -21,6 +23,9 @@ import {RouterModule} from "@angular/router";
     ReactiveFormsModule,
     RouterModule,
     MatFormFieldModule,
+    MatSnackBarModule,
+    MatIconModule,
+    MatTooltipModule,
     MatInputModule,
     MatTableModule,
     MatButtonModule,
@@ -46,7 +51,9 @@ export class AdminPanelComponent {
 
   busy = new Set<number>();
 
-  constructor(private usersService: UserService) {
+  resetBusy = new Set<number>();
+
+  constructor(private usersService: UserService, private snack: MatSnackBar) {
     this.searchCtrl.valueChanges.pipe(
       startWith(this.searchCtrl.value),
       debounceTime(500),
@@ -81,6 +88,28 @@ export class AdminPanelComponent {
     this.pageIndex = ev.pageIndex;
     this.pageSize = ev.pageSize;
     this.loadPage();
+  }
+
+  onResetPassword(u: UserDto) {
+    const id = this.getUserId(u);
+    const email = u.email;
+
+    if (!id || !email || this.resetBusy.has(id)) return;
+
+    this.resetBusy.add(id);
+    this.error = null;
+
+    this.usersService.resetPassword(email).subscribe({
+      next: () => {
+        this.resetBusy.delete(id);
+        this.snack.open('Passwort-Reset wurde ausgelöst (E-Mail wurde gesendet).', 'OK', {duration: 3000});
+      },
+      error: (e) => {
+        console.error(e);
+        this.resetBusy.delete(id);
+        this.snack.open('Passwort-Reset fehlgeschlagen.', 'OK', {duration: 3000});
+      }
+    });
   }
 
   isBlocked(u: UserDto): boolean {

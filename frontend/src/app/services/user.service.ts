@@ -38,7 +38,6 @@ export class UserService {
     return this.httpClient.get<PageResponse<UserDto>>(this.userBaseUrl, { params });
   }
 
-// block/unblock (void Endpoint => body null!)
   blockUser(userId: number) {
     return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/block`, null);
   }

@@ -200,6 +200,7 @@ public class UserServiceImpl implements UserService {
         String tokenUuid = UUID.randomUUID().toString();
         if (token == null) {
             token = new PasswordResetToken(tokenUuid, user);
+            token.setExpiryDate(LocalDateTime.now().plusHours(24));
         } else {
             token.setToken(tokenUuid);
             token.setExpiryDate(LocalDateTime.now().plusHours(24));
