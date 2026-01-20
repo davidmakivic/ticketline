@@ -61,4 +61,9 @@ export class UserService {
       .set('email', emailValue);
     return this.httpClient.post<void>(`${this.userBaseUrl}/resetPassword`, null, {params})
   }
+
+
+  deleteUser(id: number): Observable<void> {
+    return this.httpClient.delete<void>(`${this.userBaseUrl}/${id}`);
+  }
 }

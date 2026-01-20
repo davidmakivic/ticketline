@@ -32,3 +32,13 @@ mat-card-title {
 mat-card-actions button mat-icon {
   margin-right: 6px;
 }
+
+
+.danger-button {
+  background-color: #d32f2f !important; // Material Red 700
+  color: white !important;
+}
+
+.danger-button:hover {
+  background-color: #b71c1c !important; // dunkler beim Hover
+}

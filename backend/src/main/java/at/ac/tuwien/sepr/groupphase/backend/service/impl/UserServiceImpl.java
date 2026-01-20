@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -251,6 +252,23 @@ public class UserServiceImpl implements UserService {
             return;
         }
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public void delete(String email) throws ForbiddenException {
+        LOGGER.info("Deleting user with email {}", email);
+        boolean isAdmin = SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getAuthorities()
+            .stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            throw new ForbiddenException("Admins können ihren Account nicht löschen");
+        }
+
+        userRepository.deleteApplicationUserByEmail(email);
     }
 
     @Override

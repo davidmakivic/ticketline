@@ -16,7 +16,7 @@
   </div>
   <div class="error-container">
     @for (error of errors; track error) {
-      <p class="register-error-message">{{ error }}</p>
+      <p class="error">{{ error }}</p>
     }
   </div>
 
@@ -116,6 +116,8 @@
           <input matInput type="number" [formControl]="houseNumber">
           @if (houseNumber.hasError('required')) {
             <mat-error>Nummer ist erforderlich</mat-error>
+          } @else if (houseNumber.hasError('min')) {
+            <mat-error>Nummer muss größer als 0 sein</mat-error>
           }
         </mat-form-field>
       </div>

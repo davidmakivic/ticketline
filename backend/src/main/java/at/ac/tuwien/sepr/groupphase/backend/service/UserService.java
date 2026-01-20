@@ -101,6 +101,15 @@ public interface UserService extends UserDetailsService {
      */
     void delete(Long id) throws ForbiddenException;
 
+
+    /**
+     * Deletes user with email {@code email}.
+     *
+     * @param email of the user to delete
+     * @throws ForbiddenException if the user is an admin
+     */
+    void delete(String email) throws ForbiddenException;
+
     /**
      * Returns all user depending on the searched data.
      * if status = null, all user are returned

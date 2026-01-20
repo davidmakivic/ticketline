@@ -75,7 +75,7 @@
     </mat-form-field>
   </div>
 
-  <div class="d-flex gap-3 align-items-center nav-items">
+  <div class="d-flex gap-1 align-items-center nav-items">
 
     <button
       mat-icon-button
@@ -84,12 +84,7 @@
       <mat-icon>shopping_cart</mat-icon>
     </button>
 
-    @if (authService.isLoggedIn()) {
-    <a class="nav-link" routerLink="/orders" routerLinkActive="active"
-       matTooltip="Bestellübersicht" matTooltipPosition="below">
-      <i class="bi bi-receipt"></i>
-    </a>
-    }
+
 
     @if (!authService.isLoggedIn()) {
     <a class="nav-link" routerLink="/login" routerLinkActive="active"
@@ -112,6 +107,10 @@
         <button mat-menu-item routerLink="/account">
           <mat-icon>person</mat-icon>
           <span>Mein Account</span>
+        </button>
+        <button mat-menu-item routerLink="/orders" routerLinkActive="active">
+          <mat-icon>receipt</mat-icon>
+          <span>Bestellungen</span>
         </button>
 
         <button mat-menu-item (click)="logoutUser()">

@@ -55,4 +55,6 @@ public interface UserRepository extends JpaRepository<ApplicationUser, Long> {
     void setFailedLoginAttemptsToZero(@Param("email") String email);
 
     ApplicationUser getApplicationUserByEmail(String email);
+
+    void deleteApplicationUserByEmail(String email);
 }
