@@ -45,3 +45,8 @@ export interface TopEvent {
   soldTickets: number;
 }
 
+export interface SimpleEventDto {
+  id: number;
+  title: string;
+}
+

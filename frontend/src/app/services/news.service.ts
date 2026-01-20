@@ -31,14 +31,16 @@ export class NewsService {
     return this.httpClient.get<News>(this.newsBaseUri + '/' + id);
   }
 
-  createMessage(news: News, image?: File): Observable<News> {
-    console.log('Create message with title ' + news.title);
+  createMessage(news: News, image?: File, eventId?: number): Observable<News> {
     const formData = new FormData();
     formData.append('title', news.title);
     formData.append('summary', news.summary);
     formData.append('text', news.text);
     if (image) {
       formData.append('image', image);
+    }
+    if (eventId) {
+      formData.append('eventId', eventId.toString());
     }
     return this.httpClient.post<News>(this.newsBaseUri, formData);
   }
