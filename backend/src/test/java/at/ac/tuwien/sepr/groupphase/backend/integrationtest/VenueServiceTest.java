@@ -4,6 +4,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.VenueUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.VenueService;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +29,16 @@ public class VenueServiceTest {
     @Autowired
     VenueRepository venueRepository;
 
+    @Autowired
+    HallRepository hallRepository;
+
+    @Autowired
+    PerformanceRepository performanceRepository;
+
     @BeforeEach
     public void beforeEach() {
+        performanceRepository.deleteAll();
+        hallRepository.deleteAll();
         venueRepository.deleteAll();
     }
 

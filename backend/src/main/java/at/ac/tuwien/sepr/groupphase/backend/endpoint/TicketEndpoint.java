@@ -89,10 +89,9 @@ public class TicketEndpoint {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         ApplicationUser user = userRepository.findUserByEmail(email);
 
+
         TicketDto dto = ticketService.hold(id, user.getUserId());
-
-        dto.setReservedByMe(true);
-
+        markReservedByMe(dto, user.getUserId());
         return ResponseEntity.ok(dto);
     }
 
@@ -134,10 +133,17 @@ public class TicketEndpoint {
     }
 
     private void markReservedByMe(TicketDto t, Long currentUserId) {
-        boolean byMe = currentUserId != null
-            && t.getReservedByUserId() != null
-            && t.getReservedByUserId().equals(currentUserId);
+        var now = java.time.Instant.now();
+
+        boolean byMe =
+            currentUserId != null
+                && t.getReservedByUserId() != null
+                && t.getReservedByUserId().equals(currentUserId)
+                && t.getReservedUntil() != null
+                && t.getReservedUntil().isAfter(now);
+
         t.setReservedByMe(byMe);
     }
+
 
 }

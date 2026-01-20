@@ -10,14 +10,15 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {EventMapper.class})
 public interface ArtistMapper {
     @Mapping(source = "imageContentType", target = "imageContentType")
-    @Mapping(target = "events", source = "events")
+    @Mapping(target = "events", source = "events", qualifiedByName = "withoutPerformances")
     ArtistDto artistToArtistDto(Artist artist);
 
     @Mapping(source = "imageContentType", target = "imageContentType")
-    List<ArtistDto> artistToArtistDto(List<Artist> artists);
+    @Mapping(target = "events.performances", ignore = true)
+    List<ArtistDto> artistToArtistDtoList(List<Artist> artists);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "imageData", ignore = true)

@@ -9,6 +9,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.specification.EventSpecifications;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,7 @@ public class EventServiceImpl implements EventService {
         }
 
         Event saved = eventRepository.save(entity);
-        return eventMapper.eventToEventDto(saved);
+        return eventMapper.eventToEventDtoWithPerformances(saved);
     }
 
     @Override
@@ -76,17 +78,16 @@ public class EventServiceImpl implements EventService {
         }
 
         Event saved = eventRepository.save(existing);
-        return eventMapper.eventToEventDto(saved);
+        return eventMapper.eventToEventDtoWithPerformances(saved);
     }
 
 
     @Override
     public EventDto findById(Long id) {
         LOGGER.info("Fetching event with id={}", id);
-        Event event = eventRepository.findById(id)
+        Event event = eventRepository.findByIdWithPerformances(id)
             .orElseThrow(() -> new NotFoundException("Event not found with id " + id));
-
-        return eventMapper.eventToEventDto(event);
+        return eventMapper.eventToEventDtoWithPerformances(event);
     }
 
     @Override
@@ -107,7 +108,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventDto> findByAnyTitle(String title) {
         LOGGER.info("Searching events by title: {}", title);
-        return eventMapper.eventToEventDto(eventRepository.findByAnyTitle(title));
+        return eventMapper.eventToEventDtoList(eventRepository.findByAnyTitle(title));
     }
 
     @Override
@@ -121,9 +122,23 @@ public class EventServiceImpl implements EventService {
     public Page<EventDto> findByAdvancedFilters(String title, String artist, String location,
                                                 EventType eventType, Date startDate, Integer durationMinutes,
                                                 int page, int size) {
+        LOGGER.info("Searching events with filters: title={}, artist={}, location={}, eventType={}, startDate={}, duration={}",
+            title, artist, location, eventType, startDate, durationMinutes);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        return eventRepository.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, pageable)
-            .map(eventMapper::eventToEventDto);
+
+        Specification<Event> spec = Specification.allOf(
+            EventSpecifications.hasTitle(title),
+            EventSpecifications.hasArtist(artist),
+            EventSpecifications.hasLocation(location),
+            EventSpecifications.hasEventType(eventType),
+            EventSpecifications.hasStartDate(startDate),
+            EventSpecifications.hasDuration(durationMinutes),
+            EventSpecifications.fetchPerformances()
+        );
+
+        return eventRepository.findAll(spec, pageable)
+            .map(eventMapper::eventToEventDtoWithPerformances);
     }
 
     @Override
