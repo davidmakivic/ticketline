@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <mat-card-actions class="d-flex justify-content-end gap-2 mt-3">
+      <mat-card-actions class="d-flex justify-content-end gap-2 mt-3 mb-3">
         <button
           mat-stroked-button
           routerLink="/account/change-password"
@@ -80,11 +80,34 @@
           Passwort ändern
         </button>
 
+
       </mat-card-actions>
+
+      @if ( !isAdmin()) {
+        <mat-divider></mat-divider>
+
+        <div class="section mt-4">
+          <h6 class="section-title">Account</h6>
+
+          <p class="data">
+            Das Löschen deines Accounts ist endgültig und kann nicht rückgängig gemacht werden.
+          </p>
+
+          <mat-card-actions class="d-flex justify-content-end">
+            <button
+              mat-flat-button
+              color="warn"
+              class="danger-button"
+              (click)="confirmDeleteAccount()"
+            >
+              <mat-icon>delete_forever</mat-icon>
+              Account löschen
+            </button>
+          </mat-card-actions>
+        </div>
+      }
+
     </mat-card-content>
   }
-
-
-
 
 </mat-card>

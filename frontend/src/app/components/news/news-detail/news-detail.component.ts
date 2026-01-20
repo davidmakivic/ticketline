@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NewsService } from '../../../services/news.service';
 import { News } from '../../../dtos/news';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
@@ -25,6 +25,7 @@ export class NewsDetailComponent implements OnInit {
   constructor(
     private newsService: NewsService,
     private route: ActivatedRoute,
+    private router: Router,
     private sanitizer: DomSanitizer
   ) {}
 
@@ -61,5 +62,9 @@ export class NewsDetailComponent implements OnInit {
         error: () => {}
       });
     }
+  }
+
+  navigateToEvent(eventId: number): void {
+    this.router.navigate(['/events', eventId]);
   }
 }

@@ -62,18 +62,15 @@ public class NewsEndpoint {
     @Secured("ROLE_ADMIN")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Publish a new news post", security = @SecurityRequirement(name = "apiKey"))
     public DetailedNewsDto create(
         @RequestParam("title") String title,
         @RequestParam("summary") String summary,
         @RequestParam("text") String text,
-        @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+        @RequestParam(value = "image", required = false) MultipartFile image,
+        @RequestParam(value = "eventId", required = false) Long eventId) throws IOException {
 
-        LOGGER.info("Creating news");
-        LOGGER.debug("Request payload: title={}, summaryLength={}, textLength={}, imagePresent={}",
-            title, summary != null ? summary.length() : 0, text != null ? text.length() : 0, image != null);
         return newsMapper.newsToDetailedNewsDto(
-            newsService.publishMessage(title, summary, text, image));
+            newsService.publishMessage(title, summary, text, image, eventId));
     }
 
     @PermitAll

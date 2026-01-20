@@ -16,6 +16,8 @@ public class SimpleNewsDto {
 
     private String imageContentType;
 
+    private EventDto event;
+
     public Long getId() {
         return id;
     }
@@ -56,6 +58,14 @@ public class SimpleNewsDto {
         this.imageContentType = imageContentType;
     }
 
+    public EventDto getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventDto event) {
+        this.event = event;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -92,6 +102,7 @@ public class SimpleNewsDto {
         private String title;
         private String summary;
         private String imageContentType;
+        private EventDto event;
 
         private SimpleNewsDtoBuilder() {
         }
@@ -125,6 +136,11 @@ public class SimpleNewsDto {
             return this;
         }
 
+        public SimpleNewsDtoBuilder withEvent(EventDto event) {
+            this.event = event;
+            return this;
+        }
+
         public SimpleNewsDto build() {
             SimpleNewsDto simpleNewsDto = new SimpleNewsDto();
             simpleNewsDto.setId(id);
@@ -132,6 +148,7 @@ public class SimpleNewsDto {
             simpleNewsDto.setTitle(title);
             simpleNewsDto.setSummary(summary);
             simpleNewsDto.setImageContentType(imageContentType);
+            simpleNewsDto.setEvent(event);
             return simpleNewsDto;
         }
     }

@@ -14,6 +14,8 @@ import {UntypedFormBuilder, NgForm} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {SafeUrl,DomSanitizer} from "@angular/platform-browser";
 import {Router} from "@angular/router";
+import {EventsService} from "../../services/events.service";
+import {EventAutocompleteDto, EventDto, SimpleEventDto} from '../../dtos/event';
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
@@ -38,6 +40,9 @@ export class NewsComponent implements OnInit {
   selectedFile: File | null = null;
   isEditMode: boolean = false;
 
+  availableEvents: SimpleEventDto[] = [];
+  selectedEventId?: number;
+
   private message: NewsWithImage[];
 
   constructor(private messageService: NewsService,
@@ -47,7 +52,8 @@ export class NewsComponent implements OnInit {
               private authService: AuthService,
               private modalService: NgbModal,
               private sanitizer: DomSanitizer,
-              private router: Router
+              private router: Router,
+              private eventsService: EventsService
   ) {
   }
 
@@ -67,6 +73,7 @@ export class NewsComponent implements OnInit {
     this.currentMessage = new News() as NewsWithImage;
     this.selectedFile = null;
     this.modalService.open(messageAddModal, {ariaLabelledBy: 'modal-basic-title'});
+    this.loadAvailableEvents();
   }
 
 
@@ -83,10 +90,16 @@ export class NewsComponent implements OnInit {
    */
   addMessage(form) {
     this.submitted = true;
-
-
     if (form.valid) {
       this.currentMessage.publishedAt = new Date().toISOString();
+      if (this.selectedEventId) {
+        const selectedEvent = this.availableEvents.find(e => e.id === this.selectedEventId);
+        if (selectedEvent) {
+          this.currentMessage.event = selectedEvent;
+        }
+      } else {
+        this.currentMessage.event = undefined;
+      }
       this.createMessage(this.currentMessage);
       this.clearForm();
     }
@@ -104,15 +117,18 @@ export class NewsComponent implements OnInit {
   }
 
   private createMessage(message: NewsWithImage) {
-    this.messageService.createMessage(message, this.selectedFile || undefined).subscribe({
-        next: () => {
-          this.loadMessage();
-        },
-        error: error => {
-          this.defaultServiceErrorHandling(error);
-        }
+    this.messageService.createMessage(
+      message,
+      this.selectedFile || undefined,
+      this.selectedEventId || undefined
+    ).subscribe({
+      next: () => {
+        this.loadMessage();
+      },
+      error: error => {
+        this.defaultServiceErrorHandling(error);
       }
-    );
+    });
   }
 
   private loadMessage() {
@@ -120,6 +136,7 @@ export class NewsComponent implements OnInit {
       next: (messages: NewsWithImage[]) => {
         this.message = messages;
         this.message.forEach(msg => this.loadNewsImage(msg));
+        console.log(this.message);
       },
       error: error => {
         this.defaultServiceErrorHandling(error);
@@ -141,6 +158,16 @@ export class NewsComponent implements OnInit {
     }
   }
 
+  loadAvailableEvents() {
+    this.eventsService.getEvents(0, 100).subscribe({
+      next: (result) => {
+        this.availableEvents = result.content.map(e => ({
+          id: e.id,
+          title: e.title
+        }));
+      }
+    });
+  }
   openExistingMessageModal(id: number, messageAddModal: TemplateRef<any>) {
     // Navigiere zur Detail-Seite statt Modal zu öffnen
     this.router.navigate(['/news', id]);
@@ -161,6 +188,10 @@ export class NewsComponent implements OnInit {
     this.currentMessage = new News() as NewsWithImage;
     this.selectedFile = null;
     this.submitted = false;
+  }
+
+  navigateToEvent(eventId: number) {
+    this.router.navigate(['/events', eventId]);
   }
 
 }

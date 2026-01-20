@@ -22,6 +22,24 @@
       margin-bottom: 1.5rem;
     }
 
+    .event-link-container {
+      margin-bottom: 1.5rem;
+
+      .btn {
+        background-color: var(--mat-sys-primary);
+        color: var(--mat-sys-on-primary);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: var(--mat-sys-primary-container);
+          color: var(--mat-sys-on-primary-container);
+        }
+      }
+    }
+
     .image-container {
       margin-bottom: 2rem;
       border-radius: 8px;
