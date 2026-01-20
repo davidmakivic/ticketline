@@ -3,6 +3,7 @@ import {mapToCanActivate, RouterModule, Routes} from '@angular/router';
 import {HomeComponent} from './components/home/home.component';
 import {LoginComponent} from './components/login/login.component';
 import {AuthGuard} from './guards/auth.guard';
+import {AdminGuard} from './guards/admin.guard';
 import {NewsComponent} from './components/news/news.component';
 import {EventsListComponent} from './components/events/events-list/events-list.component';
 import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
@@ -15,10 +16,10 @@ import RegisterEditComponent, {
 import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
 import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
 import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
-import {BanUsersComponent} from "./components/admin-panel/ban-user/ban-user.component";
 import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
 import {ForgotPasswordComponent} from "./components/account/forgot-password/forgot-password.component";
 import { ShopComponent } from './components/shop/shop.component';
+import {AdminCreateUserComponent} from "./components/account/admin-create-user/admin-create-user.component";
 
 
 const routes: Routes = [
@@ -118,16 +119,16 @@ const routes: Routes = [
         .then(m => m.SeatSelectionComponent)
   },
 
-
-
   {
     path: 'panel',
+    canActivate: mapToCanActivate([AdminGuard]),
     component: AdminPanelComponent
   },
 
   {
-    path: 'panel/ban-users',
-    component: BanUsersComponent
+    path: 'panel/create',
+    canActivate: mapToCanActivate([AdminGuard]),
+    component: AdminCreateUserComponent
   },
 
   {
