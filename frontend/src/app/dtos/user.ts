@@ -24,6 +24,19 @@ export interface UserRegisterDto {
   houseNumber: number;
 }
 
+export interface UserCreateDto {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  zipCode: string;
+  city: string;
+  street: string;
+  houseNumber: number;
+  role: Roles;
+}
+
 export interface UserUpdateDto {
   firstName: string;
   lastName: string;
@@ -45,6 +58,7 @@ export interface UserDto {
   city: string;
   street: string;
   houseNumber: number;
+  role: Roles;
   rewardPoints: number;
   createdAt: string;        // ISO string from backend
   userStatus: UserStatus;

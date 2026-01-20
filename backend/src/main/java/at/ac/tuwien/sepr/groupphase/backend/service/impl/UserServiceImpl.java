@@ -104,6 +104,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDetailDto createUserAsAdmin(UserCreateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Creating new application user as admin: {}", dto.getEmail());
+        LOGGER.debug("Payload: {}", dto);
+        userValidator.validateUserForCreate(dto);
+
+        ApplicationUser newUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+            .withEmail(dto.getEmail())
+            .withPassword(passwordEncoder.encode(dto.getPassword()))
+            .withFirstName(dto.getFirstName())
+            .withLastName(dto.getLastName())
+            .withCountry(dto.getCountry())
+            .withZipCode(dto.getZipCode())
+            .withCity(dto.getCity())
+            .withStreet(dto.getStreet())
+            .withHouseNumber(dto.getHouseNumber())
+            .withRole(dto.getRole())
+            .withRewardPoints(0)
+            .withUserStatus(UserStatus.UNVERIFIED)
+            .withFailedLoginAttempts(0)
+            .build();
+
+        return userMapper.applicationUserToUserDetailDto(userRepository.save(newUser));
+    }
+
+    @Override
     public UserDetailDto createApplicationUser(UserCreateDto dto) throws ValidationException, ConflictException {
 
         LOGGER.info("Creating new application user: {}", dto.getEmail());
@@ -251,6 +276,11 @@ public class UserServiceImpl implements UserService {
             return;
         }
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public void delete(String email) throws ForbiddenException {
+
     }
 
     @Override

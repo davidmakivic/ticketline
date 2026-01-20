@@ -1,0 +1,17 @@
+.register-container {
+  width: 35vw;
+  justify-self: center;
+}
+
+.title {
+  color: var(--mat-sys-on-background);
+  font-size: 2.5em;
+}
+
+.login-hint {
+  color: var(--mat-sys-on-background);
+}
+
+.error {
+  color: var(--mat-sys-error);
+}
