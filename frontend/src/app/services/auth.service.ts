@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import {tap} from 'rxjs/operators';
 import {jwtDecode} from 'jwt-decode';
 import {Globals} from '../global/globals';
+import { CartService } from './cart.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,11 @@ export class AuthService {
 
   private authBaseUri: string = this.globals.backendUri + '/authentication';
 
-  constructor(private httpClient: HttpClient, private globals: Globals) {
+  constructor(
+    private httpClient: HttpClient,
+    private globals: Globals,
+    private cartService: CartService
+    ) {
   }
 
   /**
@@ -45,6 +50,7 @@ export class AuthService {
 
   logoutUser() {
     console.log('Logout');
+    this.cartService.clear();
     localStorage.removeItem('authToken');
   }
 
