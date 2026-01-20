@@ -116,6 +116,8 @@
           <input matInput type="number" [formControl]="houseNumber">
           @if (houseNumber.hasError('required')) {
             <mat-error>Nummer ist erforderlich</mat-error>
+          } @else if (houseNumber.hasError('min')) {
+            <mat-error>Nummer muss größer als 0 sein</mat-error>
           }
         </mat-form-field>
       </div>

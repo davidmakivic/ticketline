@@ -92,7 +92,7 @@ export class RegisterEditComponent implements OnInit {
   zip = new FormControl('', [Validators.required]);
   city = new FormControl('', [Validators.required]);
   street = new FormControl('', [Validators.required]);
-  houseNumber = new FormControl('', [Validators.required]);
+  houseNumber = new FormControl('', [Validators.required, Validators.min(1)]);
   email = new FormControl('', [Validators.required, Validators.email, Validators.pattern("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")]);
   password = new FormControl('', [Validators.required, Validators.minLength(8)]);
   confirmPassword = new FormControl('', [Validators.required]);
@@ -223,7 +223,7 @@ export class RegisterEditComponent implements OnInit {
   }
 
 
-  protected cancel()  {
+  protected cancel() {
     this.router.navigate(['/account']);
   }
 

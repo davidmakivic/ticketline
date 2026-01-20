@@ -88,6 +88,12 @@ public class UserValidator {
             errors.add("Adresse darf nicht länger als 255 Zeichen sein");
         }
 
+        if (dto.getHouseNumber() == null) {
+            errors.add("Hausnummer darf nicht leer sein");
+        } else if (dto.getHouseNumber() <= 0) {
+            errors.add("Hausnummer kann nicht kleiner als 1 sein");
+        }
+
         if (dto.getRole() == null) {
             errors.add("Rolle darf nicht leer sein");
         }
@@ -168,6 +174,12 @@ public class UserValidator {
             errors.add("Adresse darf nicht leer sein");
         } else if (dto.getStreet().length() > 255) {
             errors.add("Adresse darf nicht länger als 255 Zeichen sein");
+        }
+
+        if (dto.getHouseNumber() == null) {
+            errors.add("Hausnummer darf nicht leer sein");
+        } else if (dto.getHouseNumber() <= 0) {
+            errors.add("Hausnummer kann nicht kleiner als 1 sein");
         }
 
         if (dto.getRole() == null) {
