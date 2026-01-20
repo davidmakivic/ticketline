@@ -1,7 +1,9 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.entity.News;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.NewsService;
 import org.slf4j.Logger;
@@ -22,9 +24,11 @@ public class SimpleNewsService implements NewsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final NewsRepository newsRepository;
+    private final EventRepository eventRepository;
 
-    public SimpleNewsService(NewsRepository newsRepository) {
+    public SimpleNewsService(NewsRepository newsRepository, EventRepository eventRepository) {
         this.newsRepository = newsRepository;
+        this.eventRepository = eventRepository;
     }
 
     @Override
@@ -45,15 +49,19 @@ public class SimpleNewsService implements NewsService {
     }
 
     @Override
-    public News publishMessage(String title, String summary, String text, MultipartFile image) throws IOException {
+    public News publishMessage(String title, String summary, String text, MultipartFile image, Long eventId) throws IOException {
         LOGGER.info("Publishing news: {}", title);
-        LOGGER.debug("Payload: summary={}, textLength={}, imagePresent={}",
-            summary, text != null ? text.length() : 0, image != null);
         News news = new News();
         news.setTitle(title);
         news.setSummary(summary);
         news.setText(text);
         news.setPublishedAt(LocalDateTime.now());
+
+        if (eventId != null) {
+            Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+            news.setEvent(event);
+        }
 
         if (image != null && !image.isEmpty()) {
             news.setImageData(image.getBytes());

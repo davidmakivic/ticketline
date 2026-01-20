@@ -9,6 +9,8 @@ public class DetailedNewsDto extends SimpleNewsDto {
 
     private String imageContentType;
 
+    private EventDto event;
+
     public String getText() {
         return text;
     }
@@ -23,6 +25,14 @@ public class DetailedNewsDto extends SimpleNewsDto {
 
     public void setImageContentType(String imageContentType) {
         this.imageContentType = imageContentType;
+    }
+
+    public EventDto getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventDto event) {
+        this.event = event;
     }
 
     @Override
@@ -58,6 +68,7 @@ public class DetailedNewsDto extends SimpleNewsDto {
         private String text;
         private String title;
         private String summary;
+        private EventDto event;
 
         private DetailedNewsDtoBuilder() {
         }
@@ -91,6 +102,11 @@ public class DetailedNewsDto extends SimpleNewsDto {
             return this;
         }
 
+        public  DetailedNewsDtoBuilder withEvent(EventDto event) {
+            this.event = event;
+            return this;
+        }
+
         public DetailedNewsDto build() {
             DetailedNewsDto detailedMessageDto = new DetailedNewsDto();
             detailedMessageDto.setId(id);
@@ -98,6 +114,7 @@ public class DetailedNewsDto extends SimpleNewsDto {
             detailedMessageDto.setText(text);
             detailedMessageDto.setTitle(title);
             detailedMessageDto.setSummary(summary);
+            detailedMessageDto.setEvent(event);
             return detailedMessageDto;
         }
     }

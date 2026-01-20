@@ -16,6 +16,14 @@
       <h1 class="news-title">{{ news.title }}</h1>
       <p class="news-date">{{ news.publishedAt | date:'d. MMMM yyyy' }}</p>
 
+      @if (news.event) {
+        <div class="event-link-container">
+          <button class="btn btn-primary" (click)="navigateToEvent(news.event.id)">
+            Zum Event: {{ news.event.title }}
+          </button>
+        </div>
+      }
+
       @if (news.imageUrl) {
         <div class="image-container">
           <img [src]="news.imageUrl" [alt]="news.title" class="news-image">

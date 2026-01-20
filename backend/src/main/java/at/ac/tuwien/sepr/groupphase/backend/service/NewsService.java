@@ -25,7 +25,7 @@ public interface NewsService {
      */
     News findOne(Long id);
 
-    News publishMessage(String title, String summary, String text, MultipartFile image) throws IOException;
+    News publishMessage(String title, String summary, String text, MultipartFile image, Long eventId) throws IOException;
 
     ResponseEntity<byte[]> getNewsImage(Long id);
 
