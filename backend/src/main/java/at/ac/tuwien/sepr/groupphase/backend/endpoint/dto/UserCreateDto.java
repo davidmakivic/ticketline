@@ -10,20 +10,22 @@ public class UserCreateDto {
     String country;
     String zipCode;
     String city;
-    String address;
+    String street;
+    Integer houseNumber;
     Roles role;
 
     public UserCreateDto() {
     }
 
-    public UserCreateDto(String email, String password, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
+    public UserCreateDto(String email, String password, String firstName, String lastName, String country, String zipCode, String city, String street, Integer houseNumber, Roles role) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.zipCode = zipCode;
         this.city = city;
-        this.address = address;
+        this.street = street;
+        this.houseNumber = houseNumber;
         this.country = country;
         this.role = role;
     }
@@ -56,8 +58,12 @@ public class UserCreateDto {
         return city;
     }
 
-    public String getAddress() {
-        return address;
+    public String getStreet() {
+        return street;
+    }
+
+    public Integer getHouseNumber() {
+        return houseNumber;
     }
 
     public Roles getRole() {
@@ -88,8 +94,12 @@ public class UserCreateDto {
         this.city = city;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public void setHouseNumber(Integer houseNumber) {
+        this.houseNumber = houseNumber;
     }
 
     public void setRole(Roles role) {
@@ -105,7 +115,8 @@ public class UserCreateDto {
             + ", lastName='" + lastName + '\''
             + ", zipCode='" + zipCode + '\''
             + ", city='" + city + '\''
-            + ", address='" + address + '\''
+            + ", street='" + street + '\''
+            + ", house number='" + houseNumber + '\''
             + '}';
     }
 }

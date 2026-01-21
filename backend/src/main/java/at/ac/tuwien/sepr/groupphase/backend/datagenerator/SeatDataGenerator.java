@@ -50,6 +50,22 @@ public class SeatDataGenerator {
 
 
         for (Sector sector : sectors) {
+
+            if (sector.getSectorKey().equals("7") || sector.getSectorKey().equals("8")) {
+
+                for (int row = 1; row <= 10; row++) {
+                    for (int seatNo = 1; seatNo <= 5; seatNo++) {
+
+                        Seat seat = new Seat();
+                        seat.setRowNumber(row);
+                        seat.setSeatNumber(seatNo);
+                        seat.setSector(sector);
+
+                        seatsToSave.add(seat);
+                    }
+                }
+            }
+
             for (int row = 1; row <= 5; row++) {
                 for (int seatNo = 1; seatNo <= 10; seatNo++) {
 

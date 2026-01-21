@@ -186,9 +186,9 @@ public class EventServiceTest {
         eventService.create("Event 1", "Description", EventType.CONCERT, 60, null);
         eventService.create("Event 2", "Description", EventType.FESTIVAL, 120, null);
 
-        var all = eventService.findAll();
+        var all = eventService.findAll(0,10);
 
-        assertEquals(2, all.size());
+        assertEquals(2, all.getTotalElements());
     }
 
     @Test

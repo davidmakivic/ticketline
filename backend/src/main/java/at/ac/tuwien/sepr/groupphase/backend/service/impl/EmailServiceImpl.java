@@ -22,7 +22,7 @@ public class EmailServiceImpl {
     public void sendPasswordResetEmail(String token, String receiver) throws MessagingException {
         LOGGER.info("Sending password reset email to {}", receiver);
         LOGGER.debug("Reset token={}", token);
-        String link = "https://localhost:4200/api/users/resetPassword?token=" + escapeHtml(token);
+        String link = "http://localhost:4200/#/account/change-password?token=" + escapeHtml(token);
 
         String html = "<!doctype html><html><head><meta charset='utf-8'></head><body>"
             + "<h2>Passwort zurücksetzen</h2>"

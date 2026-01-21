@@ -122,11 +122,19 @@ public class PerformanceEndpointTest {
         p2.setBasePriceCents(3000L);
         performanceRepository.save(p2);
 
-        mockMvc.perform(get("/api/v1/performances"))
+        mockMvc.perform(get("/api/v1/performances")
+                .param("page", "0")
+                .param("size", "10"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()").value(2));
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.content.length()").value(2))
+            .andExpect(jsonPath("$.totalElements").value(2))
+            .andExpect(jsonPath("$.totalPages").value(1))
+            .andExpect(jsonPath("$.number").value(0))
+            .andExpect(jsonPath("$.size").value(10));
     }
+
 
     @Test
     void testGetPerformanceById() throws Exception {

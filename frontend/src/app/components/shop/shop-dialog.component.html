@@ -1,0 +1,45 @@
+<h2>{{ item.name }}</h2>
+
+<p class="price">
+  € {{ item.price / 100 | number:'1.2-2' }}
+</p>
+
+<p>{{ item.description }}</p>
+
+<!-- Dropdown nur für Artikel mit echten Größen -->
+<div *ngIf="hasSizes()" class="select-wrapper">
+  <select [(ngModel)]="selectedSize" (change)="onSizeChange()">
+    <option
+      *ngFor="let v of item.variants"
+      [ngValue]="v"
+      [disabled]="v.quantity === 0"
+    >
+      {{ v.size }}
+    </option>
+  </select>
+</div>
+
+<div class="quantity">
+  <button (click)="decrease()">−</button>
+  <input
+    type="number"
+    [(ngModel)]="quantity"
+    min="1"
+    [max]="maxQuantity"
+    (ngModelChange)="onQuantityChange()"
+    (blur)="onQuantityBlur()"
+  />
+  <button (click)="increase()">+</button>
+</div>
+
+<div *ngIf="errorMessage" style="color:#ff6b6b; text-align:center">
+  {{ errorMessage }}
+</div>
+
+<button
+  class="add"
+  (click)="addToCart()"
+  [disabled]="!!errorMessage || !quantity || quantity <= 0 || maxQuantity <= 0 || quantity > maxQuantity">
+  In den Warenkorb
+</button>
+

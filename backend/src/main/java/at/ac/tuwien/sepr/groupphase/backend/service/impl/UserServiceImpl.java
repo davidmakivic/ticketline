@@ -13,6 +13,7 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PasswordTokenRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
@@ -25,10 +26,11 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -84,7 +86,7 @@ public class UserServiceImpl implements UserService {
                 .username(applicationUser.getEmail())
                 .password(applicationUser.getPasswordHash())
                 .authorities(grantedAuthorities)
-                .accountLocked(applicationUser.getFailedLoginAttempts() >= 5)
+                .accountLocked(applicationUser.getUserStatus() == UserStatus.LOCKED)
                 .build();
         } catch (NotFoundException e) {
             throw new UsernameNotFoundException(e.getMessage(), e);
@@ -102,6 +104,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDetailDto createUserAsAdmin(UserCreateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Creating new application user as admin: {}", dto.getEmail());
+        LOGGER.debug("Payload: {}", dto);
+        userValidator.validateUserForCreate(dto);
+
+        ApplicationUser newUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+            .withEmail(dto.getEmail())
+            .withPassword(passwordEncoder.encode(dto.getPassword()))
+            .withFirstName(dto.getFirstName())
+            .withLastName(dto.getLastName())
+            .withCountry(dto.getCountry())
+            .withZipCode(dto.getZipCode())
+            .withCity(dto.getCity())
+            .withStreet(dto.getStreet())
+            .withHouseNumber(dto.getHouseNumber())
+            .withRole(dto.getRole())
+            .withRewardPoints(0)
+            .withUserStatus(UserStatus.UNVERIFIED)
+            .withFailedLoginAttempts(0)
+            .build();
+
+        return userMapper.applicationUserToUserDetailDto(userRepository.save(newUser));
+    }
+
+    @Override
     public UserDetailDto createApplicationUser(UserCreateDto dto) throws ValidationException, ConflictException {
 
         LOGGER.info("Creating new application user: {}", dto.getEmail());
@@ -115,7 +142,8 @@ public class UserServiceImpl implements UserService {
             .withCountry(dto.getCountry())
             .withZipCode(dto.getZipCode())
             .withCity(dto.getCity())
-            .withAddress(dto.getAddress())
+            .withStreet(dto.getStreet())
+            .withHouseNumber(dto.getHouseNumber())
             .withRole(dto.getRole())
             .withRewardPoints(0)
             .withUserStatus(UserStatus.UNVERIFIED)
@@ -126,23 +154,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(UserLoginDto userLoginDto) {
+    public String login(UserLoginDto userLoginDto) throws UnauthorizedException {
         LOGGER.info("Attempting login for {}", userLoginDto.getEmail());
-        UserDetails userDetails = loadUserByUsername(userLoginDto.getEmail());
-        if (userDetails == null
-            || !userDetails.isAccountNonExpired()
-            || !userDetails.isAccountNonLocked()
-            || !userDetails.isCredentialsNonExpired()
+        UserDetails storedUser = loadUserByUsername(userLoginDto.getEmail());
+        if (storedUser == null
+            || !storedUser.isAccountNonExpired()
+            || !storedUser.isCredentialsNonExpired()
         ) {
-            LOGGER.debug("accounts not found {}", userDetails == null);
-            LOGGER.debug("account expired {}", !userDetails.isAccountNonExpired());
-            LOGGER.debug("account locked {}", !userDetails.isAccountNonLocked());
-            LOGGER.debug("account credentials expired {}", !userDetails.isCredentialsNonExpired());
             throw new BadCredentialsException("Username or password is incorrect or account is locked");
         }
-        if (!passwordEncoder.matches(userLoginDto.getPassword(), userDetails.getPassword())) {
+        if (!storedUser.isAccountNonLocked()) {
+            throw new UnauthorizedException("Dieser Account wurde gesperrt.");
+        }
+        if (!passwordEncoder.matches(userLoginDto.getPassword(), storedUser.getPassword())) {
 
-            boolean isAdmin = userDetails.getAuthorities().stream()
+            boolean isAdmin = storedUser.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
 
@@ -151,12 +177,12 @@ public class UserServiceImpl implements UserService {
             }
             throw new BadCredentialsException("Username or password is incorrect or account is locked");
         }
-        List<String> roles = userDetails.getAuthorities()
+        List<String> roles = storedUser.getAuthorities()
             .stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
         userRepository.setFailedLoginAttemptsToZero(userLoginDto.getEmail());
-        return jwtTokenizer.getAuthToken(userDetails.getUsername(), roles);
+        return jwtTokenizer.getAuthToken(storedUser.getUsername(), roles);
     }
 
     @Override
@@ -174,6 +200,7 @@ public class UserServiceImpl implements UserService {
         String tokenUuid = UUID.randomUUID().toString();
         if (token == null) {
             token = new PasswordResetToken(tokenUuid, user);
+            token.setExpiryDate(LocalDateTime.now().plusHours(24));
         } else {
             token.setToken(tokenUuid);
             token.setExpiryDate(LocalDateTime.now().plusHours(24));
@@ -187,47 +214,56 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void changePassword(PasswortChangeDto dto) throws ValidationException, GoneException, NotFoundException {
         LOGGER.info("Changing password");
-        LOGGER.debug("Payload: tokenPresent={}", dto.token() != null);
+        LOGGER.debug("Payload: tokenPresent={}", dto.getResetToken() != null);
         //If user is logged in
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        userValidator.validatePassword(dto.password());
-        if (email != null) {
+        String dtoAuthenticatedUserEmail = dto.getAuthenticatedUserEmail();
+        userValidator.validatePassword(dto.getNewPassword());
+        if (dtoAuthenticatedUserEmail != null) {
             //Logged in user can change their own password
-            ApplicationUser user = userRepository.findUserByEmail(email);
-            user.setPasswordHash(passwordEncoder.encode(dto.password()));
-            user.setFailedLoginAttempts(0);
-            userRepository.save(user);
+            ApplicationUser storedUser = userRepository.findUserByEmail(dtoAuthenticatedUserEmail);
+            LOGGER.debug("Changing password for {}", dtoAuthenticatedUserEmail);
+            if (!passwordEncoder.matches(dto.getOldPassword(), storedUser.getPasswordHash())) {
+                throw new ValidationException("Fehler beim Ändern des Passworts", Collections.singletonList("Das aktuelle Passwort ist nicht korrekt"));
+            }
+            storedUser.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+            storedUser.setFailedLoginAttempts(0);
+            userRepository.save(storedUser);
+            userRepository.flush();
             return;
         }
-        PasswordResetToken token = passwordTokenRepository.findByToken(dto.token());
+        PasswordResetToken token = passwordTokenRepository.findByToken(dto.getResetToken());
+        LOGGER.debug("ResetToken= {} ", dto.getResetToken());
+        LOGGER.debug("Token= {}", dto.getResetToken());
         if (token == null) {
-            LOGGER.error("Password change failed because token was not found");
-            throw new NotFoundException("Token not found");
+            LOGGER.error("Password change failed, token was not found");
+            throw new NotFoundException("Reset-Link ist ungültig");
         }
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             LOGGER.error("Password change failed because token expired");
-            throw new GoneException("Token is expired");
+            throw new GoneException("Reset-Link ist abgelaufen");
         }
         ApplicationUser user = token.getUser();
-        user.setPasswordHash(passwordEncoder.encode(dto.password()));
+        passwordTokenRepository.deleteTokenByUserId(user.getUserId());
+        passwordTokenRepository.flush();
+        user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
         user.setFailedLoginAttempts(0);
         userRepository.save(user);
-        passwordTokenRepository.removeByUser(user);
     }
 
     @Override
     public UserDetailDto update(UserUpdateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("Updating user with id {}", dto.getUserId());
+        LOGGER.info("Updating user with email {}", dto.getAuthenticatedUserEmail());
         LOGGER.debug("Payload: {}", dto);
         userValidator.validateUserForUpdate(dto);
-        ApplicationUser applicationUser = userRepository.findUserByUserId(dto.getUserId());
+        ApplicationUser applicationUser = userRepository.findUserByEmail(dto.getAuthenticatedUserEmail());
         applicationUser.setFirstName(dto.getFirstName());
         applicationUser.setLastName(dto.getLastName());
         applicationUser.setEmail(dto.getEmail());
         applicationUser.setCountry(dto.getCountry());
         applicationUser.setZipCode(dto.getZipCode());
         applicationUser.setCity(dto.getCity());
-        applicationUser.setAddress(dto.getAddress());
+        applicationUser.setStreet(dto.getStreet());
+        applicationUser.setHouseNumber(dto.getHouseNumber());
         applicationUser.setRole(dto.getRole());
 
         return userMapper.applicationUserToUserDetailDto(userRepository.save(applicationUser));
@@ -241,6 +277,11 @@ public class UserServiceImpl implements UserService {
             return;
         }
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public void delete(String email) throws ForbiddenException {
+
     }
 
     @Override
@@ -276,6 +317,21 @@ public class UserServiceImpl implements UserService {
         return userMapper.applicationUserListToUserDetailDtoList(users);
     }
 
+
+    @Override
+    public Page<UserDetailDto> searchUsers(String email, Pageable pageable) throws ValidationException {
+
+        Page<ApplicationUser> page;
+
+        if (email == null || email.isBlank()) {
+            page = userRepository.findAll(pageable);
+        } else {
+            page = userRepository.findByEmailContainingIgnoreCase(email.trim(), pageable);
+        }
+
+        return page.map(userMapper::applicationUserToUserDetailDto);
+    }
+
     @Override
     public void blockUser(Long id) throws ForbiddenException {
         LOGGER.info("Blocking user with id {}", id);
@@ -294,6 +350,13 @@ public class UserServiceImpl implements UserService {
 
         ApplicationUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         user.setUserStatus(UserStatus.UNLOCKED);
+        user.setFailedLoginAttempts(0);
         userRepository.save(user);
     }
+
+    @Override
+    public UserDetailDto getMe(String email) {
+        return userMapper.applicationUserToUserDetailDto(userRepository.getApplicationUserByEmail((email)));
+    }
+
 }

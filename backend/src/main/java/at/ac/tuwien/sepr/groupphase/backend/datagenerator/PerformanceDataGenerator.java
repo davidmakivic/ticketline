@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -59,20 +60,13 @@ public class PerformanceDataGenerator {
         var baseDate = java.time.LocalDate.now(zone);
 
         int eventIndex = 0;
+        List<Performance> batch = new ArrayList<>(50);
 
         for (Event event : events) {
-            // pro Event: Datum +2 Tage
-
             int hallIndex = 0;
             for (Hall hall : halls) {
                 var eventDate = baseDate.plusDays(hallIndex * 2L);
-                // pro Hall an diesem Event-Abend eine volle Stunde später starten: 16:00, 17:00, 18:00, ...
-                int startHour = 16 + hallIndex;
-
-                // optional: falls viele Halls, clamp auf spätestens 21:00
-                if (startHour > 21) {
-                    startHour = 21;
-                }
+                int startHour = Math.min(16 + hallIndex, 21);
 
                 var startLdt = eventDate.atTime(startHour, 0);
                 var endLdt = startLdt.plusMinutes(event.getDurationMinutes());
@@ -87,13 +81,27 @@ public class PerformanceDataGenerator {
                 p.setEndTime(end);
                 p.setBasePriceCents(2500L + (eventIndex * 500L) + (hallIndex * 100L));
 
-                performanceRepository.save(p);
+                batch.add(p);
+
+                // Batch speichern
+                if (batch.size() >= 50) {
+                    performanceRepository.saveAll(batch);
+                    performanceRepository.flush();
+                    batch.clear();
+                }
+
                 hallIndex++;
             }
-
             eventIndex++;
         }
+
+        // Rest speichern
+        if (!batch.isEmpty()) {
+            performanceRepository.saveAll(batch);
+            performanceRepository.flush();
+        }
     }
+
 
 
 }

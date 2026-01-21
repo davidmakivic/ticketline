@@ -3,21 +3,52 @@ import {mapToCanActivate, RouterModule, Routes} from '@angular/router';
 import {HomeComponent} from './components/home/home.component';
 import {LoginComponent} from './components/login/login.component';
 import {AuthGuard} from './guards/auth.guard';
+import {AdminGuard} from './guards/admin.guard';
 import {NewsComponent} from './components/news/news.component';
 import {EventsListComponent} from './components/events/events-list/events-list.component';
 import {EventDetailComponent} from './components/events/event-detail/event-detail.component';
 import {ArtistDetailComponent} from './components/artists/artist-detail/artist-detail.component';
 import {ArtistsListComponent} from './components/artists/artists-list/artists-list.component';
-import {RegisterComponent} from './components/register/register.component';
+import {AccountComponent} from "./components/account/account.component";
+import RegisterEditComponent, {
+  RegisterEditMode
+} from "./components/account/register-edit-account/register-edit.component";
+import {NewsDetailComponent} from "./components/news/news-detail/news-detail.component";
+import {PerformancesListComponent} from "./components/performance/performances-list/performances-list.component";
+import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
+import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
+import {ForgotPasswordComponent} from "./components/account/forgot-password/forgot-password.component";
+import { ShopComponent } from './components/shop/shop.component';
+import {AdminCreateUserComponent} from "./components/account/admin-create-user/admin-create-user.component";
 
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'register', component: RegisterComponent},
+  {path: 'account', component: AccountComponent},
+  {path: 'register', component: RegisterEditComponent, data: {mode: RegisterEditMode.register}},
+  {
+    path: 'account/edit',
+    canActivate: mapToCanActivate([AuthGuard]),
+    component: RegisterEditComponent,
+    data: {mode: RegisterEditMode.edit}
+  },
+  {
+    path: 'account/change-password',
+    component: ChangePasswordComponent,
+  },
+  {
+    path: 'account/forgot-password',
+    component: ForgotPasswordComponent
+  },
   {
     path: 'news',
-    component: NewsComponent
+    component: NewsComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'news/:id',
+    component: NewsDetailComponent
   },
 
   {
@@ -63,6 +94,11 @@ const routes: Routes = [
   },
 
   {
+    path: 'shop',
+    component: ShopComponent
+  },
+
+  {
     path: 'artists',
     component: ArtistsListComponent
   },
@@ -73,10 +109,27 @@ const routes: Routes = [
   },
 
   {
+    path: 'performances',
+    component: PerformancesListComponent
+  },
+
+  {
     path: 'performances/:performanceId/seats',
     loadComponent: () =>
       import('./components/seat-selection/seat-selection.component')
         .then(m => m.SeatSelectionComponent)
+  },
+
+  {
+    path: 'panel',
+    canActivate: mapToCanActivate([AdminGuard]),
+    component: AdminPanelComponent
+  },
+
+  {
+    path: 'panel/create',
+    canActivate: mapToCanActivate([AdminGuard]),
+    component: AdminCreateUserComponent
   },
 
   {

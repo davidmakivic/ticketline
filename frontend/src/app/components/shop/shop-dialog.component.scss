@@ -1,0 +1,96 @@
+:host {
+  display: block;
+  color: white;
+}
+
+/* Dialog-Hintergrund */
+::ng-deep .mat-mdc-dialog-surface {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 420px;
+}
+
+/* Titel & Beschreibung */
+h2 {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+p {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  color: #ddd;
+}
+
+/* Wrapper für Größen & Menge */
+.select-wrapper,
+.quantity {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 12px 0;
+  gap: 12px;
+}
+
+select {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: none;
+  background-color: #2a2a2a;
+  color: white;
+  text-align: center;
+  font-size: 1rem;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.quantity input {
+  width: 60px;
+  text-align: center;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: none;
+  padding: 6px;
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.quantity button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  font-size: 18px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  cursor: pointer;
+}
+
+/* Fehlermeldung */
+.error-message {
+  color: #ff6b6b;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Add-to-cart Button */
+.add {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  border-radius: 24px;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Optional: leichtes Hover für Buttons */
+.add:hover {
+  background-color: var(--mat-sys-primary-container);
+}

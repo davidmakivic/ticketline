@@ -66,7 +66,7 @@ public class UserEndpointTest {
     @Transactional
     @Test
     void givenUserCreateDto_whenCreateUser_thenReturnCreatedUser() throws Exception {
-        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street 12", Roles.USER);
+        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street", 12, Roles.USER);
         mockMvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto)))
@@ -77,7 +77,8 @@ public class UserEndpointTest {
             .andExpect(jsonPath("$.lastName").value(dto.getLastName()))
             .andExpect(jsonPath("$.zipCode").value(dto.getZipCode()))
             .andExpect(jsonPath("$.city").value(dto.getCity()))
-            .andExpect(jsonPath("$.address").value(dto.getAddress()))
+            .andExpect(jsonPath("$.street").value(dto.getStreet()))
+            .andExpect(jsonPath("$.houseNumber").value(dto.getHouseNumber()))
             .andExpect(jsonPath("$.role").value("USER"))
             .andExpect(jsonPath("$.rewardPoints").value(0))
             .andExpect(jsonPath("$.createdAt").exists())
@@ -89,30 +90,31 @@ public class UserEndpointTest {
     @Test
     void givenUserUpdateDto_whenUpdateUser_thenReturnAndStoreUser() throws Exception {
         ApplicationUser user = new ApplicationUser();
-        user.setEmail("testuser@email.com");
+        user.setEmail("updatetest@email.com");
         user.setPasswordHash(passwordEncoder.encode("password1"));
         user.setFirstName("first");
         user.setLastName("last");
         user.setCountry("Austria");
         user.setZipCode("1222");
         user.setCity("city");
-        user.setAddress("street 12");
+        user.setStreet("street");
+        user.setHouseNumber(12);
         user.setRole(Roles.USER);
         user.setRewardPoints(10);
         user.setUserStatus(UserStatus.UNVERIFIED);
         user.setFailedLoginAttempts(0);
         userRepository.save(user);
 
-
         UserUpdateDto updateDto = new UserUpdateDto(
-            user.getUserId(),
+            "updatetest@email.com",
             "updated@email.com",
             "UpdatedFirst",
             "UpdatedLast",
             "Austria",
             "1337",
             "Vienna",
-            "New Address 99",
+            "New Address",
+            99,
             Roles.USER
         );
 
@@ -121,25 +123,14 @@ public class UserEndpointTest {
             List.of("ROLE_USER")
         );
 
-
         mockMvc.perform(
-                put("/api/v1/users/" + user.getUserId())
+                put("/api/v1/users/me")
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(securityProperties.getAuthHeader(), token)
                     .content(toJson(updateDto))
             )
-            // --- Assert (Response Body) ---
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.userId").value(user.getUserId()))
-            .andExpect(jsonPath("$.email").value(updateDto.getEmail()))
-            .andExpect(jsonPath("$.firstName").value(updateDto.getFirstName()))
-            .andExpect(jsonPath("$.lastName").value(updateDto.getLastName()))
-            .andExpect(jsonPath("$.zipCode").value(updateDto.getZipCode()))
-            .andExpect(jsonPath("$.city").value(updateDto.getCity()))
-            .andExpect(jsonPath("$.address").value(updateDto.getAddress()))
-            .andExpect(jsonPath("$.role").value("USER"));
+            .andExpect(status().isNoContent());
 
-        // --- Assert (Database State) ---
         ApplicationUser updated = userRepository.getReferenceById(user.getUserId());
 
         assertAll(
@@ -148,17 +139,18 @@ public class UserEndpointTest {
             () -> assertEquals(updateDto.getLastName(), updated.getLastName()),
             () -> assertEquals(updateDto.getZipCode(), updated.getZipCode()),
             () -> assertEquals(updateDto.getCity(), updated.getCity()),
-            () -> assertEquals(updateDto.getAddress(), updated.getAddress()),
+            () -> assertEquals(updateDto.getStreet(), updated.getStreet()),
+            () -> assertEquals(updateDto.getHouseNumber(), updated.getHouseNumber()),
             () -> assertEquals(Roles.USER, updated.getRole())
         );
-
     }
+
 
 
     @Test
     @Transactional
     void givenUserCreateDto_whenCreateUser_thenStoreUser() throws Exception {
-        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street 12", Roles.USER);
+        UserCreateDto dto = new UserCreateDto("testuser@email.com", "password1", "first", "last", "Austria", "1222", "city", "street", 12, Roles.USER);
 
         MvcResult result = mockMvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -178,7 +170,8 @@ public class UserEndpointTest {
             () -> assertEquals(dto.getLastName(), user.getLastName()),
             () -> assertEquals(dto.getZipCode(), user.getZipCode()),
             () -> assertEquals(dto.getCity(), user.getCity()),
-            () -> assertEquals(dto.getAddress(), user.getAddress()),
+            () -> assertEquals(dto.getStreet(), user.getStreet()),
+            () -> assertEquals(dto.getHouseNumber(), user.getHouseNumber()),
             () -> assertEquals(Roles.USER, user.getRole()),
             () -> assertEquals(0, user.getRewardPoints()),
             () -> assertEquals(UserStatus.UNVERIFIED, user.getUserStatus()),

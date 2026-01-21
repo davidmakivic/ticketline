@@ -79,4 +79,13 @@ export class HeaderComponent implements OnInit {
   protected openEventDetail(id: number) {
     this.router.navigate(['/events', id]);
   }
+
+  protected logoutUser() {
+    this.authService.logoutUser();
+    this.router.navigate(['/']);
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isLoggedIn() && this.authService.getUserRole() === 'ADMIN';
+  }
 }

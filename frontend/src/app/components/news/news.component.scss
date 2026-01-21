@@ -50,12 +50,54 @@
   color: var(--mat-sys-on-surface);
   border-color: var(--mat-sys-outline-variant);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 450px;
 
   .card-img-top {
     width: 100%;
     height: 200px;
     object-fit: cover;
     display: block;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 1rem;
+
+    .card-title {
+      color: var(--mat-sys-on-surface);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-subtitle {
+      color: var(--mat-sys-on-surface-variant);
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-text {
+      color: var(--mat-sys-on-surface-variant);
+      flex-grow: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      align-self: flex-start;
+      margin-top: auto;
+    }
   }
 }
 
@@ -109,10 +151,16 @@
   padding: 16px;
 }
 
-
 .modal-footer {
   background-color: var(--mat-sys-surface-container);
   border-color: var(--mat-sys-outline-variant);
+}
+
+.message-modal .modal-body .date-italic {
+  color: var(--mat-sys-on-surface-variant) !important;
+  font-style: italic;
+  font-size: 14px;
+  margin-bottom: 12px;
 }
 
 
@@ -169,4 +217,11 @@
 
 .error {
   color: var(--mat-sys-error);
+}
+
+.col-auto {
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
 }

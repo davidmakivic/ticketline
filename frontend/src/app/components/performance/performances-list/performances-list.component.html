@@ -1,0 +1,88 @@
+<div class="performances-list-container">
+  <div class="header">
+    <h1>Alle Aufführungen</h1>
+  </div>
+
+  <div class="search-filters">
+    <div class="filter-row">
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Veranstaltungstitel</mat-label>
+        <input matInput [(ngModel)]="searchTitle" (keyup)="onSearchInputChange()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Veranstaltungstyp</mat-label>
+        <mat-select [(ngModel)]="selectedEventType" (selectionChange)="onEventTypeChange()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (type of eventTypes; track type) {
+            <mat-option [value]="type">{{ getEventTypeLabel(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Ort</mat-label>
+        <input matInput [(ngModel)]="searchLocation" (keyup)="onSearchInputChange()">
+      </mat-form-field>
+
+
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Künstler</mat-label>
+        <input matInput [(ngModel)]="searchArtist" (keyup)="onSearchInputChange()">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Dauer (Minuten)</mat-label>
+        <mat-select [(ngModel)]="selectedDuration" (selectionChange)="onEventTypeChange()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (duration of durationOptions; track duration) {
+            <mat-option [value]="duration">{{ duration }} Min (±30)</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-field">
+        <mat-label>Datum</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (change)="onStartDateChange()">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="filter-actions">
+      <button mat-raised-button color="primary" (click)="performSearch()">Suchen</button>
+      <button mat-stroked-button (click)="resetFilters()">Zurücksetzen</button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!loading && performances.length > 0) {
+    <div class="performances-list">
+      @for (performance of performances; track performance.id) {
+        <app-performance-card
+          [performance]="performance"
+          [showEventImage]="true"
+          [showEventTitle]="true">
+        </app-performance-card>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="totalElements"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="[5, 10, 25]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  }
+
+  @if (!loading && performances.length === 0) {
+    <p class="no-performances">Keine Aufführungen verfügbar</p>
+  }
+</div>

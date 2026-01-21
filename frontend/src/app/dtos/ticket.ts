@@ -10,5 +10,8 @@ export interface Ticket {
   seatId: number | null;
   priceFinalCents: number;
   status: TicketStatus;
+  reservedUntil?: string | null;
+  reservedByUserId?: number | null;
+  reservedByMe?: boolean;
   version: number;
 }

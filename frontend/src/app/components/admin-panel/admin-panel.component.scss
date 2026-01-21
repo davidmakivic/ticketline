@@ -1,0 +1,139 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+}
+:host ::ng-deep .mat-mdc-cell,
+:host ::ng-deep .mat-mdc-header-cell {
+  border-bottom: none !important;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+
+}
+
+.header-row h1 {
+  margin: 0;
+  font-weight: 1000;
+  font-size: 56px;
+}
+
+.create-btn {
+  min-width: 180px;
+  min-height: 50px;
+  font-size: 20px;
+}
+
+:host ::ng-deep .mat-mdc-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+
+:host ::ng-deep .mat-mdc-header-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.search {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  color: var(--mat-sys-on-surface-variant);
+
+  &.error {
+    color: var(--mat-sys-error);
+  }
+}
+
+.table {
+  width: 100%;
+  display: table;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--mat-sys-surface-container);
+}
+
+.table th.mat-mdc-header-cell {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface-container);
+}
+
+.table tr.mat-mdc-row {
+  background: var(--mat-sys-surface-container);
+}
+
+.table td.mat-mdc-cell {
+  font-size: 16px;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+}
+
+.table tr.mat-mdc-row:hover td.mat-mdc-cell {
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 85%, transparent);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+mat-paginator {
+  margin-top: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 14px;
+  background: var(--mat-sys-surface-container);
+}
+
+.ban-btn {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+
+  background: #ff0000;
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.05);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: none;
+  }
+}
+
+.ban-btn--unblock {
+  background: #008000;
+  color: #ffffff;
+}
+
+.tooltip-wrap {
+  display: inline-block;
+}

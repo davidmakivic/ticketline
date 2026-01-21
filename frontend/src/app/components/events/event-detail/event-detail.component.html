@@ -31,7 +31,7 @@
         <h2 class="section-title">Beschreibung</h2>
         <p class="event-description">{{ event.description }}</p>
         <div class="event-metadata">
-          <span class="event-category">{{ event.category }}</span>
+          <span class="event-category">{{ getEventTypeLabel(event.category) }}</span>
           <span class="event-duration">{{ event.durationMinutes }} Minuten</span>
         </div>
       </div>
@@ -41,7 +41,10 @@
           <h2>Aufführungen</h2>
           <div class="performances-list">
             @for (performance of event.performances; track performance.id) {
-              <app-performance-card [performance]="performance"></app-performance-card>
+              <app-performance-card
+                [performance]="performance"
+                [showEventTitle]="false">
+              </app-performance-card>
             }
           </div>
         </div>

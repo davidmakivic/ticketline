@@ -1,0 +1,98 @@
+<div class="page">
+  <div class="header-row">
+    <h1>Benutzerverwaltung</h1>
+
+    <button mat-flat-button color="primary" class="create-btn" routerLink="/panel/create">
+      + Benutzer erstellen
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="search">
+    <mat-label>Suche nach E-Mail</mat-label>
+    <input matInput [formControl]="searchCtrl" placeholder="z.B. max@example.com" />
+  </mat-form-field>
+
+  <div *ngIf="loading" class="state">Lade…</div>
+  <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+  <table *ngIf="!loading && !error" mat-table [dataSource]="users" class="table">
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef>E-Mail</th>
+      <td mat-cell *matCellDef="let u">
+        {{ u.email }}
+        <span *ngIf="isAdmin(u)" class="admin-tag">(Admin)</span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let u">
+        {{ isBlocked(u) ? 'Gesperrt' : 'Aktiv' }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <td mat-cell *matCellDef="let u" class="actions">
+  <span
+    class="tooltip-wrap"
+    [matTooltip]="isAdmin(u) ? 'Admins können nicht gesperrt werden' : null"
+    matTooltipPosition="above"
+  >
+    <button
+      mat-button
+      type="button"
+      class="ban-btn"
+      [class.ban-btn--unblock]="isBlocked(u)"
+      [disabled]="isAdmin(u) || busy.has(getUserId(u))"
+      (click)="toggleBlock(u)"
+    >
+      {{ actionLabel(u) }}
+    </button>
+  </span>
+
+        <button
+          mat-icon-button
+          type="button"
+          class="reset-btn"
+          matTooltip="Passwort zurücksetzen"
+          matTooltipPosition="above"
+          [disabled]="resetBusy.has(getUserId(u))"
+          (click)="onResetPassword(u)"
+        >
+          <mat-icon>lock_reset</mat-icon>
+        </button>
+      </td>
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let u" class="actions">
+      <span
+        class="tooltip-wrap"
+        [matTooltip]="isAdmin(u) ? 'Admins können nicht gesperrt werden' : null"
+        matTooltipPosition="above"
+      >
+      <button
+         mat-button
+         type="button"
+         class="ban-btn"
+         [class.ban-btn--unblock]="isBlocked(u)"
+         [disabled]="isAdmin(u) || busy.has(getUserId(u))"
+         (click)="toggleBlock(u)"
+      >
+      {{ actionLabel(u) }}
+      </button>
+      </span>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator
+    [length]="total"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+</div>

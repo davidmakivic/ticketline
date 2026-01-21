@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -93,29 +94,29 @@ public class EventEndpoint {
     }
 
     @PermitAll
+    @GetMapping
+    @Operation(summary = "Get paginated list of all events", security = @SecurityRequirement(name = "apiKey"))
+    public Page<EventDto> getAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        LOGGER.info("Fetching events page={}, size={}", page, size);
+        return eventService.findAll(page, size);
+    }
+
+    @PermitAll
     @GetMapping("/query")
-    @Operation(summary = "Search events by advanced filters", security = @SecurityRequirement(name = "apiKey"))
-    public List<EventDto> searchByAdvancedFilters(
+    @Operation(summary = "Search events by advanced filters with pagination", security = @SecurityRequirement(name = "apiKey"))
+    public Page<EventDto> searchByAdvancedFilters(
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String artist,
         @RequestParam(required = false) String location,
         @RequestParam(required = false) EventType eventType,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-        @RequestParam(required = false) Integer durationMinutes) {
-        LOGGER.info("Searching events with advanced filters");
-        return eventService.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes);
-    }
-
-
-    @PermitAll
-    @GetMapping
-    @Operation(summary = "Get list of all events", security = @SecurityRequirement(name = "apiKey"))
-    public List<EventDto> getAll() {
-        LOGGER.info("Fetching all events");
-        LOGGER.debug("Event list requested");
-        return eventService.findAll()
-            .stream()
-            .toList();
+        @RequestParam(required = false) Integer durationMinutes,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        LOGGER.info("Searching events with advanced filters page={}, size={}", page, size);
+        return eventService.findByAdvancedFilters(title, artist, location, eventType, startDate, durationMinutes, page, size);
     }
 
     @PermitAll

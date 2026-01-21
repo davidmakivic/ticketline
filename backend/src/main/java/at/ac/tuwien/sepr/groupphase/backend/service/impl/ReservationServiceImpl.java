@@ -16,10 +16,12 @@ import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import at.ac.tuwien.sepr.groupphase.backend.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -68,30 +70,84 @@ public class ReservationServiceImpl implements ReservationService {
             throw new NotFoundException("One or more tickets not found");
         }
 
+        var now = java.time.Instant.now();
+        Long currentUserId = user.getUserId();
+
         for (Ticket t : tickets) {
-            if (t.getStatus() != TicketStatus.AVAILABLE) {
+            if (t.getStatus() != TicketStatus.RESERVED) {
                 throw new ConflictException(
                     "Ticket not available",
-                    List.of("Ticket " + t.getId() + " is " + t.getStatus())
+                    List.of("Ticket " + t.getId() + " is " + t.getStatus() + " (expected RESERVED hold).")
+                );
+            }
+
+            if (t.getReservedByUserId() == null || !t.getReservedByUserId().equals(currentUserId)) {
+                throw new ConflictException(
+                    "Ticket not available",
+                    List.of("Ticket " + t.getId() + " is not held by current user.")
+                );
+            }
+
+            if (t.getReservedUntil() == null || !t.getReservedUntil().isAfter(now)) {
+                throw new ConflictException(
+                    "Ticket not available",
+                    List.of("Ticket " + t.getId() + " hold expired.")
                 );
             }
         }
 
+        String reservationNumber = generateReservationNumber();
+        Reservation reservation = new Reservation(user, reservationNumber);
+        reservation.setTickets(tickets);
+        Reservation saved = reservationRepository.save(reservation);
+
+
         for (Ticket t : tickets) {
-            t.setStatus(TicketStatus.RESERVED);
+            t.setReservedUntil(null);
         }
         ticketRepository.saveAll(tickets);
 
-        String reservationNumber = generateReservationNumber();
-
-        Reservation reservation = new Reservation(user, reservationNumber);
-        reservation.setTickets(tickets);
-
-        Reservation saved = reservationRepository.save(reservation);
         return reservationMapper.reservationToReservationDto(saved);
     }
 
     private String generateReservationNumber() {
         return "R-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReservationDto> getAllForUser(String email) {
+        LOGGER.info("Loading reservations for user {}", email);
+
+        ApplicationUser user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        return reservationRepository.findAllByUserEmail(email).stream()
+            .map(reservationMapper::reservationToReservationDto)
+            .toList();
+    }
+
+    @Override
+    public void deleteForUser(long reservationId, String email) {
+        Reservation r = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));
+
+        if (r.getUser() == null || r.getUser().getEmail() == null || !r.getUser().getEmail().equals(email)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+        }
+
+        List<Ticket> tickets = r.getTickets();
+        if (tickets != null && !tickets.isEmpty()) {
+            for (Ticket t : tickets) {
+                t.setStatus(TicketStatus.AVAILABLE);
+                t.setReservedByUserId(null);
+                t.setReservedUntil(null);
+            }
+            ticketRepository.saveAll(tickets);
+        }
+
+        reservationRepository.delete(r);
     }
 }

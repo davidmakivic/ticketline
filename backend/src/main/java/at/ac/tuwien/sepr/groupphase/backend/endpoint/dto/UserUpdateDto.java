@@ -2,36 +2,41 @@ package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 
+
 public class UserUpdateDto {
-    Long userId;
+    String authenticatedUserEmail;
+
     String email;
     String firstName;
     String lastName;
     String country;
     String zipCode;
     String city;
-    String address;
+    String street;
+    Integer houseNumber;
     Roles role;
 
     public UserUpdateDto() {
     }
 
 
-    public UserUpdateDto(Long userId, String email, String firstName, String lastName, String country, String zipCode, String city, String address, Roles role) {
-        this.userId = userId;
+    public UserUpdateDto(String authenticatedUserEmail, String email, String firstName, String lastName, String country, String zipCode, String city, String street, Integer houseNumber, Roles role) {
+        this.authenticatedUserEmail = authenticatedUserEmail;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.zipCode = zipCode;
         this.city = city;
-        this.address = address;
+        this.street = street;
+        this.houseNumber = houseNumber;
         this.country = country;
         this.role = role;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getAuthenticatedUserEmail() {
+        return authenticatedUserEmail;
     }
+
 
     public String getEmail() {
         return email;
@@ -39,7 +44,7 @@ public class UserUpdateDto {
 
 
     public String getCountry() {
-        return "";
+        return this.country;
     }
 
     public String getFirstName() {
@@ -58,16 +63,21 @@ public class UserUpdateDto {
         return city;
     }
 
-    public String getAddress() {
-        return address;
+    public String getStreet() {
+        return street;
+    }
+
+    public Integer getHouseNumber() {
+        return houseNumber;
     }
 
     public Roles getRole() {
         return role;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+
+    public void setAuthenticatedUserEmail(String authenticatedUserEmail) {
+        this.authenticatedUserEmail = authenticatedUserEmail;
     }
 
     public void setEmail(String email) {
@@ -82,33 +92,20 @@ public class UserUpdateDto {
         this.lastName = lastName;
     }
 
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
-    }
-
     public void setCity(String city) {
         this.city = city;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public void setRole(Roles role) {
-        this.role = role;
-    }
-
-
     @Override
     public String toString() {
         return "UserCreateDto{"
-            + "userId=" + userId + '\''
             + "email='" + email + '\''
             + ", firstName='" + firstName + '\''
             + ", lastName='" + lastName + '\''
             + ", zipCode='" + zipCode + '\''
             + ", city='" + city + '\''
-            + ", address='" + address + '\''
+            + ", street='" + street + '\''
+            + ", houseNumber=" + houseNumber
             + '}';
     }
 }

@@ -19,10 +19,16 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: update
-    # Allows to fetch lazy properties outside of the original transaction. Although this sounds helpful, the property
-    # is disabled since it breaks the principle of least astonishment and leads to bad performance. To learn more,
-    # follow this link: https://bit.ly/2LaX9ku
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        connection:
+          provider_disables_autocommit: true
 
 security:
   auth:

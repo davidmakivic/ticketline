@@ -1,7 +1,23 @@
 <mat-card class="performance-card">
   <mat-card-content>
     <div class="performance-info">
+      @if (showEventImage && eventImage) {
+        <div class="event-image-container">
+          <img
+            [src]="eventImage"
+            alt="Event-Bild"
+            class="event-image"
+            loading="lazy">
+        </div>
+      }
+
       <div class="performance-left">
+        @if (showEventTitle) {
+          <div class="performance-title">
+            {{ performance.eventTitle }}
+          </div>
+        }
+
         <div class="performance-date">
           {{ performance.startTime | date: 'dd. MMMM yyyy' }}
         </div>
@@ -24,19 +40,19 @@
 
       <div class="performance-location">
         @if (venue && hall) {
-        <div class="performance-city">
-          {{ venue.city }}
-        </div>
+          <div class="performance-city">
+            {{ venue.city }}
+          </div>
 
-        <div class="performance-venue">
-          {{ venue.name }} - {{ hall.name }}
-        </div>
+          <div class="performance-venue">
+            {{ venue.name }} - {{ hall.name }}
+          </div>
 
-        @if (fullAddress) {
-        <div class="performance-address">
-          {{ fullAddress }}
-        </div>
-        }
+          @if (fullAddress) {
+            <div class="performance-address">
+              {{ fullAddress }}
+            </div>
+          }
         }
       </div>
 

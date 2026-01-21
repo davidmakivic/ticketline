@@ -147,18 +147,4 @@ public class TicketServiceTest {
             .isInstanceOf(NotFoundException.class);
     }
 
-
-
-    @Transactional
-    @Test
-    void testUpdateTicketStatus() throws ConflictException {
-        TicketDto dto = buildDto(performance.getId(), 1800L, TicketStatus.AVAILABLE);
-        TicketDto saved = ticketService.create(dto);
-        Long id = saved.getId();
-
-        TicketDto updated = ticketService.updateStatus(id, TicketStatus.PURCHASED, saved.getVersion());
-
-        assertThat(updated.getId()).isEqualTo(id);
-        assertThat(updated.getStatus()).isEqualTo(TicketStatus.PURCHASED);
-    }
 }

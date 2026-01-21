@@ -1,8 +1,9 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
-import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketStatusUpdateDto;
+import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
+import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketService;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +13,9 @@ import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,9 +37,11 @@ public class TicketEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final TicketService ticketService;
+    private final UserRepository userRepository;
 
-    public TicketEndpoint(TicketService ticketService) {
+    public TicketEndpoint(TicketService ticketService, UserRepository userRepository) {
         this.ticketService = ticketService;
+        this.userRepository = userRepository;
     }
 
 
@@ -66,36 +71,49 @@ public class TicketEndpoint {
         return ticketService.update(id, dto);
     }
 
-    @PermitAll
-    @PutMapping("/{id}/reserve")
-    public TicketDto reserve(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
-        return ticketService.updateStatus(id, TicketStatus.RESERVED, dto.getVersion());
-    }
-
-    @PermitAll
-    @PutMapping("/{id}/release")
-    @Operation(summary = "Release reserved ticket", security = @SecurityRequirement(name = "apiKey"))
-    public TicketDto release(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
-        LOGGER.info("Releasing ticket id={}", id);
-        return ticketService.updateStatus(id, TicketStatus.AVAILABLE, dto.getVersion());
-    }
-
-    @Secured("ROLE_USER")
-    @PutMapping("/{id}/status")
-    @Operation(summary = "Update ticket status", security = @SecurityRequirement(name = "apiKey"))
-    public TicketDto updateStatus(@PathVariable Long id, @RequestBody TicketStatusUpdateDto dto) {
-        LOGGER.info("Updating ticket status for Ticket with id={}", id);
-        LOGGER.debug("Request payload: {}", dto);
-        return ticketService.updateStatus(id, dto.getStatus(), dto.getVersion());
-    }
 
     @PermitAll
     @GetMapping("/performance/{performanceId}")
-    @Operation(summary = "Get tickets by performance id", security = @SecurityRequirement(name = "apiKey"))
     public List<TicketDto> getByPerformanceId(@PathVariable Long performanceId) {
-        LOGGER.info("Fetching tickets for performanceId={}", performanceId);
-        return ticketService.findByPerformanceId(performanceId);
+        Long currentUserId = getCurrentUserIdOrNull();
+        List<TicketDto> tickets = ticketService.findByPerformanceId(performanceId);
+        for (TicketDto t : tickets) {
+            markReservedByMe(t, currentUserId);
+        }
+        return tickets;
     }
+
+    @PostMapping("/{id}/hold")
+    @Secured("ROLE_USER")
+    public ResponseEntity<TicketDto> hold(@PathVariable Long id) throws ConflictException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        ApplicationUser user = userRepository.findUserByEmail(email);
+
+
+        TicketDto dto = ticketService.hold(id, user.getUserId());
+        markReservedByMe(dto, user.getUserId());
+        return ResponseEntity.ok(dto);
+    }
+
+
+    @DeleteMapping("/{id}/hold")
+    @Secured("ROLE_USER")
+    public ResponseEntity<TicketDto> release(@PathVariable Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        ApplicationUser user = userRepository.findUserByEmail(email);
+
+        try {
+            TicketDto dto = ticketService.release(id, user.getUserId());
+            dto.setReservedByMe(false);
+            return ResponseEntity.ok(dto);
+        } catch (ConflictException e) {
+            TicketDto dto = ticketService.findById(id);
+            dto.setReservedByMe(false);
+            return ResponseEntity.ok(dto);
+        }
+    }
+
+
 
     @PermitAll
     @GetMapping
@@ -104,5 +122,28 @@ public class TicketEndpoint {
         LOGGER.info("Fetching all tickets");
         return ticketService.findAll();
     }
+
+    private Long getCurrentUserIdOrNull() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null || "anonymousUser".equals(auth.getName())) {
+            return null;
+        }
+        ApplicationUser u = userRepository.findUserByEmail(auth.getName());
+        return u != null ? u.getUserId() : null;
+    }
+
+    private void markReservedByMe(TicketDto t, Long currentUserId) {
+        var now = java.time.Instant.now();
+
+        boolean byMe =
+            currentUserId != null
+                && t.getReservedByUserId() != null
+                && t.getReservedByUserId().equals(currentUserId)
+                && t.getReservedUntil() != null
+                && t.getReservedUntil().isAfter(now);
+
+        t.setReservedByMe(byMe);
+    }
+
 
 }

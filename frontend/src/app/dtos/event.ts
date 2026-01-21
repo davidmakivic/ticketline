@@ -12,6 +12,15 @@ export interface EventDto {
   performances: PerformanceDto[];
 }
 
+export interface PagedResult<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  empty: boolean;
+}
+
 export interface EventAutocompleteDto {
   id: number;
   title: string;
@@ -34,5 +43,10 @@ export enum EventTypeDto {
 export interface TopEvent {
   title: string,
   soldTickets: number;
+}
+
+export interface SimpleEventDto {
+  id: number;
+  title: string;
 }
 

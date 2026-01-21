@@ -68,8 +68,10 @@ public class SectorDataGenerator {
             Sector s4 = new Sector(hall, "B2", SectorType.VIP,      catB, "4");
             Sector s5 = new Sector(hall, "C1", SectorType.STANDING, catC, "5");
             Sector s6 = new Sector(hall, "C2", SectorType.STANDING, catC, "6");
+            Sector s7 = new Sector(hall, "D1", SectorType.SEATED, catA, "7");
+            Sector s8 = new Sector(hall, "D2", SectorType.SEATED, catA, "8");
 
-            sectorRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6));
+            sectorRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7, s8));
         }
 
         LOG.debug("Sector generation complete");

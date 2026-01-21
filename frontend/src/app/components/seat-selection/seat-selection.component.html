@@ -96,6 +96,10 @@
                 <tspan dx="6" *ngIf="standingAvailabilityLabel(el.sectorKey) !== 'Ausverkauft'">
                   (Links-Klick +1, Rechts-Klick −1)
                 </tspan>
+
+                <tspan dx="6" *ngIf="standingAvailabilityLabel(el.sectorKey) === 'Ausverkauft'">
+                  (Links-Klick +1, Rechts-Klick −1)
+                </tspan>
               </text>
             </ng-container>
           </g>

@@ -1,0 +1,113 @@
+<mat-card class="profile-card mt-5 p-4 shadow-sm">
+
+  <mat-card-title class="mb-4">
+    Mein Profil
+  </mat-card-title>
+
+  @if (!userDetails) {
+      <div class="align-self-center ">
+        <mat-spinner diameter="28"></mat-spinner>
+      </div>
+  } @else {
+    <mat-card-content>
+
+      <div class="section mb-4">
+        <h6 class="section-title">Persönliche Daten</h6>
+
+        <div class="row profile-row">
+          <div class="col-4 label">Name</div>
+          <div class="col-8 data">
+            {{ userDetails.firstName }} {{ userDetails.lastName }}
+          </div>
+        </div>
+
+        <div class="row profile-row">
+          <div class="col-4 label">E-Mail</div>
+          <div class="col-8 data">{{ userDetails.email }}</div>
+        </div>
+
+      </div>
+
+      <div class="section mb-4">
+        <h6 class="section-title">Adresse</h6>
+
+        <div class="row profile-row">
+          <div class="col-4 label">Straße / Hausnummer</div>
+          <div class="col-8 data">{{ userDetails.street }} {{userDetails.houseNumber}}</div>
+        </div>
+
+        <div class="row profile-row">
+          <div class="col-4 label">PLZ / Stadt</div>
+          <div class="col-8 data">
+            {{ userDetails.zipCode }} {{ userDetails.city }}
+          </div>
+        </div>
+
+        <div class="row profile-row">
+          <div class="col-4 label">Land</div>
+          <div class="col-8 data">{{ userDetails.country }}</div>
+        </div>
+      </div>
+
+      <mat-card-actions class="d-flex justify-content-end gap-2 mt-3 mb-3">
+
+        <button
+          mat-stroked-button
+          color="primary"
+          routerLink="/account/edit"
+        >
+          <mat-icon>edit</mat-icon>
+          Daten bearbeiten
+        </button>
+      </mat-card-actions>
+
+      <mat-divider></mat-divider>
+      <div class="section mt-3 mb-3">
+        <h6 class="section-title">Sicherheit</h6>
+
+        <div class="row profile-row">
+          <div class="col-4 label">Passwort</div>
+          <div class="col-8 data">********</div>
+        </div>
+      </div>
+
+      <mat-card-actions class="d-flex justify-content-end gap-2 mt-3 mb-3">
+        <button
+          mat-stroked-button
+          routerLink="/account/change-password"
+        >
+          <mat-icon>lock</mat-icon>
+          Passwort ändern
+        </button>
+
+
+      </mat-card-actions>
+
+      @if ( !isAdmin()) {
+        <mat-divider></mat-divider>
+
+        <div class="section mt-4">
+          <h6 class="section-title">Account</h6>
+
+          <p class="data">
+            Das Löschen deines Accounts ist endgültig und kann nicht rückgängig gemacht werden.
+          </p>
+
+          <mat-card-actions class="d-flex justify-content-end">
+            <button
+              mat-flat-button
+              color="warn"
+              class="danger-button"
+              (click)="confirmDeleteAccount()"
+            >
+              <mat-icon>delete_forever</mat-icon>
+              Account löschen
+            </button>
+          </mat-card-actions>
+        </div>
+      }
+
+    </mat-card-content>
+  }
+
+</mat-card>

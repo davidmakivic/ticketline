@@ -36,58 +36,66 @@ public class UserValidator {
         List<String> errors = new ArrayList<>();
 
         if (dto.getEmail() == null || dto.getEmail().isBlank()) {
-            errors.add("Email must not be empty");
+            errors.add("Email darf nicht leer sein");
         } else {
             if (dto.getEmail().length() > 255) {
-                errors.add("Email must not exceed 255 characters");
+                errors.add("Email darf nicht länger als 255 Zeichen sein");
             }
             // Validation following RFC 5322
             // source: https://www.baeldung.com/java-email-validation-regex#bd-regular-expression-by-rfc-5322-for-email-validation
             if (!dto.getEmail().matches("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")) {
-                errors.add("Email must be a valid email address");
+                errors.add("Email muss valide sein");
             }
         }
 
         if (dto.getPassword() == null || dto.getPassword().isBlank()) {
-            errors.add("Password must not be empty");
+            errors.add("Passwort darf nicht leer sein");
         } else {
             if (dto.getPassword().length() < 8) {
-                errors.add("Password must be at least 8 characters long");
+                errors.add("Passwort muss mindestens 8 Zeichen enthalten");
             }
         }
 
         if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
-            errors.add("First name must not be empty");
+            errors.add("Vorname darf nicht leer sein");
         } else if (dto.getFirstName().length() > 255) {
-            errors.add("First name must not exceed 255 characters");
+            errors.add("Vorname darf nicht länger als 255 Zeichen sein");
         }
 
         if (dto.getLastName() == null || dto.getLastName().isBlank()) {
-            errors.add("Last name must not be empty");
+            errors.add("Nachname darf nicht leer sein");
         } else if (dto.getLastName().length() > 255) {
-            errors.add("Last name must not exceed 255 characters");
+            errors.add("Nachname darf nicht länger als 255 Zeichen sein");
         }
         if (dto.getCountry() == null || dto.getCountry().isBlank()) {
-            errors.add("Country must not be empty");
+            errors.add("Land darf nicht leer sein");
+        } else if (dto.getCountry().length() > 255) {
+            errors.add("Land darf nicht leer als 255 Zeichen sein");
         }
         if (dto.getZipCode() == null || dto.getZipCode().isBlank()) {
-            errors.add("ZIP code must not be empty");
+            errors.add("Postleitzahl darf nicht leer sein");
         }
 
         if (dto.getCity() == null || dto.getCity().isBlank()) {
-            errors.add("City must not be empty");
+            errors.add("Ort darf nicht leer sein");
         } else if (dto.getCity().length() > 255) {
-            errors.add("City must not exceed 255 characters");
+            errors.add("Ort darf nicht länger als 255 Zeichen sein");
         }
 
-        if (dto.getAddress() == null || dto.getAddress().isBlank()) {
-            errors.add("Address must not be empty");
-        } else if (dto.getAddress().length() > 255) {
-            errors.add("Address must not exceed 255 characters");
+        if (dto.getStreet() == null || dto.getStreet().isBlank()) {
+            errors.add("Adresse darf nicht leer sein");
+        } else if (dto.getStreet().length() > 255) {
+            errors.add("Adresse darf nicht länger als 255 Zeichen sein");
+        }
+
+        if (dto.getHouseNumber() == null) {
+            errors.add("Hausnummer darf nicht leer sein");
+        } else if (dto.getHouseNumber() <= 0) {
+            errors.add("Hausnummer kann nicht kleiner als 1 sein");
         }
 
         if (dto.getRole() == null) {
-            errors.add("Role must not be null");
+            errors.add("Rolle darf nicht leer sein");
         }
 
         if (!errors.isEmpty()) {
@@ -101,11 +109,11 @@ public class UserValidator {
             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         if (!isAdmin && dto.getRole() == Roles.ADMIN) {
-            errors.add("Only admins can create admin accounts");
+            errors.add("Nur admins dürfen Admin Accounts erstellen");
         }
 
         if (userRepository.findUserByEmail(dto.getEmail()) != null) {
-            errors.add("User with this email already exists");
+            errors.add("Diese Email ist bereits registriert");
         }
 
         if (!errors.isEmpty()) {
@@ -114,12 +122,12 @@ public class UserValidator {
     }
 
     public void validateUserForUpdate(UserUpdateDto dto) throws ValidationException, ConflictException {
-        LOGGER.info("Validating user for update: {}", dto.getUserId());
+        LOGGER.info("Validating user for update: {}", dto.getAuthenticatedUserEmail());
         LOGGER.debug("Payload: {}", dto);
 
-        ApplicationUser userToUpdate = userRepository.findUserByUserId(dto.getUserId());
+        ApplicationUser userToUpdate = userRepository.findUserByEmail(dto.getAuthenticatedUserEmail());
         if (userToUpdate == null) {
-            throw new NotFoundException("User with id " + dto.getUserId() + " does not exist");
+            throw new NotFoundException("User with email " + dto.getAuthenticatedUserEmail() + " does not exist");
         }
         List<String> errors = new ArrayList<>();
 
@@ -136,38 +144,46 @@ public class UserValidator {
             }
         }
 
-
         if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
-            errors.add("First name must not be empty");
+            errors.add("Vorname darf nicht leer sein");
         } else if (dto.getFirstName().length() > 255) {
-            errors.add("First name must not exceed 255 characters");
+            errors.add("Vorname darf nicht länger als 255 Zeichen sein");
         }
 
         if (dto.getLastName() == null || dto.getLastName().isBlank()) {
-            errors.add("Last name must not be empty");
+            errors.add("Nachname darf nicht leer sein");
         } else if (dto.getLastName().length() > 255) {
-            errors.add("Last name must not exceed 255 characters");
+            errors.add("Nachname darf nicht länger als 255 Zeichen sein");
         }
         if (dto.getCountry() == null || dto.getCountry().isBlank()) {
-            if (dto.getZipCode() == null || dto.getZipCode().isBlank()) {
-                errors.add("ZIP code must not be empty");
-            }
+            errors.add("Land darf nicht leer sein");
+        } else if (dto.getCountry().length() > 255) {
+            errors.add("Land darf nicht leer als 255 Zeichen sein");
+        }
+        if (dto.getZipCode() == null || dto.getZipCode().isBlank()) {
+            errors.add("Postleitzahl darf nicht leer sein");
         }
 
         if (dto.getCity() == null || dto.getCity().isBlank()) {
-            errors.add("City must not be empty");
+            errors.add("Ort darf nicht leer sein");
         } else if (dto.getCity().length() > 255) {
-            errors.add("City must not exceed 255 characters");
+            errors.add("Ort darf nicht länger als 255 Zeichen sein");
         }
 
-        if (dto.getAddress() == null || dto.getAddress().isBlank()) {
-            errors.add("Address must not be empty");
-        } else if (dto.getAddress().length() > 255) {
-            errors.add("Address must not exceed 255 characters");
+        if (dto.getStreet() == null || dto.getStreet().isBlank()) {
+            errors.add("Adresse darf nicht leer sein");
+        } else if (dto.getStreet().length() > 255) {
+            errors.add("Adresse darf nicht länger als 255 Zeichen sein");
+        }
+
+        if (dto.getHouseNumber() == null) {
+            errors.add("Hausnummer darf nicht leer sein");
+        } else if (dto.getHouseNumber() <= 0) {
+            errors.add("Hausnummer kann nicht kleiner als 1 sein");
         }
 
         if (dto.getRole() == null) {
-            errors.add("Role must not be null");
+            errors.add("Rolle darf nicht leer sein");
         }
 
         if (!errors.isEmpty()) {
@@ -193,7 +209,7 @@ public class UserValidator {
         }
 
         ApplicationUser userWithGivenEmail = userRepository.findUserByEmail(dto.getEmail());
-        if (userWithGivenEmail != null && !userWithGivenEmail.getUserId().equals(dto.getUserId())) {
+        if (userWithGivenEmail != null && !userWithGivenEmail.getEmail().equals(dto.getAuthenticatedUserEmail())) {
             errors.add("Email already used by another user");
         }
 
@@ -213,15 +229,15 @@ public class UserValidator {
             throw new NotFoundException("User not found");
         }
 
-        boolean isAdmin = currentUser.getRole() == Roles.ADMIN;
+        boolean userIsAdmin = currentUser.getRole() == Roles.ADMIN;
         boolean isSelf = currentUser.getUserId().equals(userToDelete.getUserId());
 
-        if (isAdmin && isSelf) {
-            throw new ForbiddenException("Admins cannot delete their own account");
+        if (userToDelete.getRole() == Roles.ADMIN) {
+            throw new ForbiddenException("Admins können nicht gelöscht werden");
         }
 
-        if (!isAdmin && !isSelf) {
-            throw new NotFoundException("User not found");
+        if (!userIsAdmin && !isSelf) {
+            throw new NotFoundException("Account wurde nicht gefunden");
         }
 
     }
@@ -236,4 +252,6 @@ public class UserValidator {
             throw new ValidationException("Validation for password failed", Collections.singletonList("Password must be at least 8 characters"));
         }
     }
+
+
 }

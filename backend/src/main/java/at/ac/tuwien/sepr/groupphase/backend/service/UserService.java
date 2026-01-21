@@ -11,8 +11,11 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import jakarta.mail.MessagingException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -57,8 +60,9 @@ public interface UserService extends UserDetailsService {
      * @param userLoginDto login credentials
      * @return the JWT, if successful
      * @throws org.springframework.security.authentication.BadCredentialsException if credentials are bad
+     * @throws UnauthorizedException                                               if the account is locked
      */
-    String login(UserLoginDto userLoginDto);
+    String login(UserLoginDto userLoginDto) throws UnauthorizedException;
 
     /**
      * Sends an email to reset the password to {@code email}.
@@ -97,6 +101,15 @@ public interface UserService extends UserDetailsService {
      */
     void delete(Long id) throws ForbiddenException;
 
+
+    /**
+     * Deletes user with email {@code email}.
+     *
+     * @param email of the user to delete
+     * @throws ForbiddenException if the user is an admin
+     */
+    void delete(String email) throws ForbiddenException;
+
     /**
      * Returns all user depending on the searched data.
      * if status = null, all user are returned
@@ -105,6 +118,10 @@ public interface UserService extends UserDetailsService {
      * @return a list of users with parameters defined in {@code dto}
      */
     List<UserDetailDto> searchUser(UserSearchDto dto) throws ValidationException;
+
+
+    Page<UserDetailDto> searchUsers(String email, Pageable pageable) throws ValidationException;
+
 
     /**
      * Blocks the user with id {@code id}.
@@ -120,4 +137,14 @@ public interface UserService extends UserDetailsService {
      * @param id id of the user to unblock
      */
     void unblockUser(Long id);
+
+    /**
+     * Returns the details of the logged in user.
+     *
+     * @param email the email of the logged in user
+     * @return the logged in user
+     */
+    UserDetailDto getMe(String email);
+
+    UserDetailDto createUserAsAdmin(UserCreateDto dto) throws ValidationException, ConflictException;
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Globals } from '../global/globals';
 import { AuthService } from './auth.service';
-import {User, UserRegisterDto} from "../dtos/user";
+import {PageResponse} from "../dtos/page-response";
+import {PasswordChangeDto, User, UserCreateDto, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
 
 @Injectable({
   providedIn: 'root'
@@ -21,4 +22,51 @@ export class UserService {
     return this.httpClient.post<void>(this.userBaseUrl,dto)
   }
 
+  createUserAsAdmin(dto: UserCreateDto): Observable<void> {
+    return this.httpClient.post<void>(`${this.userBaseUrl}/admin`, dto);
+  }
+
+  getUsers(page: number, size: number, email?: string): Observable<PageResponse<UserDto>> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (email && email.trim().length > 0) {
+      params = params.set('email', email.trim());
+    }
+
+    return this.httpClient.get<PageResponse<UserDto>>(this.userBaseUrl, { params });
+  }
+
+  blockUser(userId: number) {
+    return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/block`, null);
+  }
+
+  unblockUser(userId: number) {
+    return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/unblock`, null);
+  }
+
+  changePassword(dto: PasswordChangeDto) {
+    return this.httpClient.post<void>(`${this.userBaseUrl}/changePassword`, dto);
+  }
+
+  getUser(): Observable<UserDto> {
+    return this.httpClient.get<UserDto>(this.userBaseUrl + '/me');
+  }
+
+  updateUser(payload: UserUpdateDto): Observable<void> {
+    return this.httpClient.put<void>(this.userBaseUrl + '/me', payload)
+  }
+
+  resetPassword(emailValue: string):Observable<void> {
+    console.log('emailValue', emailValue);
+    const params = new HttpParams()
+      .set('email', emailValue);
+    return this.httpClient.post<void>(`${this.userBaseUrl}/resetPassword`, null, {params})
+  }
+
+
+  deleteUser(id: number): Observable<void> {
+    return this.httpClient.delete<void>(`${this.userBaseUrl}/${id}`);
+  }
 }

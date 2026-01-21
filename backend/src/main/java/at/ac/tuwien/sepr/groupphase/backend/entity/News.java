@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -35,6 +37,10 @@ public class News {
 
     @Column(name = "image_content_type")
     private String imageContentType;
+
+    @ManyToOne
+    @JoinColumn(name = "event")
+    private Event event;
 
     public Long getId() {
         return id;
@@ -92,6 +98,14 @@ public class News {
         this.imageContentType = imageContentType;
     }
 
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -130,6 +144,7 @@ public class News {
         private String title;
         private String summary;
         private String text;
+        private Event event;
 
         private NewsBuilder() {
         }
@@ -163,6 +178,11 @@ public class News {
             return this;
         }
 
+        public NewsBuilder withEvent(Event event) {
+            this.event = event;
+            return this;
+        }
+
         public News build() {
             News news = new News();
             news.setId(id);
@@ -170,6 +190,7 @@ public class News {
             news.setTitle(title);
             news.setSummary(summary);
             news.setText(text);
+            news.setEvent(event);
             return news;
         }
     }

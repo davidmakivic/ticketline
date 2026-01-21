@@ -11,18 +11,23 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {ErrorStateMatcher} from "@angular/material/core";
 import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {MatButton} from "@angular/material/button";
 import {count, Observable, startWith} from "rxjs";
 import {EUROPEAN_COUNTRIES} from './european-countries';
 import {MatSelectModule} from '@angular/material/select';
-import {UserService} from "../../services/user.service";
+import {UserService} from "../../../services/user.service";
 import {MatAutocompleteModule, MatAutocompleteTrigger} from "@angular/material/autocomplete";
 import {map} from "rxjs/operators";
 import {AsyncPipe} from "@angular/common";
 
+
+export enum RegisterEditMode {
+  register,
+  edit
+}
 
 export const passwordMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
   const password = group.get('password');
@@ -56,8 +61,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 
 @Component({
   selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
+  templateUrl: './register-edit.component.html',
+  styleUrls: ['./register-edit.component.scss'],
   imports: [
     ReactiveFormsModule,
     MatInput,
@@ -74,7 +79,9 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   ],
   standalone: true
 })
-export class RegisterComponent implements OnInit {
+export class RegisterEditComponent implements OnInit {
+
+  mode: RegisterEditMode = RegisterEditMode.register;
 
   registerForm: UntypedFormGroup;
   matcher = new MyErrorStateMatcher();
@@ -85,7 +92,7 @@ export class RegisterComponent implements OnInit {
   zip = new FormControl('', [Validators.required]);
   city = new FormControl('', [Validators.required]);
   street = new FormControl('', [Validators.required]);
-  houseNumber = new FormControl('', [Validators.required]);
+  houseNumber = new FormControl('', [Validators.required, Validators.min(1)]);
   email = new FormControl('', [Validators.required, Validators.email, Validators.pattern("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")]);
   password = new FormControl('', [Validators.required, Validators.minLength(8)]);
   confirmPassword = new FormControl('', [Validators.required]);
@@ -93,13 +100,14 @@ export class RegisterComponent implements OnInit {
   countries = EUROPEAN_COUNTRIES;
   filteredCountries: Observable<string[]>;
 
-  registerErrors: string[] = [];
+  errors: string[] = [];
 
 
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private route: ActivatedRoute,
   ) {
     this.registerForm = this.formBuilder.group({
       firstName: this.firstName,
@@ -108,6 +116,7 @@ export class RegisterComponent implements OnInit {
       zip: this.zip,
       city: this.city,
       houseNumber: this.houseNumber,
+      street: this.street,
       email: this.email,
       password: this.password,
       confirmPassword: this.confirmPassword
@@ -115,6 +124,13 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.route.data.subscribe(data => {
+      this.mode = data.mode;
+      if (this.mode === RegisterEditMode.edit) {
+        this.disablePasswordValidation();
+        this.initData();
+      }
+    });
     this.filteredCountries = this.country.valueChanges.pipe(
       startWith(''),
       map(value => this.filterCountries(value))
@@ -122,9 +138,40 @@ export class RegisterComponent implements OnInit {
   }
 
 
-  registerUser() {
+  makeRequest() {
     if (this.registerForm.invalid) {
       console.log("Invalid input");
+      return;
+    }
+
+    if (this.mode === RegisterEditMode.edit) {
+      const payload = {
+        firstName: this.firstName.value,
+        lastName: this.lastName.value,
+        email: this.email.value,
+        country: this.country.value,
+        zipCode: this.zip.value,
+        city: this.city.value,
+        street: this.street.value,
+        houseNumber: Number(this.houseNumber.value),
+        role: 'USER'
+      };
+
+      this.userService.updateUser(payload).subscribe({
+        next: () => {
+          this.errors = [];
+          this.router.navigate(['/']);
+        },
+        error: error => {
+          console.log('Could not log in due to:');
+          console.log(error);
+          if (typeof error.error === 'object') {
+            this.errors = error.error.errors;
+          } else {
+            this.errors = error.errors;
+          }
+        }
+      })
       return;
     }
 
@@ -136,19 +183,24 @@ export class RegisterComponent implements OnInit {
       country: this.country.value,
       zipCode: this.zip.value,
       city: this.city.value,
-      address: this.street.value + " " + this.houseNumber.value,
+      street: this.street.value,
+      houseNumber: Number(this.houseNumber.value),
       role: 'USER'
     };
 
     this.userService.createUser(payload).subscribe({
       next: () => {
-        console.log("Hi")
+        this.errors = [];
         this.router.navigate(['/login']);
       },
-      error: (error) => {
-        console.log('Registration failed', error);
-        this.registerErrors = error.error.errors;
-        console.log(error.error.errors);
+      error: error => {
+        console.log('Could not log in due to:');
+        console.log(error);
+        if (typeof error.error === 'object') {
+          this.errors = error.error.errors;
+        } else {
+          this.errors = error.errors;
+        }
       }
     })
   }
@@ -160,13 +212,54 @@ export class RegisterComponent implements OnInit {
     );
   }
 
+  public modeText(): string {
+    console.log(this.mode)
+    switch (this.mode) {
+      case RegisterEditMode.edit:
+        return "Bearbeiten";
+      case RegisterEditMode.register:
+        return "Registrieren";
+    }
+  }
+
+
   protected cancel() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/account']);
   }
 
   protected readonly count = count;
   protected readonly name = name;
   protected readonly confirm = confirm;
+  protected readonly RegisterEditMode = RegisterEditMode;
+
+  private initData() {
+    this.userService.getUser().subscribe({
+      next: data => {
+        console.log(data);
+        this.registerForm.patchValue({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          country: data.country,
+          zip: data.zipCode,
+          city: data.city,
+          street: data.street,
+          houseNumber: data.houseNumber,
+        })
+      }
+    })
+  }
+
+  private disablePasswordValidation() {
+    this.password.clearValidators();
+    this.confirmPassword.clearValidators();
+
+    this.password.updateValueAndValidity();
+    this.confirmPassword.updateValueAndValidity();
+
+    this.registerForm.clearValidators();
+    this.registerForm.updateValueAndValidity();
+  }
 }
 
-export default RegisterComponent
+export default RegisterEditComponent

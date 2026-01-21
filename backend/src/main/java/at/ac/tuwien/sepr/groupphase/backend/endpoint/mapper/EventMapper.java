@@ -6,19 +6,27 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {PerformanceMapper.class})
 public interface EventMapper {
-
+    @Named("withPerformances")
     @Mapping(source = "imageContentType", target = "imageContentType")
+    EventDto eventToEventDtoWithPerformances(Event event);
+
+    @Named("withoutPerformances")
+    @Mapping(source = "imageContentType", target = "imageContentType")
+    @Mapping(target = "performances", ignore = true)
     EventDto eventToEventDto(Event event);
 
     @Mapping(source = "imageContentType", target = "imageContentType")
     @Mapping(target = "artists", ignore = true)
-    List<EventDto> eventToEventDto(List<Event> events);
+    @Mapping(target = "performances", ignore = true)
+    List<EventDto> eventToEventDtoList(List<Event> events);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "imageData", ignore = true)
@@ -32,4 +40,10 @@ public interface EventMapper {
     @Mapping(target = "imageContentType", ignore = true)
     @Mapping(target = "artists", ignore = true)
     void updateEntityFromDto(EventDto dto, @MappingTarget Event entity);
+
+
+
+    default Page<EventDto> eventPageToEventDtoPage(Page<Event> events) {
+        return events.map(this::eventToEventDto);
+    }
 }

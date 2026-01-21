@@ -2,46 +2,69 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PerformanceDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.PerformanceMapper;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.specification.PerformanceSpecifications;
 import at.ac.tuwien.sepr.groupphase.backend.service.PerformanceService;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
+import at.ac.tuwien.sepr.groupphase.backend.service.TicketGenerationService;
+import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
+import java.util.Date;
 
 @Service
 public class PerformanceServiceImpl implements PerformanceService {
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final PerformanceRepository performanceRepository;
     private final PerformanceMapper performanceMapper;
     private final EventRepository eventRepository;
     private final HallRepository hallRepository;
+    private final TicketGenerationService ticketGenerationService;
 
-    public PerformanceServiceImpl(PerformanceRepository performanceRepository, PerformanceMapper performanceMapper, EventRepository eventRepository, HallRepository hallRepository) {
+    public PerformanceServiceImpl(PerformanceRepository performanceRepository, PerformanceMapper performanceMapper, EventRepository eventRepository, HallRepository hallRepository, TicketGenerationService ticketGenerationService) {
         this.performanceRepository = performanceRepository;
         this.performanceMapper = performanceMapper;
         this.eventRepository = eventRepository;
         this.hallRepository = hallRepository;
+        this.ticketGenerationService = ticketGenerationService;
     }
 
     @Override
+    @Transactional
     public PerformanceDto create(PerformanceDto dto) {
-        LOGGER.info("Creating performance");
+        LOGGER.info("Creating performance for event {}", dto.getEventId());
         LOGGER.debug("Payload: {}", dto);
-        Performance performance = performanceMapper.performanceDtoToPerformance(dto);
 
-        performance.setEvent(eventRepository.getReferenceById(dto.getEventId()));
-        performance.setHall(hallRepository.getReferenceById(dto.getHallId()));
+        Event event = eventRepository.findById(dto.getEventId())
+            .orElseThrow(() -> new NotFoundException("Event not found with id: " + dto.getEventId()));
 
-        Performance saved = performanceRepository.save(performance);
+        Hall hall = hallRepository.findById(dto.getHallId())
+            .orElseThrow(() -> new NotFoundException("Hall not found with id: " + dto.getHallId()));
+
+        Performance entity = performanceMapper.performanceDtoToPerformance(dto);
+        entity.setEvent(event);
+        entity.setHall(hall);
+
+        Performance saved = performanceRepository.save(entity);
+
+        // Tickets automatisch generieren
+        ticketGenerationService.generateTicketsForPerformance(saved);
+
         return performanceMapper.performanceToPerformanceDto(saved);
     }
 
@@ -56,16 +79,17 @@ public class PerformanceServiceImpl implements PerformanceService {
         performance.setStartTime(dto.getStartTime());
         performance.setEndTime(dto.getEndTime());
         performance.setBasePriceCents(dto.getBasePriceCents());
-        performance.setEvent(eventRepository.getReferenceById(dto.getEventId()));
-        performance.setHall(hallRepository.getReferenceById(dto.getHallId()));
+        performance.setEvent(eventRepository.findById(dto.getEventId())
+            .orElseThrow(() -> new NotFoundException("Event " + dto.getEventId() + " not found")));
+        performance.setHall(hallRepository.findById(dto.getHallId())
+            .orElseThrow(() -> new NotFoundException("Hall " + dto.getHallId() + " not found")));
 
         Performance saved = performanceRepository.save(performance);
-
         return performanceMapper.performanceToPerformanceDto(saved);
     }
 
-
     @Override
+    @Transactional
     public PerformanceDto findById(Long id) {
         LOGGER.info("Fetching performance with id={}", id);
         Performance performance = performanceRepository.findById(id)
@@ -75,12 +99,37 @@ public class PerformanceServiceImpl implements PerformanceService {
     }
 
     @Override
-    public List<PerformanceDto> findAll() {
-        LOGGER.info("Fetching all performances");
-        return performanceMapper.performanceListToPerformanceDtoList(
-            performanceRepository.findAll()
-        );
+    public Page<PerformanceDto> findAll(int page, int size) {
+        LOGGER.info("Fetching all performances with pagination");
+        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
+        return performanceRepository.findAllWithDetails(pageable)
+            .map(performanceMapper::performanceToPerformanceDto);
     }
+
+    @Override
+    public Page<PerformanceDto> findByAdvancedFilters(
+        String title, String artist, String location,
+        EventType eventType, Date startDate, Integer durationMinutes,
+        int page, int size) {
+        LOGGER.info("Searching performances with filters: title={}, artist={}, location={}, eventType={}, startDate={}, duration={}",
+            title, artist, location, eventType, startDate, durationMinutes);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
+
+        Specification<Performance> spec = Specification.allOf(
+            PerformanceSpecifications.hasEventTitle(title),
+            PerformanceSpecifications.hasArtist(artist),
+            PerformanceSpecifications.hasLocation(location),
+            PerformanceSpecifications.hasEventType(eventType),
+            PerformanceSpecifications.hasStartDateAfter(startDate),
+            PerformanceSpecifications.hasDuration(durationMinutes),
+            PerformanceSpecifications.fetchDetails()
+        );
+
+        return performanceRepository.findAll(spec, pageable)
+            .map(performanceMapper::performanceToPerformanceDto);
+    }
+
 
     @Override
     public void delete(Long id) {
@@ -91,5 +140,4 @@ public class PerformanceServiceImpl implements PerformanceService {
 
         performanceRepository.deleteById(id);
     }
-
 }

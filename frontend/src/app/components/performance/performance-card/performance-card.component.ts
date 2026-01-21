@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 import { PerformanceDto } from '../../../dtos/performanceDto';
 import { Hall } from '../../../dtos/hall';
 import { Venue } from '../../../dtos/venue';
 import { HallsService } from '../../../services/halls.service';
 import { VenuesService } from '../../../services/venues.service';
+import { EventsService } from '../../../services/events.service';
 
 @Component({
   selector: 'app-performance-card',
@@ -27,23 +29,35 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
   @Input({ required: true })
   performance!: PerformanceDto;
 
+  @Input()
+  showEventImage: boolean = false;
+
   hall: Hall | null = null;
   venue: Venue | null = null;
-
+  eventImage: SafeUrl | null = null;
   loadingLocation = false;
+  @Input() showEventTitle!: boolean;
 
   constructor(
     private hallsService: HallsService,
-    private venuesService: VenuesService
+    private venuesService: VenuesService,
+    private eventsService: EventsService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
     this.loadLocationData();
+    if (this.showEventImage) {
+      this.loadEventImage();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['performance'] && !changes['performance'].firstChange) {
       this.loadLocationData();
+      if (this.showEventImage) {
+        this.loadEventImage();
+      }
     }
   }
 
@@ -92,6 +106,22 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
       },
       error: () => {
         this.loadingLocation = false;
+      }
+    });
+  }
+
+  private loadEventImage(): void {
+    if (!this.performance || !this.performance.eventId) {
+      return;
+    }
+
+    this.eventsService.getEventImage(this.performance.eventId).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        this.eventImage = this.sanitizer.bypassSecurityTrustUrl(url);
+      },
+      error: () => {
+        // Bild konnte nicht geladen werden
       }
     });
   }

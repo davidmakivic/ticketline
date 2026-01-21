@@ -12,4 +12,8 @@ export class HallsService {
   getById(id: number): Observable<Hall> {
     return this.http.get<Hall>(`${this.baseUri}/${id}`);
   }
+
+  getAll(): Observable<Hall[]> {
+    return this.http.get<Hall[]>(this.baseUri);
+  }
 }

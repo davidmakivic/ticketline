@@ -52,14 +52,15 @@ public class OrderEndpointTest {
 
         ApplicationUser u = ApplicationUser.ApplicationUserBuilder
             .aApplicationUser()
-            .withEmail("test@example.com")
+            .withEmail("test-" + System.currentTimeMillis() + "@example.com") // Unique email
             .withPassword("hashed")
             .withFirstName("Test")
             .withLastName("User")
             .withCountry("Austria")
             .withZipCode("1234")
             .withCity("Vienna")
-            .withAddress("Street 1")
+            .withStreet("Street")
+            .withHouseNumber(1)
             .withRole(Roles.USER)
             .withRewardPoints(0)
             .withUserStatus(UserStatus.UNLOCKED)

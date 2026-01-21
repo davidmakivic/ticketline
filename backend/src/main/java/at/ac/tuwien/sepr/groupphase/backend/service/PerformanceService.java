@@ -1,7 +1,10 @@
 package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PerformanceDto;
+import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
+import org.springframework.data.domain.Page;
 
+import java.util.Date;
 import java.util.List;
 
 public interface PerformanceService {
@@ -12,7 +15,12 @@ public interface PerformanceService {
 
     PerformanceDto findById(Long id);
 
-    List<PerformanceDto> findAll();
+    Page<PerformanceDto> findAll(int page, int size);
+
+    Page<PerformanceDto> findByAdvancedFilters(
+        String title, String artist, String location,
+        EventType eventType, Date startDate, Integer durationMinutes,
+        int page, int size);
 
     void delete(Long id);
 }

@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
+import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.service.UserService;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class LoginEndpoint {
 
     @PermitAll
     @PostMapping
-    public String login(@RequestBody UserLoginDto userLoginDto) {
+    public String login(@RequestBody UserLoginDto userLoginDto) throws UnauthorizedException {
         LOGGER.info("Login attempt for user '{}'", userLoginDto.getEmail());
         LOGGER.debug("Login DTO received");
         return userService.login(userLoginDto);

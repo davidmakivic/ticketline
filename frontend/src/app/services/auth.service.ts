@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import {tap} from 'rxjs/operators';
 import {jwtDecode} from 'jwt-decode';
 import {Globals} from '../global/globals';
+import { CartService } from './cart.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,11 @@ export class AuthService {
 
   private authBaseUri: string = this.globals.backendUri + '/authentication';
 
-  constructor(private httpClient: HttpClient, private globals: Globals) {
+  constructor(
+    private httpClient: HttpClient,
+    private globals: Globals,
+    private cartService: CartService
+    ) {
   }
 
   /**
@@ -33,11 +38,19 @@ export class AuthService {
    * Check if a valid JWT token is saved in the localStorage
    */
   isLoggedIn() {
-    return !!this.getToken() && (this.getTokenExpirationDate(this.getToken()).valueOf() > new Date().valueOf());
+    if (!this.getToken()) {
+      return false;
+    }
+    if (this.getTokenExpirationDate(this.getToken()).valueOf() < Date.now()) {
+      localStorage.removeItem('authToken');
+      return false;
+    }
+    return true;
   }
 
   logoutUser() {
     console.log('Logout');
+    this.cartService.clear();
     localStorage.removeItem('authToken');
   }
 
