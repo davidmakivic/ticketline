@@ -231,15 +231,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public CancellationResultDto cancelTickets(long orderId, List<Long> ticketIds) {
-        LOGGER.info("Cancelling tickets for orderId={}", orderId);
-
-        if (ticketIds == null || ticketIds.isEmpty()) {
-            try {
-                throw new ValidationException("No tickets provided", List.of("ticketIds must not be empty"));
-            } catch (ValidationException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        LOGGER.info("Cancelling order/tickets for orderId={}", orderId);
 
         Order order = orderRepository.findByIdWithTickets(orderId)
             .orElseThrow(() -> new NotFoundException("Order not found"));
@@ -263,51 +255,82 @@ public class OrderServiceImpl implements OrderService {
                 org.springframework.http.HttpStatus.FORBIDDEN, "Not allowed");
         }
 
-        var orderTicketIds = order.getTickets().stream().map(Ticket::getId).toList();
-        for (Long tid : ticketIds) {
-            if (!orderTicketIds.contains(tid)) {
-                try {
-                    throw new ConflictException("Ticket not in order",
-                        List.of("Ticket " + tid + " not part of order " + orderId));
-                } catch (ConflictException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        // Neu: wenn leer/null -> ganze Bestellung stornieren (Tickets + Merch)
+        boolean cancelAll = (ticketIds == null || ticketIds.isEmpty());
 
-        List<Ticket> tickets = ticketRepository.findAllById(ticketIds);
-        if (tickets.size() != ticketIds.size()) {
-            throw new NotFoundException("One or more tickets not found");
-        }
+        List<Long> idsToCancel = cancelAll
+            ? order.getTickets().stream().map(Ticket::getId).toList()
+            : ticketIds;
 
-        long refund = 0;
+        long ticketsRefund = 0;
         List<Long> cancelled = new ArrayList<>();
 
-        for (Ticket t : tickets) {
-            if (t.getStatus() == TicketStatus.PURCHASED) {
-                refund += (t.getPriceFinalCents() == null ? 0 : t.getPriceFinalCents());
-                t.setStatus(TicketStatus.AVAILABLE);
-                cancelled.add(t.getId());
-            } else if (t.getStatus() == TicketStatus.AVAILABLE) {
-                cancelled.add(t.getId());
-            } else {
-                try {
-                    throw new ConflictException("Ticket not purchased",
-                        List.of("Ticket " + t.getId() + " is " + t.getStatus()));
-                } catch (ConflictException e) {
-                    throw new RuntimeException(e);
+        if (idsToCancel != null && !idsToCancel.isEmpty()) {
+            var orderTicketIds = order.getTickets().stream().map(Ticket::getId).toList();
+            for (Long tid : idsToCancel) {
+                if (!orderTicketIds.contains(tid)) {
+                    throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.CONFLICT, "Ticket " + tid + " not part of order " + orderId);
                 }
             }
+
+            List<Ticket> tickets = ticketRepository.findAllById(idsToCancel);
+            if (tickets.size() != idsToCancel.size()) {
+                throw new NotFoundException("One or more tickets not found");
+            }
+
+            for (Ticket t : tickets) {
+                if (t.getStatus() == TicketStatus.PURCHASED) {
+                    ticketsRefund += (t.getPriceFinalCents() == null ? 0 : t.getPriceFinalCents());
+                    t.setStatus(TicketStatus.AVAILABLE);
+                    cancelled.add(t.getId());
+                } else if (t.getStatus() == TicketStatus.AVAILABLE) {
+                    cancelled.add(t.getId());
+                } else {
+                    throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.CONFLICT, "Ticket " + t.getId() + " is " + t.getStatus());
+                }
+            }
+
+            ticketRepository.saveAll(tickets);
+            ticketRepository.detachFromOrder(idsToCancel);
         }
 
-        ticketRepository.saveAll(tickets);
-        ticketRepository.detachFromOrder(ticketIds);
+        long merchRefund = 0;
 
-        long newTotal = Math.max(0, order.getTotalPriceCents() - refund);
-        order.setTotalPriceCents(newTotal);
+        // Merch nur bei cancelAll stornieren
+        if (cancelAll) {
+            var merchItemsCopy = new ArrayList<>(order.getMerchItems());
+
+            for (OrderMerchItem mi : merchItemsCopy) {
+                int qty = mi.getQuantity() == null ? 0 : mi.getQuantity();
+                long unit = mi.getUnitPriceCents() == null ? 0L : mi.getUnitPriceCents();
+
+                merchRefund += unit * qty;
+
+                var variant = mi.getVariant();
+                if (variant != null) {
+                    int current = variant.getQuantity() == null ? 0 : variant.getQuantity();
+                    variant.setQuantity(current + qty);
+                    merchVariantRepository.save(variant);
+                }
+            }
+
+            order.getMerchItems().clear();
+        }
+
+        long totalRefund = ticketsRefund + merchRefund;
+
+        if (cancelAll) {
+            order.setTotalPriceCents(0L);
+        } else {
+            long newTotal = Math.max(0, order.getTotalPriceCents() - ticketsRefund);
+            order.setTotalPriceCents(newTotal);
+        }
+
         orderRepository.save(order);
 
-        return new CancellationResultDto(order.getId(), cancelled, refund, Instant.now());
+        return new CancellationResultDto(order.getId(), cancelled, totalRefund, Instant.now());
     }
 
     private OrderDto toDto(Order o) {

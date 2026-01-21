@@ -103,7 +103,7 @@
       <div class="order-actions">
         <button
           class="btn-outline"
-          *ngIf="!isCancelled(o) && (o.ticketIds?.length ?? 0) > 0"
+          *ngIf="!isCancelled(o) && ((o.ticketIds?.length ?? 0) > 0 || (($any(o).merchItems?.length ?? 0) > 0))"
           (click)="openInvoice(o)">
           Rechnung drucken
         </button>
