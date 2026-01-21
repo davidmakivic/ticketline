@@ -29,4 +29,10 @@ public interface NewsService {
 
     ResponseEntity<byte[]> getNewsImage(Long id);
 
+    List<News> getUnreadNews(Long userId);
+
+    List<News> getReadNews(Long userId);
+
+    void markAsRead(Long userId, Long newsId);
+
 }

@@ -9,11 +9,17 @@ import java.util.List;
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
 
-    /**
-     * Find all message entries ordered by published at date (descending).
-     *
-     * @return ordered list of al message entries
-     */
     List<News> findAllByOrderByPublishedAtDesc();
+
+    List<News> findByIdNotInOrderByPublishedAtDesc(List<Long> ids);
+
+    List<News> findByIdInOrderByPublishedAtDesc(List<Long> ids);
+
+    default List<News> findByIdNotInOrderByPublishedAtDescOrAll(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return findAllByOrderByPublishedAtDesc();
+        }
+        return findByIdNotInOrderByPublishedAtDesc(ids);
+    }
 
 }
