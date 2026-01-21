@@ -84,4 +84,8 @@ export class HeaderComponent implements OnInit {
     this.authService.logoutUser();
     this.router.navigate(['/']);
   }
+
+  isAdmin(): boolean {
+    return this.authService.isLoggedIn() && this.authService.getUserRole() === 'ADMIN';
+  }
 }

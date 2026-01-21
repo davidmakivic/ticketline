@@ -31,7 +31,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -102,6 +101,31 @@ public class UserServiceImpl implements UserService {
             return applicationUser;
         }
         throw new NotFoundException("E-Mail-Adresse oder Passwort ist falsch.");
+    }
+
+    @Override
+    public UserDetailDto createUserAsAdmin(UserCreateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Creating new application user as admin: {}", dto.getEmail());
+        LOGGER.debug("Payload: {}", dto);
+        userValidator.validateUserForCreate(dto);
+
+        ApplicationUser newUser = ApplicationUser.ApplicationUserBuilder.aApplicationUser()
+            .withEmail(dto.getEmail())
+            .withPassword(passwordEncoder.encode(dto.getPassword()))
+            .withFirstName(dto.getFirstName())
+            .withLastName(dto.getLastName())
+            .withCountry(dto.getCountry())
+            .withZipCode(dto.getZipCode())
+            .withCity(dto.getCity())
+            .withStreet(dto.getStreet())
+            .withHouseNumber(dto.getHouseNumber())
+            .withRole(dto.getRole())
+            .withRewardPoints(0)
+            .withUserStatus(UserStatus.UNVERIFIED)
+            .withFailedLoginAttempts(0)
+            .build();
+
+        return userMapper.applicationUserToUserDetailDto(userRepository.save(newUser));
     }
 
     @Override
@@ -176,6 +200,7 @@ public class UserServiceImpl implements UserService {
         String tokenUuid = UUID.randomUUID().toString();
         if (token == null) {
             token = new PasswordResetToken(tokenUuid, user);
+            token.setExpiryDate(LocalDateTime.now().plusHours(24));
         } else {
             token.setToken(tokenUuid);
             token.setExpiryDate(LocalDateTime.now().plusHours(24));
@@ -256,19 +281,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(String email) throws ForbiddenException {
-        LOGGER.info("Deleting user with email {}", email);
-        boolean isAdmin = SecurityContextHolder
-            .getContext()
-            .getAuthentication()
-            .getAuthorities()
-            .stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (isAdmin) {
-            throw new ForbiddenException("Admins können ihren Account nicht löschen");
-        }
-
-        userRepository.deleteApplicationUserByEmail(email);
     }
 
     @Override

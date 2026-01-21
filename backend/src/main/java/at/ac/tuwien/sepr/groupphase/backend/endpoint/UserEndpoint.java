@@ -76,6 +76,15 @@ public class UserEndpoint {
         return userService.createApplicationUser(dto);
     }
 
+    @Secured("ROLE_ADMIN")
+    @PostMapping("/admin")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDetailDto createUserasAdmin(@RequestBody UserCreateDto dto) throws ValidationException, ConflictException {
+        LOGGER.info("Creating user as admin");
+        LOGGER.debug("Request payload: {}", dto);
+        return userService.createUserAsAdmin(dto);
+    }
+
     @PermitAll
     @PostMapping("/resetPassword")
     public ResponseEntity<Void> resetPassword(@RequestParam("email") String email) {

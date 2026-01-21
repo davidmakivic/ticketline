@@ -68,4 +68,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "update tickets set order_id = null where ticket_id in (:ids)", nativeQuery = true)
     void detachFromOrder(@Param("ids") List<Long> ids);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = "update tickets set reservation_id = null where ticket_id in (:ids)", nativeQuery = true)
+    void detachFromReservation(@Param("ids") List<Long> ids);
+
 }

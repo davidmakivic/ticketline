@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Globals } from '../global/globals';
 import { AuthService } from './auth.service';
 import {PageResponse} from "../dtos/page-response";
-import {PasswordChangeDto, User, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
+import {PasswordChangeDto, User, UserCreateDto, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +22,10 @@ export class UserService {
     return this.httpClient.post<void>(this.userBaseUrl,dto)
   }
 
+  createUserAsAdmin(dto: UserCreateDto): Observable<void> {
+    return this.httpClient.post<void>(`${this.userBaseUrl}/admin`, dto);
+  }
+
   getUsers(page: number, size: number, email?: string): Observable<PageResponse<UserDto>> {
     let params = new HttpParams()
       .set('page', page)
@@ -34,7 +38,6 @@ export class UserService {
     return this.httpClient.get<PageResponse<UserDto>>(this.userBaseUrl, { params });
   }
 
-// block/unblock (void Endpoint => body null!)
   blockUser(userId: number) {
     return this.httpClient.put<void>(`${this.userBaseUrl}/${userId}/block`, null);
   }

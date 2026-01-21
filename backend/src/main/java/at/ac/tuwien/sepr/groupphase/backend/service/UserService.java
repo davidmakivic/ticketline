@@ -145,4 +145,6 @@ public interface UserService extends UserDetailsService {
      * @return the logged in user
      */
     UserDetailDto getMe(String email);
+
+    UserDetailDto createUserAsAdmin(UserCreateDto dto) throws ValidationException, ConflictException;
 }
