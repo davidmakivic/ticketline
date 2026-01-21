@@ -93,13 +93,4 @@ public class PerformanceEndpoint {
         LOGGER.debug("Request payload: {}", dto);
         return performanceService.update(id, dto);
     }
-
-    @Secured("ROLE_ADMIN")
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Delete performance", security = @SecurityRequirement(name = "apiKey"))
-    public void delete(@PathVariable Long id) {
-        LOGGER.info("Deleting performance with id={}", id);
-        performanceService.delete(id);
-    }
 }
