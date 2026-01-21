@@ -16,7 +16,7 @@ spring:
     # Set this property to true if you want to see the executed queries
     show-sql: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:
