@@ -43,6 +43,10 @@ export class NewsComponent implements OnInit {
   availableEvents: SimpleEventDto[] = [];
   selectedEventId?: number;
 
+  showUnreadOnly: boolean = true;
+  private unreadNews: NewsWithImage[] = [];
+  private readNews: NewsWithImage[] = [];
+
   private message: NewsWithImage[];
 
   constructor(private messageService: NewsService,
@@ -58,7 +62,7 @@ export class NewsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadMessage();
+    this.loadNews();
   }
 
   /**
@@ -106,7 +110,10 @@ export class NewsComponent implements OnInit {
   }
 
   getMessage(): NewsWithImage[] {
-    return this.message;
+    if (!this.isLoggedIn()) {
+      return [...this.unreadNews, ...this.readNews];
+    }
+    return this.showUnreadOnly ? this.unreadNews : this.readNews;
   }
 
   /**
@@ -123,26 +130,62 @@ export class NewsComponent implements OnInit {
       this.selectedEventId || undefined
     ).subscribe({
       next: () => {
-        this.loadMessage();
+        this.loadNews();
       },
       error: error => {
         this.defaultServiceErrorHandling(error);
       }
+    });
+  }
+  private loadNews() {
+    if (this.isLoggedIn()) {
+      this.loadUnreadNews();
+      this.loadReadNews();
+    } else {
+      // Nicht eingeloggte Benutzer werden zur Login-Seite umgeleitet
+      this.router.navigate(['/login']);
+    }
+  }
+
+
+  private loadUnreadNews() {
+    this.messageService.getUnreadNews().subscribe({
+      next: (messages: NewsWithImage[]) => {
+        this.unreadNews = messages;
+        this.unreadNews.forEach(msg => this.loadNewsImage(msg));
+      },
+      error: error => this.defaultServiceErrorHandling(error)
     });
   }
 
-  private loadMessage() {
-    this.messageService.getMessage().subscribe({
+  private loadReadNews() {
+    this.messageService.getReadNews().subscribe({
       next: (messages: NewsWithImage[]) => {
-        this.message = messages;
-        this.message.forEach(msg => this.loadNewsImage(msg));
-        console.log(this.message);
+        this.readNews = messages;
+        this.readNews.forEach(msg => this.loadNewsImage(msg));
       },
-      error: error => {
-        this.defaultServiceErrorHandling(error);
-      }
+      error: error => this.defaultServiceErrorHandling(error)
     });
   }
+
+  private markAsRead(newsId: number) {
+    this.messageService.markAsRead(newsId).subscribe({
+      next: () => {
+        // News von unread zu read verschieben
+        const newsIndex = this.unreadNews.findIndex(n => n.id === newsId);
+        if (newsIndex > -1) {
+          const [news] = this.unreadNews.splice(newsIndex, 1);
+          this.readNews.unshift(news);
+        }
+      },
+      error: error => this.defaultServiceErrorHandling(error)
+    });
+  }
+
+  toggleNewsView() {
+    this.showUnreadOnly = !this.showUnreadOnly;
+  }
+
 
   private loadNewsImage(news: NewsWithImage) {
     if (news.imageContentType) {
@@ -169,7 +212,6 @@ export class NewsComponent implements OnInit {
     });
   }
   openExistingMessageModal(id: number, messageAddModal: TemplateRef<any>) {
-    // Navigiere zur Detail-Seite statt Modal zu öffnen
     this.router.navigate(['/news', id]);
   }
 
@@ -192,6 +234,10 @@ export class NewsComponent implements OnInit {
 
   navigateToEvent(eventId: number) {
     this.router.navigate(['/events', eventId]);
+  }
+
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
   }
 
 }

@@ -28,6 +28,7 @@ public interface NewsMapper {
     @Mapping(source = "event", target = "event", qualifiedByName = "eventWithoutPerformances")
     DetailedNewsDto newsToDetailedNewsDto(News news);
 
+
     @Named("eventWithoutPerformances")
     @Mapping(target = "performances", ignore = true)
     EventDto eventToEventDto(Event event);
@@ -37,6 +38,9 @@ public interface NewsMapper {
     News newsInquiryDtoToNews(NewsInquiryDto newsInquiryDto);
 
     NewsInquiryDto newsToNewsInquiryDto(News news);
+
+    List<SimpleNewsDto> newsListToSimpleNewsDtoList(List<News> newsList);
+
 
 }
 

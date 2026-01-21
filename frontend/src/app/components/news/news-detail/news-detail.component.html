@@ -2,7 +2,7 @@
   <button
     mat-icon-button
     class="back-button"
-    [routerLink]="['/news']"
+    (click)="navigateBack()"
     [attr.aria-label]="'Zurück zur Übersicht'">
     <mat-icon>arrow_back</mat-icon>
   </button>
