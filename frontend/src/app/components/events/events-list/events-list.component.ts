@@ -29,6 +29,7 @@ import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-events-list',
@@ -92,10 +93,6 @@ export class EventsListComponent implements OnInit {
   performances: PerformanceDto[] = [];
   newPerformance: Partial<PerformanceDto> = {};
   newPerformancePriceEuros: number | null = null;
-  error: boolean = false;
-  errorMessage: string = '';
-  modalError: boolean = false;
-  modalErrorMessage: string = '';
 
   constructor(
     private eventsService: EventsService,
@@ -104,7 +101,8 @@ export class EventsListComponent implements OnInit {
     private modalService: NgbModal,
     private authService: AuthService,
     private hallsService: HallsService,
-    private venuesService: VenuesService
+    private venuesService: VenuesService,
+    private snackBar: MatSnackBar
   ) {
   }
 
@@ -135,7 +133,7 @@ export class EventsListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Fehler beim Laden der Events:', error);
+        this.showErrorSnackbar('Fehler beim Laden der Events');
         this.isLoading = false;
       }
     });
@@ -144,7 +142,7 @@ export class EventsListComponent implements OnInit {
 
   performSearch(): void {
     this.isSearchActive = true;
-    this.currentPage = 0;  // Wichtig: Immer auf Seite 0 zurücksetzen
+    this.currentPage = 0;  // Immer auf Seite 0 zurücksetzen
     this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
 
@@ -170,7 +168,7 @@ export class EventsListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Fehler bei der Suche:', error);
+        this.showErrorSnackbar('Fehler bei der Suche');
         this.isLoading = false;
       }
     });
@@ -236,8 +234,6 @@ export class EventsListComponent implements OnInit {
     this.performances = [];
     this.newPerformance = {};
     this.newPerformancePriceEuros = null;
-    this.modalError = false;
-    this.modalErrorMessage = '';
     this.modalService.open(eventAddModal, {size: 'lg'});
   }
 
@@ -369,23 +365,18 @@ export class EventsListComponent implements OnInit {
     }
 
     if (!this.currentEvent) {
-      this.modalError = true;
-      this.modalErrorMessage = 'Event-Daten fehlen';
+      this.showErrorSnackbar('Event-Daten fehlen');
       return;
     }
 
-    // Validiere, dass mindestens eine Performance vorhanden ist
     if (this.performances.length === 0) {
-      this.modalError = true;
-      this.modalErrorMessage = 'Mindestens eine Aufführung ist erforderlich';
+      this.showErrorSnackbar('Mindestens eine Aufführung ist erforderlich');
       return;
     }
 
-    // Service-Validierung durchführen
     const validation = this.eventsService.validateEvent(this.currentEvent);
     if (!validation.valid) {
-      this.modalError = true;
-      this.modalErrorMessage = validation.errors.join(', ');
+      this.showErrorSnackbar(validation.errors.join(', '));
       return;
     }
 
@@ -398,8 +389,7 @@ export class EventsListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        this.modalError = true;
-        this.modalErrorMessage = error.error?.error || 'Fehler beim Erstellen des Events';
+        this.showErrorSnackbar(error.error?.error || 'Fehler beim Erstellen des Events');
         this.isLoading = false;
       }
     });
@@ -430,11 +420,15 @@ export class EventsListComponent implements OnInit {
     });
   }
 
-  vanishError(): void {
-    this.error = false;
+  private showErrorSnackbar(message: string): void {
+    this.snackBar.open(message, 'Schließen', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar'],
+    });
+
+
   }
 
-  vanishModalError(): void {
-    this.modalError = false;
-  }
 }
