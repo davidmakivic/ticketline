@@ -8,13 +8,6 @@
       </div>
     }
 
-    @if (error) {
-      <div class="alert alert-danger">
-        {{ errorMessage }}
-        <button type="button" (click)="vanishError()" class="close">×</button>
-      </div>
-    }
-
     <div class="filter-row">
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Veranstaltungstitel</mat-label>
@@ -68,13 +61,6 @@
     </div>
     <form #eventForm="ngForm" (ngSubmit)="saveEvent(modal, eventForm)">
       <div class="modal-body">
-        @if (modalError) {
-          <div class="alert alert-danger">
-            {{ modalErrorMessage }}
-            <button type="button" (click)="vanishModalError()" class="close">×</button>
-          </div>
-        }
-
         <!-- Event-Titel -->
         <div class="form-group">
           <label>Titel *</label>
