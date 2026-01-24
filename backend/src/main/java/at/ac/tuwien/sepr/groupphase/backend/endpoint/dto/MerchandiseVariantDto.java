@@ -1,21 +1,23 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
+import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
+
 public class MerchandiseVariantDto {
 
     private Long id;
-    private String size;
+    private MerchandiseSize size;
     private Integer quantity;
 
     public MerchandiseVariantDto() {
     }
 
-    public MerchandiseVariantDto(Long id, String size, Integer quantity) {
+    public MerchandiseVariantDto(Long id, MerchandiseSize size, Integer quantity) {
         this.id = id;
         this.size = size;
         this.quantity = quantity;
     }
 
-    public MerchandiseVariantDto(String size, Integer quantity) {
+    public MerchandiseVariantDto(MerchandiseSize size, Integer quantity) {
         this.id = null;
         this.size = size;
         this.quantity = quantity;
@@ -30,11 +32,11 @@ public class MerchandiseVariantDto {
         this.id = id;
     }
 
-    public String getSize() {
+    public MerchandiseSize getSize() {
         return size;
     }
 
-    public void setSize(String size) {
+    public void setSize(MerchandiseSize size) {
         this.size = size;
     }
 

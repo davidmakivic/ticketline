@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
 import at.ac.tuwien.sepr.groupphase.backend.entity.MerchandiseVariant;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
+import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -52,10 +53,10 @@ public class MerchandiseDataGenerator {
         tshirt.setName("T-Shirt");
         tshirt.setDescription("Official band T-shirt");
         tshirt.setPrice(2500);
-        tshirt.getVariants().add(createVariant(tshirt, "S", 25));
-        tshirt.getVariants().add(createVariant(tshirt, "M", 30));
-        tshirt.getVariants().add(createVariant(tshirt, "L", 25));
-        tshirt.getVariants().add(createVariant(tshirt, "XL", 20));
+        tshirt.getVariants().add(createVariant(tshirt, MerchandiseSize.S, 25));
+        tshirt.getVariants().add(createVariant(tshirt, MerchandiseSize.M, 30));
+        tshirt.getVariants().add(createVariant(tshirt, MerchandiseSize.L, 25));
+        tshirt.getVariants().add(createVariant(tshirt, MerchandiseSize.XL, 20));
         loadImageFromFile(tshirt, "src/main/resources/images/bandTshirt.png");
         merchandiseRepository.save(tshirt);
 
@@ -64,10 +65,10 @@ public class MerchandiseDataGenerator {
         hoodie.setName("Hoodie");
         hoodie.setDescription("Official band hoodie");
         hoodie.setPrice(5000);
-        hoodie.getVariants().add(createVariant(hoodie, "S", 20));
-        hoodie.getVariants().add(createVariant(hoodie, "M", 30));
-        hoodie.getVariants().add(createVariant(hoodie, "L", 30));
-        hoodie.getVariants().add(createVariant(hoodie, "XL", 20));
+        hoodie.getVariants().add(createVariant(hoodie, MerchandiseSize.S, 20));
+        hoodie.getVariants().add(createVariant(hoodie, MerchandiseSize.M, 30));
+        hoodie.getVariants().add(createVariant(hoodie, MerchandiseSize.L, 30));
+        hoodie.getVariants().add(createVariant(hoodie, MerchandiseSize.XL, 20));
         loadImageFromFile(hoodie, "src/main/resources/images/bandHoodie.png");
         merchandiseRepository.save(hoodie);
 
@@ -103,17 +104,17 @@ public class MerchandiseDataGenerator {
         tankTop.setName("Tank Top");
         tankTop.setDescription("Tank top with band logo");
         tankTop.setPrice(1500);
-        tankTop.getVariants().add(createVariant(tankTop, "S", 20));
-        tankTop.getVariants().add(createVariant(tankTop, "M", 30));
-        tankTop.getVariants().add(createVariant(tankTop, "L", 30));
-        tankTop.getVariants().add(createVariant(tankTop, "XL", 20));
+        tankTop.getVariants().add(createVariant(tankTop, MerchandiseSize.S, 20));
+        tankTop.getVariants().add(createVariant(tankTop, MerchandiseSize.M, 30));
+        tankTop.getVariants().add(createVariant(tankTop, MerchandiseSize.L, 30));
+        tankTop.getVariants().add(createVariant(tankTop, MerchandiseSize.XL, 20));
         loadImageFromFile(tankTop, "src/main/resources/images/bandTankTop.png");
         merchandiseRepository.save(tankTop);
 
         LOGGER.debug("Merchandise data generated successfully");
     }
 
-    private MerchandiseVariant createVariant(Merchandise merchandise, String size, int quantity) {
+    private MerchandiseVariant createVariant(Merchandise merchandise, MerchandiseSize size, int quantity) {
         MerchandiseVariant variant = new MerchandiseVariant();
         variant.setMerchandise(merchandise);
         variant.setSize(size);

@@ -1,17 +1,19 @@
 package at.ac.tuwien.sepr.groupphase.backend.endpoint.dto;
 
+import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
+
 public class OrderMerchItemDto {
     private final Long variantId;
     private final Long merchandiseId;
     private final String merchandiseName;
-    private final String size;
+    private final MerchandiseSize size;
     private final Integer quantity;
     private final Long unitPriceCents;
 
     public OrderMerchItemDto(Long variantId,
                              Long merchandiseId,
                              String merchandiseName,
-                             String size,
+                             MerchandiseSize size,
                              Integer quantity,
                              Long unitPriceCents) {
         this.variantId = variantId;
@@ -34,7 +36,7 @@ public class OrderMerchItemDto {
         return merchandiseName;
     }
 
-    public String getSize() {
+    public MerchandiseSize getSize() {
         return size;
     }
 
