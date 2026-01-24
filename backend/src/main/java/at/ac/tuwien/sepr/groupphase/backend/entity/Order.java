@@ -30,9 +30,9 @@ public class Order {
     @Column(name = "order_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "user_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private ApplicationUser user;
 
     @OneToMany(fetch = FetchType.LAZY)
@@ -49,7 +49,8 @@ public class Order {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    public Order() {}
+    public Order() {
+    }
 
     public Order(ApplicationUser user, long totalPriceCents) {
         this.user = user;

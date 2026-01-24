@@ -94,13 +94,6 @@ public interface UserService extends UserDetailsService {
      */
     UserDetailDto update(UserUpdateDto dto) throws ValidationException, ConflictException;
 
-    /**
-     * Deletes user with id {@code id}.
-     *
-     * @param id of the user to delete
-     */
-    void delete(Long id) throws ForbiddenException;
-
 
     /**
      * Deletes user with email {@code email}.

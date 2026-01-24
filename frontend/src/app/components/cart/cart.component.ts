@@ -56,27 +56,38 @@ export class CartComponent {
 
     this.loading = true;
 
-    forkJoin(
-      ids.map(id =>
-        this.cart.removeTicketAndRelease(id).pipe(
-          catchError(err => {
-            console.error('Release failed for ticket', id, err);
-            return of(null);
-          })
+    const release$ = ids.length
+      ? forkJoin(
+          ids.map(id =>
+            this.cart.removeTicketAndRelease(id).pipe(
+              catchError(err => {
+                console.error('Release failed for ticket', id, err);
+                return of(null);
+              })
+            )
+          )
         )
-      )
-    ).subscribe({
+      : of([]);
+
+    release$.subscribe({
       next: () => {
         this.loading = false;
         this.cart.clear();
+        this.tickets = [];
+        this.merchItems = [];
+        this.merchImages.clear();
       },
       error: (e) => {
         console.error(e);
         this.loading = false;
         this.cart.clear();
+        this.tickets = [];
+        this.merchItems = [];
+        this.merchImages.clear();
       }
     });
   }
+
 
   removeTicket(ticket: Ticket): void {
     this.cart.removeTicketAndRelease(ticket.id).subscribe({

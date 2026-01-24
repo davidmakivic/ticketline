@@ -63,12 +63,11 @@ public class EventEndpointTest {
                 .param("category", "CONCERT")
                 .param("durationMinutes", "30")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.title").value("Test Event"))
             .andExpect(jsonPath("$.category").value("CONCERT"));
     }
-
 
     @Transactional
     @Test
@@ -80,7 +79,7 @@ public class EventEndpointTest {
                 .param("category", "FESTIVAL")
                 .param("durationMinutes", "30")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andReturn();
 
         EventDto responseDto = objectMapper.readValue(result.getResponse().getContentAsString(), EventDto.class);
@@ -101,7 +100,7 @@ public class EventEndpointTest {
                 .param("category", "CONCERT")
                 .param("durationMinutes", "30")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andReturn();
 
         EventDto created = objectMapper.readValue(result.getResponse().getContentAsString(), EventDto.class);
@@ -150,7 +149,7 @@ public class EventEndpointTest {
                 .param("category", "CONCERT")
                 .param("durationMinutes", "30")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk());
+            .andExpect(status().isCreated());
 
         mockMvc.perform(multipart("/api/v1/events")
                 .file("image", new byte[0])
@@ -159,7 +158,7 @@ public class EventEndpointTest {
                 .param("category", "MUSICAL")
                 .param("durationMinutes", "30")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk());
+            .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/v1/events"))
             .andExpect(status().isOk())
@@ -186,7 +185,7 @@ public class EventEndpointTest {
                 .param("category", "CONCERT")
                 .param("durationMinutes", "30")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andReturn();
 
         EventDto created = objectMapper.readValue(result.getResponse().getContentAsString(), EventDto.class);

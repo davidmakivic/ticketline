@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Globals } from '../global/globals';
-import { AuthService } from './auth.service';
+import {Observable} from 'rxjs';
+import {Globals} from '../global/globals';
+import {AuthService} from './auth.service';
 import {PageResponse} from "../dtos/page-response";
-import {PasswordChangeDto, User, UserCreateDto, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
+import {PasswordChangeDto, UserCreateDto, UserDto, UserRegisterDto, UserUpdateDto} from "../dtos/user";
 
 @Injectable({
   providedIn: 'root'
@@ -16,10 +16,11 @@ export class UserService {
     private httpClient: HttpClient,
     private globals: Globals,
     private authService: AuthService
-  ) {}
+  ) {
+  }
 
   createUser(dto: UserRegisterDto): Observable<void> {
-    return this.httpClient.post<void>(this.userBaseUrl,dto)
+    return this.httpClient.post<void>(this.userBaseUrl, dto)
   }
 
   createUserAsAdmin(dto: UserCreateDto): Observable<void> {
@@ -35,7 +36,7 @@ export class UserService {
       params = params.set('email', email.trim());
     }
 
-    return this.httpClient.get<PageResponse<UserDto>>(this.userBaseUrl, { params });
+    return this.httpClient.get<PageResponse<UserDto>>(this.userBaseUrl, {params});
   }
 
   blockUser(userId: number) {
@@ -58,7 +59,7 @@ export class UserService {
     return this.httpClient.put<void>(this.userBaseUrl + '/me', payload)
   }
 
-  resetPassword(emailValue: string):Observable<void> {
+  resetPassword(emailValue: string): Observable<void> {
     console.log('emailValue', emailValue);
     const params = new HttpParams()
       .set('email', emailValue);
@@ -67,6 +68,6 @@ export class UserService {
 
 
   deleteUser(id: number): Observable<void> {
-    return this.httpClient.delete<void>(`${this.userBaseUrl}/${id}`);
+    return this.httpClient.delete<void>(`${this.userBaseUrl}/me`);
   }
 }
