@@ -38,7 +38,7 @@ export class EventsService {
     if (filters.startDate) params = params.set('startDate', this.formatDate(filters.startDate));
     if (filters.durationMinutes) params = params.set('durationMinutes', filters.durationMinutes.toString());
 
-    return this.httpClient.get<PagedResult<EventDto>>(`${this.eventsBaseUri}/query`, { params });
+    return this.httpClient.get<PagedResult<EventDto>>(`${this.eventsBaseUri}/search`, { params });
   }
 
   private formatDate(date: Date): string {

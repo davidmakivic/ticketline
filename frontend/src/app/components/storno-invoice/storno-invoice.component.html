@@ -36,6 +36,25 @@
       </ng-template>
     </div>
 
+    <div class="content-box" *ngIf="merchLines.length > 0">
+      <h2>Stornierte Merchandise</h2>
+
+      <div *ngFor="let m of merchLines" style="display:flex; justify-content:space-between; gap:12px;">
+        <div>
+          <strong>{{ m.merchandiseName }}</strong>
+          <span class="muted" *ngIf="m.size"> • Größe: {{ m.size }}</span>
+          <div class="muted">Menge: {{ m.quantity }}</div>
+        </div>
+
+        <div style="text-align:right;">
+          <div>{{ toEuro(m.unitPriceCents) }}</div>
+          <div class="muted" style="font-size:12px;">
+            {{ toEuro((m.unitPriceCents ?? 0) * (m.quantity ?? 0)) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="content-box total-box">
       <div class="total-row">
         <span>Gutschrift </span>

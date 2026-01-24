@@ -58,3 +58,40 @@ app-root {
   }
 }
 
+// Bootstrap Modal Z-Index überschreiben
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.modal {
+  z-index: 1055 !important;
+}
+
+// Snackbar über alles
+.cdk-overlay-container {
+  z-index: 100000 !important;
+  pointer-events: none;
+
+  .cdk-overlay-pane {
+    pointer-events: auto;
+  }
+
+  .mat-mdc-snack-bar-container.error-snackbar {
+    background-color: var(--mat-sys-error) !important;
+
+    .mdc-snackbar__surface {
+      background-color: var(--mat-sys-error) !important;
+    }
+
+    .mat-mdc-snack-bar-label {
+      color: var(--mat-sys-on-error) !important;
+    }
+
+    .mat-mdc-button {
+      color: var(--mat-sys-on-error) !important;
+    }
+  }
+}
+
+
+

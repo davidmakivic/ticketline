@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.MerchandiseMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
 import at.ac.tuwien.sepr.groupphase.backend.entity.MerchandiseVariant;
+import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
@@ -25,7 +26,7 @@ public class MerchandiseMapperTest {
 
         // Variante hinzufügen
         MerchandiseVariant variant = new MerchandiseVariant();
-        variant.setSize("M");
+        variant.setSize(MerchandiseSize.M);
         variant.setQuantity(10);
         variant.setMerchandise(merchandise);
         merchandise.getVariants().add(variant);
@@ -45,7 +46,7 @@ public class MerchandiseMapperTest {
         assertEquals("Black band T-Shirt", dto.getDescription());
         assertEquals(2500, dto.getPrice());
         assertEquals(1, dto.getVariants().size());
-        assertEquals("M", dto.getVariants().get(0).getSize());
+        assertEquals(MerchandiseSize.M, dto.getVariants().get(0).getSize());
         assertEquals(10, dto.getVariants().get(0).getQuantity());
     }
 
@@ -57,7 +58,7 @@ public class MerchandiseMapperTest {
         m2.setName("Hoodie");
         m2.getVariants().clear();
         m2.getVariants().add(new MerchandiseVariant(){{
-            setSize("L");
+            setSize(MerchandiseSize.L);
             setQuantity(5);
             setMerchandise(m2);
         }});
@@ -69,6 +70,6 @@ public class MerchandiseMapperTest {
         assertEquals(1, dtos.get(0).getVariants().size());
         assertEquals("Hoodie", dtos.get(1).getName());
         assertEquals(1, dtos.get(1).getVariants().size());
-        assertEquals("L", dtos.get(1).getVariants().get(0).getSize());
+        assertEquals(MerchandiseSize.L, dtos.get(1).getVariants().get(0).getSize());
     }
 }

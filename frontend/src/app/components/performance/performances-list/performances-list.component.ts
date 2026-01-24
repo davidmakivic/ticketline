@@ -58,6 +58,7 @@ export class PerformancesListComponent implements OnInit {
 
   private isSearchActive = false;
   protected searchSubject = new Subject<void>();
+  private dateSearchSubject = new Subject<void>();
 
   constructor(private performancesService: PerformancesService) {}
 
@@ -66,6 +67,12 @@ export class PerformancesListComponent implements OnInit {
 
     this.searchSubject.pipe(
       debounceTime(500)
+    ).subscribe(() => {
+      this.performSearch();
+    });
+
+    this.dateSearchSubject.pipe(
+      debounceTime(300),
     ).subscribe(() => {
       this.performSearch();
     });
@@ -101,8 +108,9 @@ export class PerformancesListComponent implements OnInit {
   onStartDateChange(): void {
     this.isSearchActive = this.hasActiveFilters();
     this.pageIndex = 0;
-    this.performSearch();
+    this.dateSearchSubject.next();
   }
+
 
   private hasActiveFilters(): boolean {
     return !!(
@@ -113,35 +121,46 @@ export class PerformancesListComponent implements OnInit {
     );
   }
 
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   performSearch(): void {
+    this.isSearchActive = true;
+    this.pageIndex = 0;
     this.loading = true;
+
     let startDateFormatted: Date | undefined = undefined;
 
     if (this.selectedStartDate) {
-      const normalizedDate = new Date(this.selectedStartDate);
-      normalizedDate.setHours(12, 0, 0, 0);
-      startDateFormatted = normalizedDate;
+      startDateFormatted = this.selectedStartDate instanceof Date
+        ? this.selectedStartDate
+        : new Date(this.selectedStartDate);
     }
 
     this.performancesService.searchAdvanced({
-      title: this.searchTitle?.trim() || undefined,
-      artist: this.searchArtist?.trim() || undefined,
-      location: this.searchLocation?.trim() || undefined,
+      title: this.searchTitle || undefined,
+      artist: this.searchArtist || undefined,
+      location: this.searchLocation || undefined,
       eventType: this.selectedEventType || undefined,
       startDate: startDateFormatted,
       durationMinutes: this.selectedDuration || undefined
     }, this.pageIndex, this.pageSize).subscribe({
-      next: (pagedResult: PagedResult<PerformanceDto>) => {
+      next: (pagedResult) => {
         this.performances = pagedResult.content;
         this.totalElements = pagedResult.totalElements;
         this.totalPages = pagedResult.totalPages;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
         this.loading = false;
       }
     });
   }
+
 
 
   onPageChange(event: PageEvent): void {

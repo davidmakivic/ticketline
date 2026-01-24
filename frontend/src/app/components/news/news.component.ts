@@ -16,6 +16,7 @@ import {SafeUrl,DomSanitizer} from "@angular/platform-browser";
 import {Router} from "@angular/router";
 import {EventsService} from "../../services/events.service";
 import {EventAutocompleteDto, EventDto, SimpleEventDto} from '../../dtos/event';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
@@ -31,8 +32,6 @@ interface NewsWithImage extends News {
 })
 export class NewsComponent implements OnInit {
 
-  error = false;
-  errorMessage = '';
   // After first submission attempt, form validation will start
   submitted = false;
 
@@ -50,14 +49,12 @@ export class NewsComponent implements OnInit {
   private message: NewsWithImage[];
 
   constructor(private messageService: NewsService,
-              private ngbPaginationConfig: NgbPaginationConfig,
-              private formBuilder: UntypedFormBuilder,
-              private cd: ChangeDetectorRef,
               private authService: AuthService,
               private modalService: NgbModal,
               private sanitizer: DomSanitizer,
               private router: Router,
-              private eventsService: EventsService
+              private eventsService: EventsService,
+              private snackBar: MatSnackBar
   ) {
   }
 
@@ -116,12 +113,7 @@ export class NewsComponent implements OnInit {
     return this.showUnreadOnly ? this.unreadNews : this.readNews;
   }
 
-  /**
-   * Error flag will be deactivated, which clears the error message
-   */
-  vanishError() {
-    this.error = false;
-  }
+
 
   private createMessage(message: NewsWithImage) {
     this.messageService.createMessage(
@@ -218,12 +210,20 @@ export class NewsComponent implements OnInit {
 
   private defaultServiceErrorHandling(error: any) {
     console.log(error);
-    this.error = true;
+    let errorMessage = 'Ein Fehler ist aufgetreten';
+
     if (typeof error.error === 'object') {
-      this.errorMessage = error.error.error;
+      errorMessage = error.error.error || errorMessage;
     } else {
-      this.errorMessage = error.error;
+      errorMessage = error.error || errorMessage;
     }
+
+    this.snackBar.open(errorMessage, 'Schließen', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar']
+    });
   }
 
   private clearForm() {

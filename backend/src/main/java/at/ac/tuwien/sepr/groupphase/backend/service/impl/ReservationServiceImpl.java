@@ -141,7 +141,15 @@ public class ReservationServiceImpl implements ReservationService {
         List<Ticket> tickets = r.getTickets();
         if (tickets != null && !tickets.isEmpty()) {
             for (Ticket t : tickets) {
-                t.setStatus(TicketStatus.AVAILABLE);
+
+                if (t.getStatus() == TicketStatus.PURCHASED) {
+                    continue;
+                }
+
+                if (t.getStatus() == TicketStatus.RESERVED) {
+                    t.setStatus(TicketStatus.AVAILABLE);
+                }
+
                 t.setReservedByUserId(null);
                 t.setReservedUntil(null);
             }

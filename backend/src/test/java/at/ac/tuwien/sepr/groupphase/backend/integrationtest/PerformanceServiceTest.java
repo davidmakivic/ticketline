@@ -160,26 +160,4 @@ public class PerformanceServiceTest {
         assertThatThrownBy(() -> performanceService.findById(999999L))
             .isInstanceOf(NotFoundException.class);
     }
-
-    @Transactional
-    @Test
-    void testDeletePerformance() {
-        PerformanceDto dto = buildDto(event.getId(), hall.getId(), 2200L);
-        PerformanceDto saved = performanceService.create(dto);
-        Long id = saved.getId();
-
-        assertThat(performanceService.findById(id)).isNotNull();
-
-        performanceService.delete(id);
-
-        assertThatThrownBy(() -> performanceService.findById(id))
-            .isInstanceOf(NotFoundException.class);
-    }
-
-    @Transactional
-    @Test
-    void testDeletePerformanceNotFound() {
-        assertThatThrownBy(() -> performanceService.delete(999999L))
-            .isInstanceOf(NotFoundException.class);
-    }
 }

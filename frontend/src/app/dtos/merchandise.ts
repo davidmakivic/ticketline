@@ -8,8 +8,16 @@ export interface MerchandiseDto {
   variants: MerchandiseVariantDto[];
 }
 
+export enum MerchandiseSize {
+  XS = 'XS',
+  S = 'S',
+  M = 'M',
+  L = 'L',
+  XL = 'XL',
+}
+
 export interface MerchandiseVariantDto {
   id: number;
-  size: string | null;
+  size: MerchandiseSize | null;
   quantity: number;
 }

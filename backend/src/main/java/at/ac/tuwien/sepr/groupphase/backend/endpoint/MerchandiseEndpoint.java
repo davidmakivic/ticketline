@@ -38,6 +38,7 @@ public class MerchandiseEndpoint {
     @GetMapping
     //@Secured({"ROLE_ADMIN", "ROLE_USER"})
     public List<MerchandiseDto> getAll() {
+        LOGGER.info("Fetching all merchandise articles");
         return service.findAll();
     }
 
@@ -45,6 +46,7 @@ public class MerchandiseEndpoint {
     @GetMapping("/{id}")
     //@Secured({"ROLE_ADMIN", "ROLE_USER"})
     public ResponseEntity<MerchandiseDto> getById(@PathVariable Long id) {
+        LOGGER.info("Fetching merchandise with id={}", id);
         MerchandiseDto dto = service.findById(id);
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
@@ -53,12 +55,15 @@ public class MerchandiseEndpoint {
     @Secured("ROLE_ADMIN")
     @ResponseStatus(HttpStatus.CREATED)
     public MerchandiseDto create(@RequestBody MerchandiseDto dto) {
+        LOGGER.info("Creating Merchandise article");
+        LOGGER.debug("Request payload: {}", dto);
         return service.save(dto);
     }
 
     @DeleteMapping("/{id}")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        LOGGER.info("Deleting merchandise article with id={}", id);
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

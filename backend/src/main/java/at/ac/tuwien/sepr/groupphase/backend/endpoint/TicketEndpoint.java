@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 
@@ -71,21 +72,19 @@ public class TicketEndpoint {
         return ticketService.update(id, dto);
     }
 
-
     @PermitAll
-    @GetMapping("/performance/{performanceId}")
-    public List<TicketDto> getByPerformanceId(@PathVariable Long performanceId) {
+    @GetMapping
+    public List<TicketDto> getTickets(@RequestParam Long performanceId) {
         Long currentUserId = getCurrentUserIdOrNull();
         List<TicketDto> tickets = ticketService.findByPerformanceId(performanceId);
-        for (TicketDto t : tickets) {
-            markReservedByMe(t, currentUserId);
-        }
+        tickets.forEach(t -> markReservedByMe(t, currentUserId));
         return tickets;
     }
 
-    @PostMapping("/{id}/hold")
+
+    @PostMapping("/{id}/holds")
     @Secured("ROLE_USER")
-    public ResponseEntity<TicketDto> hold(@PathVariable Long id) throws ConflictException {
+    public ResponseEntity<TicketDto> createHold(@PathVariable Long id) throws ConflictException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         ApplicationUser user = userRepository.findUserByEmail(email);
 
@@ -96,9 +95,9 @@ public class TicketEndpoint {
     }
 
 
-    @DeleteMapping("/{id}/hold")
+    @DeleteMapping("/{id}/holds/me")
     @Secured("ROLE_USER")
-    public ResponseEntity<TicketDto> release(@PathVariable Long id) {
+    public ResponseEntity<TicketDto> deleteMyHold(@PathVariable Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         ApplicationUser user = userRepository.findUserByEmail(email);
 
@@ -113,15 +112,6 @@ public class TicketEndpoint {
         }
     }
 
-
-
-    @PermitAll
-    @GetMapping
-    @Operation(summary = "Get all tickets", security = @SecurityRequirement(name = "apiKey"))
-    public List<TicketDto> getAll() {
-        LOGGER.info("Fetching all tickets");
-        return ticketService.findAll();
-    }
 
     private Long getCurrentUserIdOrNull() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
