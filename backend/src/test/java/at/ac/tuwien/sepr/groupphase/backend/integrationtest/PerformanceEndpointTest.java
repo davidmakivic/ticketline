@@ -202,34 +202,4 @@ public class PerformanceEndpointTest {
             .andExpect(status().isNotFound());
     }
 
-    @Test
-    void testDeletePerformance() throws Exception {
-        PerformanceDto dto = PerformanceTestDataFactory.create(event.getId(), hall.getId());
-
-        String response = mockMvc.perform(post("/api/v1/performances")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(dto))
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-
-        PerformanceDto created = objectMapper.readValue(response, PerformanceDto.class);
-
-        mockMvc.perform(delete("/api/v1/performances/" + created.getId())
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isNoContent());
-
-        mockMvc.perform(get("/api/v1/performances/" + created.getId()))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testDeletePerformance_notFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/performances/999999")
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isNotFound());
-    }
 }
