@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Globals } from '../global/globals';
 
 import { OrderDto } from '../dtos/order.dto';
 import { CartItem, isMerchItem, isTicketItem } from '../dtos/cart-item';
@@ -18,7 +19,10 @@ export class OrdersService {
 
   private ordersBaseUri: string = this.globals.backendUri + '/orders';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private globals: Globals
+    ) {}
 
   getAll(): Observable<OrderDto[]> {
     return this.http.get<OrderDto[]>(this.ordersBaseUri);
