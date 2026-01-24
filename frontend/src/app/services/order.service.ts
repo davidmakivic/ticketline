@@ -16,7 +16,6 @@ export interface CancellationResultDto {
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
 
-  private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/orders`;
   private ordersBaseUri: string = this.globals.backendUri + '/orders';
 
   constructor(private http: HttpClient) {}
