@@ -9,6 +9,8 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 public class EventSpecifications {
@@ -74,16 +76,24 @@ public class EventSpecifications {
     public static Specification<Event> hasStartDate(Date startDate) {
         return (root, query, cb) -> {
             if (startDate == null) {
-                return null;
+                return cb.conjunction();
             }
 
-            Join<Event, Performance> perfJoin = root.join("performances", JoinType.LEFT);
-            return cb.equal(
-                cb.function("DATE", Date.class, perfJoin.get("startTime")),
-                cb.function("DATE", Date.class, cb.literal(startDate))
+            LocalDateTime startOfDay = startDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .atStartOfDay();
+            LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
+
+            return cb.and(
+                cb.greaterThanOrEqualTo(root.join("performances").get("startTime"), startOfDay),
+                cb.lessThanOrEqualTo(root.join("performances").get("startTime"), endOfDay)
             );
         };
     }
+
+
+
 
     public static Specification<Event> hasDuration(Integer durationMinutes) {
         return (root, query, cb) -> {
