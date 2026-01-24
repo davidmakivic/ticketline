@@ -1,13 +1,11 @@
 package at.ac.tuwien.sepr.groupphase.backend.repository;
 
-import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 
 import java.time.Instant;
 import java.util.List;
@@ -73,4 +71,5 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query(value = "update tickets set reservation_id = null where ticket_id in (:ids)", nativeQuery = true)
     void detachFromReservation(@Param("ids") List<Long> ids);
 
+    List<Ticket> findByReservedByUserId(Long reservedByUserId);
 }
