@@ -10,6 +10,9 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 public class PerformanceSpecifications {
@@ -69,9 +72,22 @@ public class PerformanceSpecifications {
             if (date == null) {
                 return cb.conjunction();
             }
-            return cb.greaterThanOrEqualTo(root.get("startTime"), date);
+
+            // Start und Ende des Tages
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDateTime startOfDay = localDate.atStartOfDay();
+            LocalDateTime endOfDay = localDate.plusDays(1).atStartOfDay();
+
+            // Performance.startTime liegt zwischen startOfDay und endOfDay
+            return cb.and(
+                cb.greaterThanOrEqualTo(root.get("startTime"), startOfDay),
+                cb.lessThan(root.get("startTime"), endOfDay)
+            );
         };
     }
+
+
+
 
     public static Specification<Performance> hasDuration(Integer durationMinutes) {
         return (root, query, cb) -> {

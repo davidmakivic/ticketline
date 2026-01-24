@@ -38,7 +38,7 @@
 
       <mat-form-field appearance="fill" class="filter-field">
         <mat-label>Datum</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (change)="performSearch()">
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="selectedStartDate" (dateChange)="onDateChange()">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
