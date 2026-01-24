@@ -47,4 +47,11 @@ export class OrdersService {
       { ticketIds }
     );
   }
+cancelOrder(orderId: number): Observable<CancellationResultDto> {
+  return this.http.post<CancellationResultDto>(
+    `${this.baseUrl}/${orderId}/cancel`,
+    {} // Backend soll dann "alles" stornieren
+  );
+}
+
 }

@@ -19,7 +19,11 @@ type State = {
   originalInvoiceNo?: string;
   eventTitle?: string;
   seats?: string[];
+
+  merchLines?: { merchandiseName: string; size: string | null; quantity: number; unitPriceCents: number }[];
+  merchRefundCents?: number;
 };
+
 
 @Component({
   selector: 'app-storno-invoice',
@@ -40,7 +44,8 @@ export class StornoInvoiceComponent implements OnDestroy {
 
   eventTitle = '';
   seatLabels: string[] = [];
-
+  merchLines: { merchandiseName: string; size: string | null; quantity: number; unitPriceCents: number }[] = [];
+  private merchRefundCents = 0;
   private refundFromTicketsCents = 0;
 
   constructor(
@@ -61,6 +66,9 @@ export class StornoInvoiceComponent implements OnDestroy {
 
     this.eventTitle = effective.eventTitle ?? '';
     this.seatLabels = effective.seats ?? [];
+    this.merchLines = effective.merchLines ?? [];
+    this.merchRefundCents = Number(effective.merchRefundCents ?? 0) || 0;
+
 
     this.customerName = effective.customerName ?? 'Kunde';
     this.originalInvoiceNo = effective.originalInvoiceNo ?? '';
@@ -117,11 +125,15 @@ export class StornoInvoiceComponent implements OnDestroy {
     this.router.navigate(['/']);
   }
 
-  private effectiveRefundCents(): number {
-    const api = this.cancellation?.refundTotalCents ?? 0;
-    if (api > 0) return api;
-    return this.refundFromTicketsCents ?? 0;
-  }
+ private effectiveRefundCents(): number {
+   const api = this.cancellation?.refundTotalCents ?? 0;
+   if (api > 0) return api;
+
+   const ticketsPart = this.refundFromTicketsCents ?? 0;
+   const merchPart = this.merchRefundCents ?? 0;
+
+   return ticketsPart + merchPart;
+ }
 
   refundEuro(): string {
     const cents = this.effectiveRefundCents();

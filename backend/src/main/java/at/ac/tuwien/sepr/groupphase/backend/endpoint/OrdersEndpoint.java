@@ -111,10 +111,12 @@ public class OrdersEndpoint {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/{id}/cancel")
-    public CancellationResultDto cancelTickets(@PathVariable long id, @RequestBody CancelTicketsDto dto) {
-        LOGGER.info("Cancelling tickets for order id={}", id);
+    public CancellationResultDto cancelTickets(@PathVariable long id, @RequestBody(required = false) CancelTicketsDto dto) {
+        LOGGER.info("Cancelling order/tickets for order id={}", id);
         LOGGER.debug("Request payload: {}", dto);
-        return orderService.cancelTickets(id, dto.getTicketIds());
+
+        var ticketIds = (dto == null) ? null : dto.getTicketIds();
+        return orderService.cancelTickets(id, ticketIds);
     }
 
 }
