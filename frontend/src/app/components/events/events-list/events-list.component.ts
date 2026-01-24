@@ -82,6 +82,7 @@ export class EventsListComponent implements OnInit {
   selectedDuration: number | null = null;
 
   private searchSubject = new Subject<void>();
+  private dateSearchSubject = new Subject<void>();
 
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
@@ -111,7 +112,14 @@ export class EventsListComponent implements OnInit {
     this.loadHalls();
 
     this.searchSubject.pipe(
-      debounceTime(1000),
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.performSearch();
+    });
+
+    this.dateSearchSubject.pipe(
+      debounceTime(300),
       distinctUntilChanged()
     ).subscribe(() => {
       this.performSearch();
@@ -184,6 +192,10 @@ export class EventsListComponent implements OnInit {
     } else {
       this.loadEvents();
     }
+  }
+
+  onDateChange(): void {
+    this.dateSearchSubject.next();
   }
 
   resetFilters(): void {
