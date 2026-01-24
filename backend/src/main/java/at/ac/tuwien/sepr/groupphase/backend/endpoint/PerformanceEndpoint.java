@@ -150,25 +150,4 @@ public class PerformanceEndpoint {
             dto.getStartTime(), dto.getEndTime(), dto.getBasePriceCents());
         return performanceService.update(id, dto);
     }
-
-    @Secured("ROLE_ADMIN")
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(
-        summary = "Delete a performance",
-        description = "Permanently deletes a performance and all associated tickets. "
-            + "Requires ADMIN role.",
-        security = @SecurityRequirement(name = "bearerAuth"),
-        responses = {
-            @ApiResponse(responseCode = "204", description = "Performance deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - ADMIN role required"),
-            @ApiResponse(responseCode = "404", description = "Performance not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-        }
-    )
-    public void delete(@PathVariable Long id) {
-        LOGGER.info("Deleting performance with id={}", id);
-        performanceService.delete(id);
-    }
 }

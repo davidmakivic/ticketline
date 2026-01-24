@@ -70,12 +70,4 @@ public interface PerformanceService {
         String title, String artist, String location,
         EventType eventType, Date startDate, Integer durationMinutes,
         int page, int size);
-
-    /**
-     * Deletes a performance permanently along with all associated tickets.
-     *
-     * @param id the performance ID (required)
-     * @throws NotFoundException if performance with given ID does not exist
-     */
-    void delete(Long id);
 }

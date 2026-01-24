@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Globals } from '../global/globals';
 
 import { OrderDto } from '../dtos/order.dto';
 import { CartItem, isMerchItem, isTicketItem } from '../dtos/cart-item';
@@ -16,12 +17,15 @@ export interface CancellationResultDto {
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
 
-  private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/orders`;
+  private ordersBaseUri: string = this.globals.backendUri + '/orders';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private globals: Globals
+    ) {}
 
   getAll(): Observable<OrderDto[]> {
-    return this.http.get<OrderDto[]>(this.baseUrl);
+    return this.http.get<OrderDto[]>(this.ordersBaseUri);
   }
 
   createFromCart(items: CartItem[]): Observable<OrderDto> {
@@ -35,7 +39,7 @@ export class OrdersService {
       }))
       .filter(x => Number.isFinite(x.variantId) && Number.isFinite(x.quantity) && x.quantity > 0);
 
-    return this.http.post<OrderDto>(this.baseUrl, {
+    return this.http.post<OrderDto>(this.ordersBaseUri, {
       ticketIds,
       merchItems
     });
@@ -43,13 +47,13 @@ export class OrdersService {
 
   cancelTickets(orderId: number, ticketIds: number[]): Observable<CancellationResultDto> {
     return this.http.post<CancellationResultDto>(
-      `${this.baseUrl}/${orderId}/cancel`,
+      `${this.ordersBaseUri}/${orderId}/cancel`,
       { ticketIds }
     );
   }
 cancelOrder(orderId: number): Observable<CancellationResultDto> {
   return this.http.post<CancellationResultDto>(
-    `${this.baseUrl}/${orderId}/cancel`,
+    `${this.ordersBaseUri}/${orderId}/cancel`,
     {} // Backend soll dann "alles" stornieren
   );
 }
