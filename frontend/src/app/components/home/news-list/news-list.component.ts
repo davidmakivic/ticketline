@@ -32,7 +32,9 @@ export class NewsListComponent implements OnInit {
   }
 
   openNewsDetails(newsId: number): void {
-    this.router.navigate(['/news', newsId]);
+    this.router.navigate(['/news', newsId], {
+      state: { fromHomepage: true }
+    });
   }
 
   private loadNews(): void {

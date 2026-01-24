@@ -48,4 +48,18 @@ export class NewsService {
   getNewsImage(id: number): Observable<Blob> {
     return this.httpClient.get(`${this.newsBaseUri}/${id}/image`, { responseType: 'blob' });
   }
+
+  getUnreadNews(): Observable<News[]> {
+    return this.httpClient.get<News[]>(`${this.newsBaseUri}/unread`);
+  }
+
+  getReadNews(): Observable<News[]> {
+    return this.httpClient.get<News[]>(`${this.newsBaseUri}/read`);
+  }
+
+  markAsRead(newsId: number): Observable<void> {
+    return this.httpClient.post<void>(`${this.newsBaseUri}/${newsId}/read`, null);
+  }
+
+
 }

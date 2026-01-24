@@ -58,11 +58,11 @@ public class UserEndpoint {
         return ResponseEntity.noContent().build();
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    @DeleteMapping(path = "{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) throws ForbiddenException {
-        LOGGER.info("Deleting user with id={}", id);
-        userService.delete(id);
+    @Secured({"ROLE_USER"})
+    @DeleteMapping(path = "/me")
+    public ResponseEntity<Void> deleteUser(Principal principal) throws ForbiddenException {
+        LOGGER.info("Deleting user with id={}", principal.getName());
+        userService.delete(principal.getName());
         return ResponseEntity.noContent().build();
     }
 

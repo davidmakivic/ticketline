@@ -218,27 +218,20 @@ public class UserValidator {
         }
     }
 
-    public void validateForDelete(Long id) throws ForbiddenException {
-        LOGGER.info("Validating delete for user id={}", id);
+    public void validateForDelete(String email) throws ForbiddenException {
+        LOGGER.info("Validating delete for user id={}", email);
 
-        String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
-        ApplicationUser currentUser = userRepository.findUserByEmail(userMail);
-        ApplicationUser userToDelete = userRepository.findUserByUserId(id);
+        boolean isAdmin = SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getAuthorities()
+            .stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (userToDelete == null) {
-            throw new NotFoundException("User not found");
+        if (isAdmin) {
+            throw new ForbiddenException("Admin Accounts können nicht gelöscht werden");
         }
 
-        boolean userIsAdmin = currentUser.getRole() == Roles.ADMIN;
-        boolean isSelf = currentUser.getUserId().equals(userToDelete.getUserId());
-
-        if (userToDelete.getRole() == Roles.ADMIN) {
-            throw new ForbiddenException("Admins können nicht gelöscht werden");
-        }
-
-        if (!userIsAdmin && !isSelf) {
-            throw new NotFoundException("Account wurde nicht gefunden");
-        }
 
     }
 

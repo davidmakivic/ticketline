@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.PasswortChangeDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ReservationDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserCreateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserDetailDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserLoginDto;
@@ -9,6 +10,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.UserUpdateDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.UserMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.entity.PasswordResetToken;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ForbiddenException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.GoneException;
@@ -16,8 +18,10 @@ import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.UnauthorizedException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ValidationException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PasswordTokenRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
+import at.ac.tuwien.sepr.groupphase.backend.service.ReservationService;
 import at.ac.tuwien.sepr.groupphase.backend.service.UserService;
 import at.ac.tuwien.sepr.groupphase.backend.type.Roles;
 import at.ac.tuwien.sepr.groupphase.backend.type.UserStatus;
@@ -38,6 +42,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -54,12 +59,14 @@ public class UserServiceImpl implements UserService {
     private final UserValidator userValidator;
     private final EmailServiceImpl emailServiceImpl;
     private final UserMapper userMapper;
+    private final ReservationService reservationService;
+    private final TicketRepository ticketRepository;
 
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, PasswordTokenRepository passwordTokenRepository, PasswordEncoder passwordEncoder, JwtTokenizer jwtTokenizer, UserValidator userValidator,
                            EmailServiceImpl emailServiceImpl,
-                           UserMapper userMapper) {
+                           UserMapper userMapper, ReservationService reservationService, TicketRepository ticketRepository) {
         this.userRepository = userRepository;
         this.passwordTokenRepository = passwordTokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -67,6 +74,8 @@ public class UserServiceImpl implements UserService {
         this.userValidator = userValidator;
         this.emailServiceImpl = emailServiceImpl;
         this.userMapper = userMapper;
+        this.reservationService = reservationService;
+        this.ticketRepository = ticketRepository;
     }
 
     @Override
@@ -269,19 +278,25 @@ public class UserServiceImpl implements UserService {
         return userMapper.applicationUserToUserDetailDto(userRepository.save(applicationUser));
     }
 
-    @Override
-    public void delete(Long id) throws ForbiddenException {
-        LOGGER.info("Deleting user with id {}", id);
-        userValidator.validateForDelete(id);
-        if (id == null) {
-            return;
-        }
-        userRepository.deleteById(id);
-    }
-
+    @Transactional
     @Override
     public void delete(String email) throws ForbiddenException {
+        LOGGER.info("Deleting user with id {}", email);
+        userValidator.validateForDelete(email);
 
+        List<ReservationDto> reservations = reservationService.getAllForUser(email);
+        for (ReservationDto reservation : reservations) {
+            reservationService.deleteForUser(reservation.getId(), email);
+        }
+
+        ApplicationUser user = userRepository.findUserByEmail(email);
+
+        List<Ticket> ticketsOnHold = ticketRepository.findByReservedByUserId(user.getUserId());
+        for (Ticket ticket : ticketsOnHold) {
+            ticketRepository.releaseHoldOwned(ticket.getId(), user.getUserId(), Instant.now());
+        }
+
+        userRepository.deleteApplicationUserByEmail(email);
     }
 
     @Override
