@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import {News} from '../dtos/news';
 import {Observable} from 'rxjs';
 import {Globals} from '../global/globals';
@@ -50,16 +50,16 @@ export class NewsService {
   }
 
   getUnreadNews(): Observable<News[]> {
-    return this.httpClient.get<News[]>(`${this.newsBaseUri}/unread`);
+    const params = new HttpParams().set('status', 'unread');
+    return this.httpClient.get<News[]>(this.newsBaseUri, { params });
   }
 
   getReadNews(): Observable<News[]> {
-    return this.httpClient.get<News[]>(`${this.newsBaseUri}/read`);
+    const params = new HttpParams().set('status', 'read');
+    return this.httpClient.get<News[]>(this.newsBaseUri, { params });
   }
 
   markAsRead(newsId: number): Observable<void> {
-    return this.httpClient.post<void>(`${this.newsBaseUri}/${newsId}/read`, null);
+    return this.httpClient.put<void>(`${this.newsBaseUri}/${newsId}/read-status`, null);
   }
-
-
 }
