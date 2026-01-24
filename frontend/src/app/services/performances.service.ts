@@ -44,7 +44,7 @@ export class PerformancesService {
     if (filters.startDate) params = params.set('startDate', this.formatDate(filters.startDate));
     if (filters.durationMinutes) params = params.set('durationMinutes', filters.durationMinutes.toString());
 
-    return this.http.get<PagedResult<PerformanceDto>>(`${this.baseUri}/query`, { params });
+    return this.http.get<PagedResult<PerformanceDto>>(`${this.baseUri}`, { params });
   }
 
   private formatDate(date: Date): string {
