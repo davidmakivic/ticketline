@@ -11,6 +11,7 @@ import { Venue } from '../../../dtos/venue';
 import { HallsService } from '../../../services/halls.service';
 import { VenuesService } from '../../../services/venues.service';
 import { EventsService } from '../../../services/events.service';
+import {Subject, takeUntil} from "rxjs";
 
 @Component({
   selector: 'app-performance-card',
@@ -38,6 +39,8 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
   loadingLocation = false;
   @Input() showEventTitle!: boolean;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private hallsService: HallsService,
     private venuesService: VenuesService,
@@ -59,6 +62,11 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
         this.loadEventImage();
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get basePriceEuro(): number {
@@ -85,7 +93,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
 
     this.loadingLocation = true;
 
-    this.hallsService.getById(this.performance.hallId).subscribe({
+    this.hallsService.getById(this.performance.hallId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: hall => {
         this.hall = hall;
 
@@ -94,7 +104,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
           return;
         }
 
-        this.venuesService.getById(hall.venueId).subscribe({
+        this.venuesService.getById(hall.venueId).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
           next: venue => {
             this.venue = venue;
             this.loadingLocation = false;
@@ -115,7 +127,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.eventsService.getEventImage(this.performance.eventId).subscribe({
+    this.eventsService.getEventImage(this.performance.eventId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
         this.eventImage = this.sanitizer.bypassSecurityTrustUrl(url);

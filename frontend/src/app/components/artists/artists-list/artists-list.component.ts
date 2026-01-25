@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import {Subject, takeUntil} from "rxjs";
 
 interface ArtistWithImage extends Artist {
   imageUrl?: SafeUrl;
@@ -24,6 +25,8 @@ export class ArtistsListComponent implements OnInit {
   loading = false;
   artists: ArtistWithImage[] = [];
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private artistsService: ArtistsService,
     private sanitizer: DomSanitizer
@@ -33,9 +36,16 @@ export class ArtistsListComponent implements OnInit {
     this.load();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   load(): void {
     this.loading = true;
-    this.artistsService.getArtists().subscribe({
+    this.artistsService.getArtists().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (artists: Artist[]) => {
         this.artists = artists;
         this.loadArtistImages();
@@ -47,7 +57,9 @@ export class ArtistsListComponent implements OnInit {
 
   private loadArtistImages(): void {
     this.artists.forEach(artist => {
-      this.artistsService.getArtistImage(artist.id).subscribe({
+      this.artistsService.getArtistImage(artist.id).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
         next: (blob: Blob) => {
           const url = URL.createObjectURL(blob);
           artist.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
