@@ -1,11 +1,11 @@
-import {Component} from '@angular/core';
-import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
-import {FormsModule} from "@angular/forms";
-import {EventTop10Dto, EventTypeDto} from "../../../dtos/event";
-import {EventsService} from "../../../services/events.service";
-import {Observable} from "rxjs";
-import {DomSanitizer} from "@angular/platform-browser";
-import {RouterLink} from "@angular/router";
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MatButtonToggle, MatButtonToggleGroup } from "@angular/material/button-toggle";
+import { FormsModule } from "@angular/forms";
+import { EventTop10Dto, EventTypeDto } from "../../../dtos/event";
+import { EventsService } from "../../../services/events.service";
+import { Observable, Subject, takeUntil } from "rxjs";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-top10',
@@ -19,24 +19,38 @@ import {RouterLink} from "@angular/router";
   styleUrl: './top10.component.scss',
   standalone: true
 })
-export class Top10Component {
+export class Top10Component implements OnInit, OnDestroy {
 
   constructor(
     private eventsService: EventsService,
     private sanitizer: DomSanitizer
-  ) {
-  }
+  ) {}
 
   selectedCategory = "ALL";
+  top10Events: EventTop10Dto[] = [];
 
-  top10Events: EventTop10Dto[];
+  private destroy$ = new Subject<void>();
 
+  private imageObjectUrls = new Map<number, string>();
 
   ngOnInit() {
     this.fetchTop10();
   }
 
+  ngOnDestroy(): void {
+    this.revokeAllImages();
+
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  protected onCategoryChange() {
+    this.fetchTop10();
+  }
+
   private fetchTop10(): void {
+    this.revokeAllImages();
+
     let eventsObservable!: Observable<EventTop10Dto[]>;
 
     switch (this.selectedCategory) {
@@ -53,45 +67,61 @@ export class Top10Component {
         eventsObservable = this.eventsService.getTop10Events(null);
     }
 
-    eventsObservable.subscribe({
-      next: value => {
-        this.top10Events = value.slice().sort((a, b) => b.soldTickets - a.soldTickets)
-        this.loadEventImages();
-      },
-      error: err => {
-        console.log(err);
-      }
-    })
-
+    eventsObservable
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: value => {
+          this.top10Events = value.slice().sort((a, b) => b.soldTickets - a.soldTickets);
+          this.loadEventImages();
+        },
+        error: err => console.log(err)
+      });
   }
 
   private loadEventImages(): void {
     this.top10Events.forEach(event => {
-      console.log(event);
-      this.eventsService.getEventImage(event.eventId).subscribe({
-        next: (blob: Blob) => {
-          const url = URL.createObjectURL(blob);
-          event.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
-        },
-        error: () => {
-        }
-      });
+      this.eventsService.getEventImage(event.eventId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (blob: Blob) => {
+            const existing = this.imageObjectUrls.get(event.eventId);
+            if (existing) {
+              URL.revokeObjectURL(existing);
+              this.imageObjectUrls.delete(event.eventId);
+            }
+
+            const url = URL.createObjectURL(blob);
+            this.imageObjectUrls.set(event.eventId, url);
+
+            (event as any).imageUrl = this.sanitizer.bypassSecurityTrustUrl(url) as SafeUrl;
+          },
+          error: () => {
+            const existing = this.imageObjectUrls.get(event.eventId);
+            if (existing) {
+              URL.revokeObjectURL(existing);
+              this.imageObjectUrls.delete(event.eventId);
+            }
+            (event as any).imageUrl = undefined;
+          }
+        });
     });
   }
 
-  protected onCategoryChange() {
-    this.fetchTop10();
+  private revokeAllImages(): void {
+    for (const url of this.imageObjectUrls.values()) {
+      URL.revokeObjectURL(url);
+    }
+    this.imageObjectUrls.clear();
+    this.top10Events.forEach(e => ((e as any).imageUrl = undefined));
   }
 
-
-  //Chart
+  // Chart
   get maxTickets(): number {
-    return Math.max(...this.top10Events.map(e => e.soldTickets));
+    return this.top10Events.length ? Math.max(...this.top10Events.map(e => e.soldTickets)) : 0;
   }
 
   getBarWidth(event: EventTop10Dto): number {
+    if (!this.maxTickets) return 0;
     return (event.soldTickets / this.maxTickets) * 100;
   }
-
-
 }

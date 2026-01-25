@@ -21,6 +21,7 @@ import {Subject, takeUntil} from "rxjs";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
+  _objectUrl?: string;
 }
 
 @Component({
@@ -64,9 +65,21 @@ export class NewsComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.unreadNews.forEach(n => this.revokeNewsObjectUrl(n));
+    this.readNews.forEach(n => this.revokeNewsObjectUrl(n));
+
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  private revokeNewsObjectUrl(news: NewsWithImage) {
+    if (news._objectUrl) {
+      URL.revokeObjectURL(news._objectUrl);
+      news._objectUrl = undefined;
+      news.imageUrl = undefined;
+    }
+  }
+
 
   /**
    * Returns true if the authenticated user is an admin
@@ -147,6 +160,8 @@ export class NewsComponent implements OnInit {
 
 
   private loadUnreadNews() {
+    this.unreadNews.forEach(n => this.revokeNewsObjectUrl(n));
+
     this.messageService.getUnreadNews().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -159,6 +174,8 @@ export class NewsComponent implements OnInit {
   }
 
   private loadReadNews() {
+    this.readNews.forEach(n => this.revokeNewsObjectUrl(n));
+
     this.messageService.getReadNews().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -192,20 +209,26 @@ export class NewsComponent implements OnInit {
 
 
   private loadNewsImage(news: NewsWithImage) {
-    if (news.imageContentType) {
-      this.messageService.getNewsImage(news.id).pipe(
-        takeUntil(this.destroy$)
-      ).subscribe({
-        next: (blob: Blob) => {
-          const url = URL.createObjectURL(blob);
-          news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
-        },
-        error: () => {
-          // Bild konnte nicht geladen werden
-        }
-      });
-    }
+    if (!news.imageContentType) return;
+
+    this.messageService.getNewsImage(news.id).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (blob: Blob) => {
+        // alte URL der News freigeben (falls schon vorhanden)
+        this.revokeNewsObjectUrl(news);
+
+        const url = URL.createObjectURL(blob);
+        news._objectUrl = url;
+        news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+      },
+      error: () => {
+        // optional: bei Fehler auch freigeben
+        this.revokeNewsObjectUrl(news);
+      }
+    });
   }
+
 
   loadAvailableEvents() {
     this.eventsService.getEvents(0, 100).pipe(
