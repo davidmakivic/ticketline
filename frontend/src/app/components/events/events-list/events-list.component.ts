@@ -138,29 +138,35 @@ export class EventsListComponent implements OnInit, OnDestroy {
     return this.authService.getUserRole() === 'ADMIN';
   }
 
+  private loadToken = 0;
+
   loadEvents(): void {
+    const token = ++this.loadToken;
     this.isLoading = true;
 
-    this.eventsService.getEvents(this.currentPage, this.pageSize).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: (pagedResult) => {
-        this.events = pagedResult.content;
-        this.totalEvents = pagedResult.totalElements;
-        this.totalPages = pagedResult.totalPages;
+    this.eventsService.getEvents(this.currentPage, this.pageSize)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (pagedResult) => {
+          if (token !== this.loadToken) return;
 
-        this.syncEventImages(this.events);
+          this.events = pagedResult.content;
+          this.totalEvents = pagedResult.totalElements;
+          this.totalPages = pagedResult.totalPages;
 
-        this.isLoading = false;
-      },
-      error: () => {
-        this.showErrorSnackbar('Fehler beim Laden der Events');
-        this.isLoading = false;
-      }
-    });
+          this.syncEventImages(this.events, token);
+
+          this.isLoading = false;
+        },
+        error: () => {
+          this.showErrorSnackbar('Fehler beim Laden der Events');
+          this.isLoading = false;
+        }
+      });
   }
 
   performSearch(): void {
+    const token = ++this.loadToken;
     this.isSearchActive = true;
     this.currentPage = 0;
     this.isLoading = true;
@@ -183,11 +189,14 @@ export class EventsListComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (pagedResult) => {
+        if (token !== this.loadToken) {
+          return;
+        }
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
         this.totalPages = pagedResult.totalPages;
 
-        this.syncEventImages(this.events);
+        this.syncEventImages(this.events, token);
 
         this.isLoading = false;
       },
@@ -232,11 +241,10 @@ export class EventsListComponent implements OnInit, OnDestroy {
     return this.eventImages.get(eventId);
   }
 
-  private syncEventImages(events: EventDto[]): void {
-    const currentIds = new Set<number>(
-      events.filter(e => e.id != null).map(e => e.id as number)
-    );
+  private syncEventImages(events: EventDto[], token: number): void {
+    const currentIds = new Set<number>(events.filter(e => e.id != null).map(e => e.id!));
 
+    // revoke images that are no longer visible
     for (const [id, objUrl] of this.eventImageObjectUrls.entries()) {
       if (!currentIds.has(id)) {
         URL.revokeObjectURL(objUrl);
@@ -245,30 +253,28 @@ export class EventsListComponent implements OnInit, OnDestroy {
       }
     }
 
-    events.forEach(event => {
-      if (!event.id) return;
-      if (this.eventImages.has(event.id)) return;
+    // load images for current page
+    for (const event of events) {
+      if (!event.id) continue;
+      if (this.eventImages.has(event.id)) continue;
 
-      this.eventsService.getEventImage(event.id).pipe(
-        takeUntil(this.destroy$)
-      ).subscribe({
-        next: (blob) => {
-          const existing = this.eventImageObjectUrls.get(event.id!);
-          if (existing) {
-            URL.revokeObjectURL(existing);
-            this.eventImageObjectUrls.delete(event.id!);
-            this.eventImages.delete(event.id!);
-          }
+      this.eventsService.getEventImage(event.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (blob) => {
+            if (token !== this.loadToken) return;      // stale response
+            if (!currentIds.has(event.id!)) return;    // not on current page anymore
 
-          const url = window.URL.createObjectURL(blob);
-          this.eventImageObjectUrls.set(event.id!, url);
-          this.eventImages.set(event.id!, this.sanitizer.bypassSecurityTrustUrl(url));
-        },
-        error: (error) => {
-          console.warn(`Bild für Event ${event.id} konnte nicht geladen werden:`, error);
-        }
-      });
-    });
+            const old = this.eventImageObjectUrls.get(event.id!);
+            if (old) URL.revokeObjectURL(old);
+
+            const url = URL.createObjectURL(blob);
+            this.eventImageObjectUrls.set(event.id!, url);
+            this.eventImages.set(event.id!, this.sanitizer.bypassSecurityTrustUrl(url));
+          },
+          error: () => { /* ignore */ }
+        });
+    }
   }
 
   private revokeAllEventImageUrls(): void {
