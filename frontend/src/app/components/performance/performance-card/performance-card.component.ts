@@ -11,6 +11,7 @@ import { Venue } from '../../../dtos/venue';
 import { HallsService } from '../../../services/halls.service';
 import { VenuesService } from '../../../services/venues.service';
 import { EventsService } from '../../../services/events.service';
+import {Subject, takeUntil} from "rxjs";
 
 @Component({
   selector: 'app-performance-card',
@@ -38,6 +39,8 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
   loadingLocation = false;
   @Input() showEventTitle!: boolean;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private hallsService: HallsService,
     private venuesService: VenuesService,
@@ -58,6 +61,18 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
       if (this.showEventImage) {
         this.loadEventImage();
       }
+    }
+  }
+
+  private imageUrl?: string;
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    if (this.imageUrl) {
+      URL.revokeObjectURL(this.imageUrl);
+      this.imageUrl = undefined;
     }
   }
 
@@ -85,7 +100,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
 
     this.loadingLocation = true;
 
-    this.hallsService.getById(this.performance.hallId).subscribe({
+    this.hallsService.getById(this.performance.hallId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: hall => {
         this.hall = hall;
 
@@ -94,7 +111,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
           return;
         }
 
-        this.venuesService.getById(hall.venueId).subscribe({
+        this.venuesService.getById(hall.venueId).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
           next: venue => {
             this.venue = venue;
             this.loadingLocation = false;
@@ -111,18 +130,18 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
   }
 
   private loadEventImage(): void {
-    if (!this.performance || !this.performance.eventId) {
-      return;
-    }
+    if (!this.performance?.eventId) return;
 
-    this.eventsService.getEventImage(this.performance.eventId).subscribe({
-      next: (blob: Blob) => {
-        const url = URL.createObjectURL(blob);
-        this.eventImage = this.sanitizer.bypassSecurityTrustUrl(url);
-      },
-      error: () => {
-        // Bild konnte nicht geladen werden
-      }
-    });
+    this.eventsService.getEventImage(this.performance.eventId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          if (this.imageUrl) URL.revokeObjectURL(this.imageUrl);
+
+          this.imageUrl = URL.createObjectURL(blob);
+          this.eventImage = this.sanitizer.bypassSecurityTrustUrl(this.imageUrl);
+        },
+        error: () => {}
+      });
   }
 }

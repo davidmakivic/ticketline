@@ -186,7 +186,8 @@
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         <jvmFlags>
                             <jvmFlag>-Dspring.profiles.active=qa,generateData</jvmFlag>
-                            <jvmFlag>-Xmx128m</jvmFlag>
+                            <jvmFlag>-Xmx256m</jvmFlag>
+                            <jvmFlag>-XX:+UseG1GC</jvmFlag>
                         </jvmFlags>
                     </container>
                 </configuration>
