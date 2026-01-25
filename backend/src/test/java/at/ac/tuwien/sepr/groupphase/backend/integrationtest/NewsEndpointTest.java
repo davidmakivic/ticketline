@@ -8,6 +8,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.SimpleNewsDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.NewsMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.News;
 import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.ReadNewsRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,9 @@ public class NewsEndpointTest implements TestData {
     private NewsRepository newsRepository;
 
     @Autowired
+    private ReadNewsRepository readNewsRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -68,6 +72,7 @@ public class NewsEndpointTest implements TestData {
 
     @BeforeEach
     public void beforeEach() {
+        readNewsRepository.deleteAll();
         newsRepository.deleteAll();
         news = News.NewsBuilder.aMessage()
             .withTitle(TEST_NEWS_TITLE)

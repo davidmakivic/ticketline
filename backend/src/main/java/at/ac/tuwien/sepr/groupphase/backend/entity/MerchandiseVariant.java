@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 
+import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,7 +17,7 @@ public class MerchandiseVariant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String size;
+    private MerchandiseSize size;
 
     private Integer quantity;
 
@@ -35,11 +36,11 @@ public class MerchandiseVariant {
         this.id = id;
     }
 
-    public String getSize() {
+    public MerchandiseSize getSize() {
         return size;
     }
 
-    public void setSize(String size) {
+    public void setSize(MerchandiseSize size) {
         this.size = size;
     }
 

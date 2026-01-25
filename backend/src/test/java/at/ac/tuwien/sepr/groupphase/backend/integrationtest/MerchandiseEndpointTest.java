@@ -7,6 +7,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.MerchandiseVariant;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
+import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,7 +80,7 @@ public class MerchandiseEndpointTest {
 
         // Variante hinzufügen
         MerchandiseVariant variant = new MerchandiseVariant();
-        variant.setSize("M");
+        variant.setSize(MerchandiseSize.M);
         variant.setQuantity(100);
         variant.setMerchandise(merchandise);
         merchandise.getVariants().add(variant);
@@ -97,13 +98,13 @@ public class MerchandiseEndpointTest {
         assertEquals("T-Shirt", dtos[0].getName());
         assertEquals(25, dtos[0].getPrice());
         assertEquals(1, dtos[0].getVariants().size());
-        assertEquals("M", dtos[0].getVariants().get(0).getSize());
+        assertEquals(MerchandiseSize.M, dtos[0].getVariants().get(0).getSize());
         assertEquals(100, dtos[0].getVariants().get(0).getQuantity());
     }
 
     @Test
     void givenMerchandise_whenCreate_thenReturnsCreatedMerchandise() throws Exception {
-        MerchandiseVariantDto variantDto = new MerchandiseVariantDto("M", 50);
+        MerchandiseVariantDto variantDto = new MerchandiseVariantDto(MerchandiseSize.M, 50);
         MerchandiseDto dto = new MerchandiseDto(null, "Poster", "Band Poster", 10, null, List.of(variantDto));
 
         String body = objectMapper.writeValueAsString(dto);
@@ -121,7 +122,7 @@ public class MerchandiseEndpointTest {
         assertEquals("Poster", returned.getName());
         assertEquals(10, returned.getPrice());
         assertEquals(1, returned.getVariants().size());
-        assertEquals("M", returned.getVariants().get(0).getSize());
+        assertEquals(MerchandiseSize.M, returned.getVariants().get(0).getSize());
         assertEquals(50, returned.getVariants().get(0).getQuantity());
     }
 }

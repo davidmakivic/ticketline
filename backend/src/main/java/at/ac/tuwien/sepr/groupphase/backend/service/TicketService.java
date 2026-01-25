@@ -49,8 +49,6 @@ public interface TicketService {
      */
     List<TicketDto> findByPerformanceId(Long performanceId);
 
-    List<TicketDto> findAll();
-
     TicketDto release(Long id, Long userId) throws ConflictException;
 
     TicketDto hold(Long id, Long userId) throws ConflictException;

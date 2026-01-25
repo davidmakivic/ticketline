@@ -6,6 +6,7 @@ import { News } from '../../../dtos/news';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import {AuthService} from "../../../services/auth.service";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
@@ -26,7 +27,8 @@ export class NewsDetailComponent implements OnInit {
     private newsService: NewsService,
     private route: ActivatedRoute,
     private router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -66,5 +68,18 @@ export class NewsDetailComponent implements OnInit {
 
   navigateToEvent(eventId: number): void {
     this.router.navigate(['/events', eventId]);
+  }
+
+  navigateBack(): void {
+    const navigation = this.router.getCurrentNavigation();
+    const state = window.history.state;
+
+    if (state?.fromHomepage) {
+      this.router.navigate(['/']);
+    } else if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/news']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 }

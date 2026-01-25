@@ -24,16 +24,19 @@ export class TicketsService {
   }
 
   hold(ticketId: number): Observable<Ticket> {
-    return this.httpClient.post<Ticket>(`${this.ticketsBaseUri}/${ticketId}/hold`, {});
+    return this.httpClient.post<Ticket>(`${this.ticketsBaseUri}/${ticketId}/holds`, {});
   }
 
-releaseHold(ticketId: number): Observable<Ticket> {
-  return this.httpClient.delete<Ticket>(`${this.ticketsBaseUri}/${ticketId}/hold`);
+  releaseHold(ticketId: number): Observable<Ticket> {
+    return this.httpClient.delete<Ticket>(`${this.ticketsBaseUri}/${ticketId}/holds/me`);
   }
 
   getTicketsByPerformance(performanceId: number): Observable<Ticket[]> {
-    return this.httpClient.get<Ticket[]>(`${this.ticketsBaseUri}/performance/${performanceId}`);
+    return this.httpClient.get<Ticket[]>(
+      `${this.ticketsBaseUri}?performanceId=${performanceId}`
+    );
   }
+
 
 
   createTicket(ticket: Ticket): Observable<Ticket> {

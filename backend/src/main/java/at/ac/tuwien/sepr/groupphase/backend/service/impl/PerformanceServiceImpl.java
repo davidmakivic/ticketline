@@ -129,15 +129,4 @@ public class PerformanceServiceImpl implements PerformanceService {
         return performanceRepository.findAll(spec, pageable)
             .map(performanceMapper::performanceToPerformanceDto);
     }
-
-
-    @Override
-    public void delete(Long id) {
-        LOGGER.info("Deleting performance with id={}", id);
-        if (!performanceRepository.existsById(id)) {
-            throw new NotFoundException("Performance with id " + id + " not found");
-        }
-
-        performanceRepository.deleteById(id);
-    }
 }

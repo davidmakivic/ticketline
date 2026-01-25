@@ -74,8 +74,18 @@ export class InvoiceComponent implements OnDestroy {
     this.customerName = state.customerName ?? 'Kunde';
     this.eventTitle = state.eventTitle ?? '';
 
-    const qpType = (this.route.snapshot.queryParamMap.get('type') ?? 'tickets') as InvoiceType;
-    this.viewType = qpType === 'merch' ? 'merch' : 'tickets';
+   const qpRaw = this.route.snapshot.queryParamMap.get('type');
+   const qpType = (qpRaw === 'merch' || qpRaw === 'tickets') ? (qpRaw as InvoiceType) : null;
+
+   // Default: wenn kein qpType und Order hat nur Merch -> merch anzeigen
+   const decideDefault = (o?: OrderDto): InvoiceType => {
+     const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
+     const hasMerch = (o?.merchItems?.length ?? 0) > 0;
+     if (!hasTickets && hasMerch) return 'merch';
+     return 'tickets';
+   };
+
+   this.viewType = qpType ?? decideDefault(this.order);
 
     const idFromRoute = Number(this.route.snapshot.paramMap.get('id'));
 
@@ -89,6 +99,12 @@ export class InvoiceComponent implements OnDestroy {
           }
 
           this.order = o;
+          if (!qpType) {
+            const hasTickets = (o.ticketIds?.length ?? 0) > 0;
+            const hasMerch = (o.merchItems?.length ?? 0) > 0;
+            this.viewType = (!hasTickets && hasMerch) ? 'merch' : 'tickets';
+          }
+
 
           if (!this.payment) {
             try {

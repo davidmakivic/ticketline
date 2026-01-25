@@ -10,6 +10,20 @@
   }
 }
 
+.error-snackbar {
+  background-color: var(--mat-sys-error) !important;
+  color: var(--mat-sys-on-error) !important;
+
+  .mat-mdc-snack-bar-label {
+    color: var(--mat-sys-on-error) !important;
+  }
+
+  .mat-mdc-button {
+    color: var(--mat-sys-on-error) !important;
+  }
+}
+
+
 .btn {
   &.btn-secondary {
     background-color: var(--mat-sys-secondary-container);

@@ -169,88 +169,155 @@ export class OrdersComponent {
     this.openCancelConfirm(o);
   }
 
-  openCancelConfirm(o: OrderDto) {
-    if (!o.ticketIds || o.ticketIds.length === 0) {
-      alert('Keine Tickets zum Stornieren');
-      return;
-    }
-    this.confirmOrder = o;
-    this.confirmOpen = true;
+openCancelConfirm(o: any) {
+  const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
+  const hasMerch = ((o?.merchItems?.length ?? 0) > 0);
+
+  if (!hasTickets && !hasMerch) {
+    alert('Nichts zum Stornieren');
+    return;
   }
+
+  this.confirmOrder = o;
+  this.confirmOpen = true;
+}
+
 
   closeCancelConfirm() {
     this.confirmOpen = false;
     this.confirmOrder = null;
   }
 
-  doCancelConfirmed() {
-    const o = this.confirmOrder;
-    if (!o) return;
+doCancelConfirmed() {
+  const o: any = this.confirmOrder;
+  if (!o) return;
 
-    const ticketIds = o.ticketIds ?? [];
-    if (ticketIds.length === 0) {
-      alert('Keine Tickets zum Stornieren');
-      return;
-    }
+  const ticketIds: number[] = (o.ticketIds ?? []);
+  const merchItems: any[] = (o.merchItems ?? []);
 
-    this.closeCancelConfirm();
+  const hasTickets = ticketIds.length > 0;
+  const hasMerch = merchItems.length > 0;
 
-    forkJoin(
-      ticketIds.map(id =>
-        this.ticketsService.getTicketById(id).pipe(
-          catchError(() => of(null))
-        )
-      )
-    ).pipe(
-      map(list => list.filter((t): t is any => t !== null))
-    ).subscribe(preTickets => {
-
-      const seats = Array.from(new Set(preTickets.map(t => this.ticketSeatLabel(t))));
-
-      const first: any = preTickets[0] ?? null;
-      const eventTitle =
-        this.eventTitleByOrderId[o.id] ??
-        first?.performanceTitle ??
-        first?.eventTitle ??
-        first?.performance?.title ??
-        first?.performance?.event?.title ??
-        first?.event?.title ??
-        first?.title ??
-        'Unbekannte Veranstaltung';
-
-      this.saveOrderMeta(o.id, eventTitle, seats);
-
-      this.orderService.cancelTickets(o.id, ticketIds).subscribe({
-        next: (cancellation) => {
-          o.ticketIds = [];
-          o.totalPriceCents = 0;
-          this.ticketCountByOrderId[o.id] = 0;
-          this.seatsByOrderId[o.id] = [];
-
-          this.router.navigate(['/storno-invoice', o.id], {
-            state: {
-              cancellation,
-              customerName: 'Kunde',
-              eventTitle,
-              seats
-            }
-          });
-        },
-        error: (e) => {
-          console.error(e);
-          alert('Stornierung fehlgeschlagen');
-        }
-      });
-    });
+  if (!hasTickets && !hasMerch) {
+    alert('Nichts zum Stornieren');
+    return;
   }
+
+  this.closeCancelConfirm();
+
+  const stornoMerchLines = merchItems.map(m => ({
+    merchandiseName: m?.merchandiseName ?? m?.name ?? 'Merch',
+    size: m?.size ?? null,
+    quantity: Number(m?.quantity ?? 0),
+    unitPriceCents: Number(m?.unitPriceCents ?? 0)
+  }));
+
+  const stornoMerchRefundCents = stornoMerchLines.reduce(
+    (s: number, x: any) => s + (x.unitPriceCents * x.quantity),
+    0
+  );
+
+  const finalizeNavigate = (cancellation: any, eventTitle: string, seats: string[]) => {
+    o.ticketIds = [];
+    o.merchItems = [];
+    o.totalPriceCents = 0;
+
+    this.ticketCountByOrderId[o.id] = 0;
+    this.seatsByOrderId[o.id] = [];
+
+    this.router.navigate(['/storno-invoice', o.id], {
+      state: {
+        cancellation,
+        customerName: 'Kunde',
+        eventTitle,
+        seats,
+
+        merchLines: stornoMerchLines,
+        merchRefundCents: stornoMerchRefundCents
+      }
+    });
+  };
+
+
+  if (!hasTickets) {
+    const names = Array.from(new Set(stornoMerchLines.map(x => x.merchandiseName).filter(Boolean)));
+    const eventTitle = names.length ? names.join(' • ') : `Merchandise #${o.id}`;
+    const seats: string[] = [];
+
+    this.orderService.cancelOrder(o.id).subscribe({
+      next: (cancellation) => finalizeNavigate(cancellation, eventTitle, seats),
+      error: (e: any) => {
+        console.error(e);
+        alert('Stornierung fehlgeschlagen');
+      }
+    });
+
+    return;
+  }
+
+  forkJoin(
+    ticketIds.map(id =>
+      this.ticketsService.getTicketById(id).pipe(catchError(() => of(null)))
+    )
+  ).pipe(
+    map(list => list.filter((t): t is any => t !== null))
+  ).subscribe(preTickets => {
+    const seats = Array.from(new Set(preTickets.map(t => this.ticketSeatLabel(t))));
+
+    const first: any = preTickets[0] ?? null;
+    const eventTitle =
+      this.eventTitleByOrderId[o.id] ??
+      first?.performanceTitle ??
+      first?.eventTitle ??
+      first?.performance?.title ??
+      first?.performance?.event?.title ??
+      first?.event?.title ??
+      first?.title ??
+      'Unbekannte Veranstaltung';
+
+    this.saveOrderMeta(o.id, eventTitle, seats);
+
+    this.orderService.cancelOrder(o.id).subscribe({
+      next: (cancellation) => finalizeNavigate(cancellation, eventTitle, seats),
+      error: (e: any) => {
+        console.error(e);
+        alert('Stornierung fehlgeschlagen');
+      }
+    });
+  });
+}
 
   openInvoice(o: OrderDto) {
     if (this.isCancelled(o)) return;
 
+    const tItems = (o.ticketIds ?? []).map(id => ({
+      kind: 'ticket',
+      ticketId: id,
+      addedAt: ''
+    } as any));
+
+    const mItems = ((o as any).merchItems ?? []).map((mi: any) => ({
+      kind: 'merch',
+      merchandiseId: mi.merchandiseId,
+      variantId: mi.variantId,
+      name: mi.merchandiseName ?? mi.name ?? 'Merch',
+      size: mi.size ?? null,
+      unitPriceCents: Number(mi.unitPriceCents ?? 0),
+      quantity: Number(mi.quantity ?? 0),
+      addedAt: ''
+    } as any));
+
+    const hasTickets = (o.ticketIds?.length ?? 0) > 0;
+    const hasMerch = (mItems?.length ?? 0) > 0;
+
+    const type =
+      !hasTickets && hasMerch ? 'merch' : 'tickets'; // default
+
     this.router.navigate(['/invoice', o.id], {
+      queryParams: { type },
       state: {
         order: o,
-        items: (o.ticketIds ?? []).map(id => ({ ticketId: id })),
+        items: [...tItems, ...mItems],
         payment: 'card',
         customerName: 'Kunde',
         eventTitle: this.eventTitleByOrderId[o.id] ?? ''

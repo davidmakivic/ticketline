@@ -139,12 +139,6 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<TicketDto> findAll() {
-        return ticketMapper.ticketListToTicketDtoList(ticketRepository.findAll());
-    }
-
-    @Override
     @Transactional
     public TicketDto hold(Long ticketId, Long userId) throws ConflictException {
         Instant now = Instant.now();

@@ -2,10 +2,14 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.entity.News;
+import at.ac.tuwien.sepr.groupphase.backend.entity.ReadNews;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.ReadNewsRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.NewsService;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -25,10 +29,14 @@ public class SimpleNewsService implements NewsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final NewsRepository newsRepository;
     private final EventRepository eventRepository;
+    private final ReadNewsRepository readNewsRepository;
+    private final UserRepository userRepository;
 
-    public SimpleNewsService(NewsRepository newsRepository, EventRepository eventRepository) {
+    public SimpleNewsService(NewsRepository newsRepository, EventRepository eventRepository, ReadNewsRepository readNewsRepository, UserRepository userRepository) {
         this.newsRepository = newsRepository;
         this.eventRepository = eventRepository;
+        this.readNewsRepository = readNewsRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -84,6 +92,31 @@ public class SimpleNewsService implements NewsService {
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(news.getImageContentType()))
             .body(news.getImageData());
+    }
+
+
+    public List<News> getUnreadNews(Long userId) {
+        List<Long> readNewsIds = readNewsRepository.findReadNewsIdsByUserId(userId);
+        if (readNewsIds == null || readNewsIds.isEmpty()) {
+            return newsRepository.findAllByOrderByPublishedAtDesc();
+        }
+        return newsRepository.findByIdNotInOrderByPublishedAtDesc(readNewsIds);
+    }
+
+    public List<News> getReadNews(Long userId) {
+        List<Long> readNewsIds = readNewsRepository.findReadNewsIdsByUserId(userId);
+        return newsRepository.findByIdInOrderByPublishedAtDesc(readNewsIds);
+    }
+
+    @Transactional
+    public void markAsRead(Long userId, Long newsId) {
+        if (!readNewsRepository.existsByUserIdAndNewsId(userId, newsId)) {
+            ReadNews readNews = new ReadNews();
+            readNews.setUser(userRepository.getReferenceById(userId));
+            readNews.setNews(newsRepository.getReferenceById(newsId));
+            readNews.setReadAt(LocalDateTime.now());
+            readNewsRepository.save(readNews);
+        }
     }
 
 

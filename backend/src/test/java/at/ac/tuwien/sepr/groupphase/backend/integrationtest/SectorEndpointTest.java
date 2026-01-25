@@ -8,10 +8,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Hall;
 import at.ac.tuwien.sepr.groupphase.backend.entity.PriceCategory;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Venue;
-import at.ac.tuwien.sepr.groupphase.backend.repository.HallRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.PriceCategoryRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.VenueRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.*;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 
@@ -52,6 +49,9 @@ public class SectorEndpointTest implements TestData {
     private HallRepository hallRepository;
 
     @Autowired
+    private PerformanceRepository performanceRepository;
+
+    @Autowired
     private JwtTokenizer jwtTokenizer;
 
     @Autowired
@@ -77,6 +77,7 @@ public class SectorEndpointTest implements TestData {
     @BeforeEach
     void setup() {
         sectorRepository.deleteAll();
+        performanceRepository.deleteAll();
         hallRepository.deleteAll();
         venueRepository.deleteAll();
 
