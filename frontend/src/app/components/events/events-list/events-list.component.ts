@@ -28,7 +28,7 @@ import {Hall} from "../../../dtos/hall";
 import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
+import {debounceTime, distinctUntilChanged, Subject, takeUntil} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
@@ -95,6 +95,8 @@ export class EventsListComponent implements OnInit {
   newPerformance: Partial<PerformanceDto> = {};
   newPerformancePriceEuros: number | null = null;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private eventsService: EventsService,
     private sanitizer: DomSanitizer,
@@ -114,6 +116,8 @@ export class EventsListComponent implements OnInit {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
+    ).pipe(
+      takeUntil(this.destroy$)
     ).subscribe(() => {
       this.performSearch();
     });
@@ -121,9 +125,16 @@ export class EventsListComponent implements OnInit {
     this.dateSearchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
+    ).pipe(
+      takeUntil(this.destroy$)
     ).subscribe(() => {
       this.performSearch();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   isAdmin(): boolean {
@@ -132,7 +143,9 @@ export class EventsListComponent implements OnInit {
 
   loadEvents(): void {
     this.isLoading = true;
-    this.eventsService.getEvents(this.currentPage, this.pageSize).subscribe({
+    this.eventsService.getEvents(this.currentPage, this.pageSize).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (pagedResult) => {
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
@@ -167,7 +180,9 @@ export class EventsListComponent implements OnInit {
       eventType: this.selectedEventType || undefined,
       startDate: startDateFormatted,
       durationMinutes: this.selectedDuration || undefined
-    }, this.currentPage, this.pageSize).subscribe({
+    }, this.currentPage, this.pageSize).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (pagedResult) => {
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
@@ -218,7 +233,9 @@ export class EventsListComponent implements OnInit {
   loadImagesForEvents(events: EventDto[]): void {
     events.forEach(event => {
       if (event.id && !this.eventImages.has(event.id)) {
-        this.eventsService.getEventImage(event.id).subscribe({
+        this.eventsService.getEventImage(event.id).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
           next: (blob) => {
             const url = window.URL.createObjectURL(blob);
             const safeUrl = this.sanitizer.bypassSecurityTrustUrl(url);
@@ -344,7 +361,9 @@ export class EventsListComponent implements OnInit {
   }
 
   private loadHalls(): void {
-    this.hallsService.getAll().subscribe({
+    this.hallsService.getAll().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (halls) => {
         this.hallsWithVenues = halls.map(hall => ({ hall }));
         this.loadVenuesForHalls();
@@ -358,7 +377,9 @@ export class EventsListComponent implements OnInit {
   private loadVenuesForHalls(): void {
     this.hallsWithVenues.forEach(item => {
       if (item.hall.venueId) {
-        this.venuesService.getById(item.hall.venueId).subscribe({
+        this.venuesService.getById(item.hall.venueId).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
           next: (venue) => {
             item.venueName = venue.name;
           },
@@ -393,7 +414,9 @@ export class EventsListComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.eventsService.createEvent(this.currentEvent, this.selectedFile || undefined).subscribe({
+    this.eventsService.createEvent(this.currentEvent, this.selectedFile || undefined).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (createdEvent) => {
         this.createPerformances(createdEvent.id);
         this.loadEvents();
@@ -426,7 +449,9 @@ export class EventsListComponent implements OnInit {
         endTime: perf.endTime,
         basePriceCents: perf.basePriceCents
       };
-      this.performanceService.create(perfDto).subscribe({
+      this.performanceService.create(perfDto).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
         error: (error) => console.error('Fehler beim Erstellen der Performance:', error)
       });
     });

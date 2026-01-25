@@ -17,6 +17,7 @@ import {Router} from "@angular/router";
 import {EventsService} from "../../services/events.service";
 import {EventAutocompleteDto, EventDto, SimpleEventDto} from '../../dtos/event';
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {Subject, takeUntil} from "rxjs";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
@@ -46,7 +47,7 @@ export class NewsComponent implements OnInit {
   private unreadNews: NewsWithImage[] = [];
   private readNews: NewsWithImage[] = [];
 
-  private message: NewsWithImage[];
+  private destroy$ = new Subject<void>();
 
   constructor(private messageService: NewsService,
               private authService: AuthService,
@@ -60,6 +61,11 @@ export class NewsComponent implements OnInit {
 
   ngOnInit() {
     this.loadNews();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -141,7 +147,9 @@ export class NewsComponent implements OnInit {
 
 
   private loadUnreadNews() {
-    this.messageService.getUnreadNews().subscribe({
+    this.messageService.getUnreadNews().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (messages: NewsWithImage[]) => {
         this.unreadNews = messages;
         this.unreadNews.forEach(msg => this.loadNewsImage(msg));
@@ -151,7 +159,9 @@ export class NewsComponent implements OnInit {
   }
 
   private loadReadNews() {
-    this.messageService.getReadNews().subscribe({
+    this.messageService.getReadNews().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (messages: NewsWithImage[]) => {
         this.readNews = messages;
         this.readNews.forEach(msg => this.loadNewsImage(msg));
@@ -161,7 +171,9 @@ export class NewsComponent implements OnInit {
   }
 
   private markAsRead(newsId: number) {
-    this.messageService.markAsRead(newsId).subscribe({
+    this.messageService.markAsRead(newsId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: () => {
         // News von unread zu read verschieben
         const newsIndex = this.unreadNews.findIndex(n => n.id === newsId);
@@ -181,7 +193,9 @@ export class NewsComponent implements OnInit {
 
   private loadNewsImage(news: NewsWithImage) {
     if (news.imageContentType) {
-      this.messageService.getNewsImage(news.id).subscribe({
+      this.messageService.getNewsImage(news.id).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
         next: (blob: Blob) => {
           const url = URL.createObjectURL(blob);
           news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
@@ -194,7 +208,9 @@ export class NewsComponent implements OnInit {
   }
 
   loadAvailableEvents() {
-    this.eventsService.getEvents(0, 100).subscribe({
+    this.eventsService.getEvents(0, 100).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (result) => {
         this.availableEvents = result.content.map(e => ({
           id: e.id,
