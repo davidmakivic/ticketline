@@ -10,7 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
-import {debounceTime, distinctUntilChanged, Subject, takeUntil} from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 import { PerformanceDto } from '../../../dtos/performanceDto';
 import { PerformancesService } from '../../../services/performances.service';
@@ -59,7 +59,6 @@ export class PerformancesListComponent implements OnInit {
   private isSearchActive = false;
   protected searchSubject = new Subject<void>();
   private dateSearchSubject = new Subject<void>();
-  private destroy$ = new Subject<void>();
 
   constructor(private performancesService: PerformancesService) {}
 
@@ -67,15 +66,13 @@ export class PerformancesListComponent implements OnInit {
     this.loadPerformances();
 
     this.searchSubject.pipe(
-      debounceTime(500),
-      takeUntil(this.destroy$)
+      debounceTime(500)
     ).subscribe(() => {
       this.performSearch();
     });
 
     this.dateSearchSubject.pipe(
       debounceTime(300),
-      takeUntil(this.destroy$)
     ).subscribe(() => {
       this.performSearch();
     });
@@ -83,9 +80,7 @@ export class PerformancesListComponent implements OnInit {
 
   private loadPerformances(): void {
     this.loading = true;
-    this.performancesService.getAll(this.pageIndex, this.pageSize).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.performancesService.getAll(this.pageIndex, this.pageSize).subscribe({
       next: (pagedResult: PagedResult<PerformanceDto>) => {
         this.performances = pagedResult.content;
         this.totalElements = pagedResult.totalElements;
@@ -96,11 +91,6 @@ export class PerformancesListComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   onSearchInputChange(): void {

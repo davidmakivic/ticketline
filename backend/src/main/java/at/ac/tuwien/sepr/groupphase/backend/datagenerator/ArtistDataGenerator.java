@@ -10,13 +10,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Profile("generateData")
@@ -48,7 +49,7 @@ public class ArtistDataGenerator {
         freddie.setLastName("Mercury");
         freddie.setStageName("Queen");
         freddie.setArtistType(ArtistType.BAND);
-        loadImageFromFile(freddie, new ClassPathResource("images/freddie-mercury.jpg"));
+        loadImageFromFile(freddie, "src/main/resources/images/freddie-mercury.jpg");
         artistRepository.save(freddie);
 
         Artist elvis = new Artist();
@@ -56,7 +57,7 @@ public class ArtistDataGenerator {
         elvis.setLastName("Presley");
         elvis.setStageName("The King");
         elvis.setArtistType(ArtistType.SOLO);
-        loadImageFromFile(elvis, new ClassPathResource("images/Elvis_Presley.jpg"));
+        loadImageFromFile(elvis, "src/main/resources/images/Elvis_Presley.jpg");
         artistRepository.save(elvis);
 
         Artist bono = new Artist();
@@ -64,7 +65,7 @@ public class ArtistDataGenerator {
         bono.setLastName("Hewson");
         bono.setStageName("Bono");
         bono.setArtistType(ArtistType.BAND);
-        loadImageFromFile(bono, new ClassPathResource("images/Bono.jpg"));
+        loadImageFromFile(bono, "src/main/resources/images/Bono.jpg");
         artistRepository.save(bono);
 
         Artist davidBowie = new Artist();
@@ -72,7 +73,7 @@ public class ArtistDataGenerator {
         davidBowie.setLastName("Bowie");
         davidBowie.setStageName("David Bowie");
         davidBowie.setArtistType(ArtistType.SOLO);
-        loadImageFromFile(davidBowie, new ClassPathResource("images/bowie.jpg"));
+        loadImageFromFile(davidBowie, "src/main/resources/images/bowie.jpg");
         artistRepository.save(davidBowie);
 
         Artist mickJagger = new Artist();
@@ -80,7 +81,7 @@ public class ArtistDataGenerator {
         mickJagger.setLastName("Jagger");
         mickJagger.setStageName("The Rolling Stones");
         mickJagger.setArtistType(ArtistType.BAND);
-        loadImageFromFile(mickJagger, new ClassPathResource("images/mick-jagger.jpg"));
+        loadImageFromFile(mickJagger, "src/main/resources/images/mick-jagger.jpg");
         artistRepository.save(mickJagger);
 
         List<Event> allEvents = eventRepository.findAllWithArtists();
@@ -104,14 +105,16 @@ public class ArtistDataGenerator {
         LOGGER.debug("Artist data generated and linked to events successfully");
     }
 
-    private void loadImageFromFile(Artist artist, ClassPathResource img) {
-        try (InputStream in = img.getInputStream()) {
-
-            byte[] bytes = in.readAllBytes();
-            artist.setImageData(bytes);
-            artist.setImageContentType("image/jpeg");
+    private void loadImageFromFile(Artist artist, String filePath) {
+        try {
+            Path path = Paths.get(filePath);
+            if (Files.exists(path)) {
+                byte[] imageData = Files.readAllBytes(path);
+                artist.setImageData(imageData);
+                artist.setImageContentType("image/jpeg");
+            }
         } catch (IOException e) {
-            LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());
+            LOGGER.warn("Could not load image from {}: {}", filePath, e.getMessage());
         }
     }
 }

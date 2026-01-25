@@ -1,4 +1,4 @@
-import {Component, OnInit, OnDestroy, TemplateRef} from '@angular/core';
+import {Component, OnInit, TemplateRef} from '@angular/core';
 import {EventsService} from '../../../services/events.service';
 import {EventDto, EventTypeDto} from '../../../dtos/event';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
@@ -28,7 +28,7 @@ import {Hall} from "../../../dtos/hall";
 import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {debounceTime, distinctUntilChanged, Subject, takeUntil} from "rxjs";
+import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
@@ -61,16 +61,13 @@ import {MatSnackBar} from "@angular/material/snack-bar";
   standalone: true,
   styleUrls: ['./events-list.component.scss']
 })
-export class EventsListComponent implements OnInit, OnDestroy {
+export class EventsListComponent implements OnInit {
   events: EventDto[] = [];
-
   eventImages: Map<number, SafeUrl> = new Map();
-
-  private eventImageObjectUrls: Map<number, string> = new Map();
-
   halls: Hall[] = [];
   hallsWithVenues: { hall: Hall; venueName?: string }[] = [];
 
+  // Pagination
   currentPage: number = 0;
   pageSize: number = 10;
   totalEvents: number = 0;
@@ -90,14 +87,13 @@ export class EventsListComponent implements OnInit, OnDestroy {
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
 
+  // Admin-Eigenschaften
   currentEvent: EventDto | null = null;
   selectedFile: File | null = null;
   isEditMode: boolean = false;
   performances: PerformanceDto[] = [];
   newPerformance: Partial<PerformanceDto> = {};
   newPerformancePriceEuros: number | null = null;
-
-  private destroy$ = new Subject<void>();
 
   constructor(
     private eventsService: EventsService,
@@ -108,7 +104,8 @@ export class EventsListComponent implements OnInit, OnDestroy {
     private hallsService: HallsService,
     private venuesService: VenuesService,
     private snackBar: MatSnackBar
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadEvents();
@@ -116,62 +113,47 @@ export class EventsListComponent implements OnInit, OnDestroy {
 
     this.searchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(() => this.performSearch());
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.performSearch();
+    });
 
     this.dateSearchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(() => this.performSearch());
-  }
-
-  ngOnDestroy(): void {
-    this.revokeAllEventImageUrls();
-
-    this.destroy$.next();
-    this.destroy$.complete();
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.performSearch();
+    });
   }
 
   isAdmin(): boolean {
     return this.authService.getUserRole() === 'ADMIN';
   }
 
-  private loadToken = 0;
-
   loadEvents(): void {
-    const token = ++this.loadToken;
     this.isLoading = true;
-
-    this.eventsService.getEvents(this.currentPage, this.pageSize)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (pagedResult) => {
-          if (token !== this.loadToken) return;
-
-          this.events = pagedResult.content;
-          this.totalEvents = pagedResult.totalElements;
-          this.totalPages = pagedResult.totalPages;
-
-          this.syncEventImages(this.events, token);
-
-          this.isLoading = false;
-        },
-        error: () => {
-          this.showErrorSnackbar('Fehler beim Laden der Events');
-          this.isLoading = false;
-        }
-      });
+    this.eventsService.getEvents(this.currentPage, this.pageSize).subscribe({
+      next: (pagedResult) => {
+        this.events = pagedResult.content;
+        this.totalEvents = pagedResult.totalElements;
+        this.totalPages = pagedResult.totalPages;
+        this.loadImagesForEvents(this.events);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.showErrorSnackbar('Fehler beim Laden der Events');
+        this.isLoading = false;
+      }
+    });
   }
 
-  performSearch(): void {
-    const token = ++this.loadToken;
-    this.isSearchActive = true;
-    this.currentPage = 0;
-    this.isLoading = true;
 
+  performSearch(): void {
+    this.isSearchActive = true;
+    this.currentPage = 0;  // Immer auf Seite 0 zurücksetzen
+    this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
+
     if (this.selectedStartDate) {
       startDateFormatted = this.selectedStartDate instanceof Date
         ? this.selectedStartDate
@@ -185,22 +167,15 @@ export class EventsListComponent implements OnInit, OnDestroy {
       eventType: this.selectedEventType || undefined,
       startDate: startDateFormatted,
       durationMinutes: this.selectedDuration || undefined
-    }, this.currentPage, this.pageSize).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    }, this.currentPage, this.pageSize).subscribe({
       next: (pagedResult) => {
-        if (token !== this.loadToken) {
-          return;
-        }
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
         this.totalPages = pagedResult.totalPages;
-
-        this.syncEventImages(this.events, token);
-
+        this.loadImagesForEvents(this.events);
         this.isLoading = false;
       },
-      error: () => {
+      error: (error) => {
         this.showErrorSnackbar('Fehler bei der Suche');
         this.isLoading = false;
       }
@@ -211,6 +186,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
 
+    // Einfache Logik: Wenn isSearchActive, dann performSearch, sonst loadEvents
     if (this.isSearchActive) {
       this.performSearch();
     } else {
@@ -231,9 +207,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
     this.selectedDuration = null;
     this.currentPage = 0;
     this.isSearchActive = false;
-
-    this.revokeAllEventImageUrls();
-
+    this.eventImages.clear();
     this.loadEvents();
   }
 
@@ -241,48 +215,21 @@ export class EventsListComponent implements OnInit, OnDestroy {
     return this.eventImages.get(eventId);
   }
 
-  private syncEventImages(events: EventDto[], token: number): void {
-    const currentIds = new Set<number>(events.filter(e => e.id != null).map(e => e.id!));
-
-    // revoke images that are no longer visible
-    for (const [id, objUrl] of this.eventImageObjectUrls.entries()) {
-      if (!currentIds.has(id)) {
-        URL.revokeObjectURL(objUrl);
-        this.eventImageObjectUrls.delete(id);
-        this.eventImages.delete(id);
-      }
-    }
-
-    // load images for current page
-    for (const event of events) {
-      if (!event.id) continue;
-      if (this.eventImages.has(event.id)) continue;
-
-      this.eventsService.getEventImage(event.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
+  loadImagesForEvents(events: EventDto[]): void {
+    events.forEach(event => {
+      if (event.id && !this.eventImages.has(event.id)) {
+        this.eventsService.getEventImage(event.id).subscribe({
           next: (blob) => {
-            if (token !== this.loadToken) return;      // stale response
-            if (!currentIds.has(event.id!)) return;    // not on current page anymore
-
-            const old = this.eventImageObjectUrls.get(event.id!);
-            if (old) URL.revokeObjectURL(old);
-
-            const url = URL.createObjectURL(blob);
-            this.eventImageObjectUrls.set(event.id!, url);
-            this.eventImages.set(event.id!, this.sanitizer.bypassSecurityTrustUrl(url));
+            const url = window.URL.createObjectURL(blob);
+            const safeUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+            this.eventImages.set(event.id!, safeUrl);
           },
-          error: () => { /* ignore */ }
+          error: (error) => {
+            console.warn(`Bild für Event ${event.id} konnte nicht geladen werden:`, error);
+          }
         });
-    }
-  }
-
-  private revokeAllEventImageUrls(): void {
-    for (const url of this.eventImageObjectUrls.values()) {
-      URL.revokeObjectURL(url);
-    }
-    this.eventImageObjectUrls.clear();
-    this.eventImages.clear();
+      }
+    });
   }
 
   openAddEventModal(eventAddModal: TemplateRef<any>): void {
@@ -295,7 +242,6 @@ export class EventsListComponent implements OnInit, OnDestroy {
       artists: [],
       performances: []
     } as EventDto;
-
     this.selectedFile = null;
     this.performances = [];
     this.newPerformance = {};
@@ -313,7 +259,9 @@ export class EventsListComponent implements OnInit, OnDestroy {
   performanceErrors: { [key: string]: string } = {};
 
   calculateDurationFromPerformances(): number | null {
-    if (this.performances.length === 0) return null;
+    if (this.performances.length === 0) {
+      return null;
+    }
 
     const firstPerf = this.performances[0];
     const startTime = new Date(firstPerf.startTime);
@@ -325,25 +273,32 @@ export class EventsListComponent implements OnInit, OnDestroy {
   }
 
   addPerformanceToList(): void {
+    // Validiere Halle, Start- und Endzeit
     const baseValidation = this.eventsService.validatePerformanceBase(this.newPerformance);
     if (!baseValidation.valid) {
       this.performanceErrors = baseValidation.fieldErrors;
       return;
     }
 
+    // Validiere Preis separat
     if (this.newPerformancePriceEuros === null || this.newPerformancePriceEuros === undefined || this.newPerformancePriceEuros < 0) {
       this.performanceErrors['basePrice'] = 'Basispreis darf nicht negativ sein';
       return;
     }
 
+    // Berechne Dauer aus der ersten Performance
     if (this.performances.length === 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
       const startTime = new Date(this.newPerformance.startTime);
       const endTime = new Date(this.newPerformance.endTime);
       const durationMs = endTime.getTime() - startTime.getTime();
       const durationMinutes = Math.round(durationMs / (1000 * 60));
-      if (this.currentEvent) this.currentEvent.durationMinutes = durationMinutes;
+
+      if (this.currentEvent) {
+        this.currentEvent.durationMinutes = durationMinutes;
+      }
     }
 
+    // Validiere, dass alle Performances die gleiche Dauer haben
     if (this.performances.length > 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
       const startTime = new Date(this.newPerformance.startTime);
       const endTime = new Date(this.newPerformance.endTime);
@@ -356,8 +311,9 @@ export class EventsListComponent implements OnInit, OnDestroy {
       }
     }
 
+    // Konvertiere Preis von Euro zu Cents
     const performanceToAdd: PerformanceDto = {
-      ...(this.newPerformance as PerformanceDto),
+      ...this.newPerformance as PerformanceDto,
       basePriceCents: Math.round(this.newPerformancePriceEuros * 100),
       id: Date.now()
     };
@@ -368,21 +324,27 @@ export class EventsListComponent implements OnInit, OnDestroy {
     this.performanceErrors = {};
   }
 
+
+
+
+
   removePerformance(index: number): void {
     this.performances.splice(index, 1);
-
+    // Berechne Dauer neu, wenn noch Performances vorhanden sind
     if (this.performances.length > 0) {
       const duration = this.calculateDurationFromPerformances();
-      if (this.currentEvent && duration) this.currentEvent.durationMinutes = duration;
+      if (this.currentEvent && duration) {
+        this.currentEvent.durationMinutes = duration;
+      }
     } else {
-      if (this.currentEvent) this.currentEvent.durationMinutes = 0;
+      if (this.currentEvent) {
+        this.currentEvent.durationMinutes = 0;
+      }
     }
   }
 
   private loadHalls(): void {
-    this.hallsService.getAll().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.hallsService.getAll().subscribe({
       next: (halls) => {
         this.hallsWithVenues = halls.map(hall => ({ hall }));
         this.loadVenuesForHalls();
@@ -396,9 +358,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
   private loadVenuesForHalls(): void {
     this.hallsWithVenues.forEach(item => {
       if (item.hall.venueId) {
-        this.venuesService.getById(item.hall.venueId).pipe(
-          takeUntil(this.destroy$)
-        ).subscribe({
+        this.venuesService.getById(item.hall.venueId).subscribe({
           next: (venue) => {
             item.venueName = venue.name;
           },
@@ -433,9 +393,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    this.eventsService.createEvent(this.currentEvent, this.selectedFile || undefined).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.eventsService.createEvent(this.currentEvent, this.selectedFile || undefined).subscribe({
       next: (createdEvent) => {
         this.createPerformances(createdEvent.id);
         this.loadEvents();
@@ -468,10 +426,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
         endTime: perf.endTime,
         basePriceCents: perf.basePriceCents
       };
-
-      this.performanceService.create(perfDto).pipe(
-        takeUntil(this.destroy$)
-      ).subscribe({
+      this.performanceService.create(perfDto).subscribe({
         error: (error) => console.error('Fehler beim Erstellen der Performance:', error)
       });
     });
@@ -484,5 +439,8 @@ export class EventsListComponent implements OnInit, OnDestroy {
       verticalPosition: 'bottom',
       panelClass: ['error-snackbar'],
     });
+
+
   }
+
 }

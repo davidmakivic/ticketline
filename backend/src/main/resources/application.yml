@@ -7,8 +7,6 @@ logging:
     level: r=%X{r} ip=%X{ip} u=%X{u} %5p
 
 spring:
-  profiles:
-    active: qa
   datasource:
     url: jdbc:h2:file:./database/db;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver

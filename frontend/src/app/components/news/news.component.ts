@@ -17,11 +17,9 @@ import {Router} from "@angular/router";
 import {EventsService} from "../../services/events.service";
 import {EventAutocompleteDto, EventDto, SimpleEventDto} from '../../dtos/event';
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Subject, takeUntil} from "rxjs";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
-  _objectUrl?: string;
 }
 
 @Component({
@@ -48,7 +46,7 @@ export class NewsComponent implements OnInit {
   private unreadNews: NewsWithImage[] = [];
   private readNews: NewsWithImage[] = [];
 
-  private destroy$ = new Subject<void>();
+  private message: NewsWithImage[];
 
   constructor(private messageService: NewsService,
               private authService: AuthService,
@@ -63,23 +61,6 @@ export class NewsComponent implements OnInit {
   ngOnInit() {
     this.loadNews();
   }
-
-  ngOnDestroy(): void {
-    this.unreadNews.forEach(n => this.revokeNewsObjectUrl(n));
-    this.readNews.forEach(n => this.revokeNewsObjectUrl(n));
-
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private revokeNewsObjectUrl(news: NewsWithImage) {
-    if (news._objectUrl) {
-      URL.revokeObjectURL(news._objectUrl);
-      news._objectUrl = undefined;
-      news.imageUrl = undefined;
-    }
-  }
-
 
   /**
    * Returns true if the authenticated user is an admin
@@ -160,11 +141,7 @@ export class NewsComponent implements OnInit {
 
 
   private loadUnreadNews() {
-    this.unreadNews.forEach(n => this.revokeNewsObjectUrl(n));
-
-    this.messageService.getUnreadNews().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.messageService.getUnreadNews().subscribe({
       next: (messages: NewsWithImage[]) => {
         this.unreadNews = messages;
         this.unreadNews.forEach(msg => this.loadNewsImage(msg));
@@ -174,11 +151,7 @@ export class NewsComponent implements OnInit {
   }
 
   private loadReadNews() {
-    this.readNews.forEach(n => this.revokeNewsObjectUrl(n));
-
-    this.messageService.getReadNews().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.messageService.getReadNews().subscribe({
       next: (messages: NewsWithImage[]) => {
         this.readNews = messages;
         this.readNews.forEach(msg => this.loadNewsImage(msg));
@@ -188,9 +161,7 @@ export class NewsComponent implements OnInit {
   }
 
   private markAsRead(newsId: number) {
-    this.messageService.markAsRead(newsId).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.messageService.markAsRead(newsId).subscribe({
       next: () => {
         // News von unread zu read verschieben
         const newsIndex = this.unreadNews.findIndex(n => n.id === newsId);
@@ -209,31 +180,21 @@ export class NewsComponent implements OnInit {
 
 
   private loadNewsImage(news: NewsWithImage) {
-    if (!news.imageContentType) return;
-
-    this.messageService.getNewsImage(news.id).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: (blob: Blob) => {
-        // alte URL der News freigeben (falls schon vorhanden)
-        this.revokeNewsObjectUrl(news);
-
-        const url = URL.createObjectURL(blob);
-        news._objectUrl = url;
-        news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
-      },
-      error: () => {
-        // optional: bei Fehler auch freigeben
-        this.revokeNewsObjectUrl(news);
-      }
-    });
+    if (news.imageContentType) {
+      this.messageService.getNewsImage(news.id).subscribe({
+        next: (blob: Blob) => {
+          const url = URL.createObjectURL(blob);
+          news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+        },
+        error: () => {
+          // Bild konnte nicht geladen werden
+        }
+      });
+    }
   }
 
-
   loadAvailableEvents() {
-    this.eventsService.getEvents(0, 100).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.eventsService.getEvents(0, 100).subscribe({
       next: (result) => {
         this.availableEvents = result.content.map(e => ({
           id: e.id,

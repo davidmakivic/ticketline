@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MerchandiseService } from '../../services/merchandise.service';
 import { MerchandiseDto } from '../../dtos/merchandise';
@@ -6,7 +6,6 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MerchandiseDialogComponent } from './shop-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-shop',
@@ -15,17 +14,12 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss'
 })
-export class ShopComponent implements OnInit, OnDestroy {
+export class ShopComponent implements OnInit {
   merchandise: MerchandiseDto[] = [];
-
   images = new Map<number, SafeUrl>();
-
-  private imageObjectUrls = new Map<number, string>();
 
   pageSize = 12;
   pageIndex = 0;
-
-  private destroy$ = new Subject<void>();
 
   constructor(
     private merchService: MerchandiseService,
@@ -37,48 +31,23 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.loadMerchandise();
   }
 
-  ngOnDestroy(): void {
-    this.revokeAllImages();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   loadMerchandise(): void {
-    this.revokeAllImages();
-
-    this.merchService.getAll()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(items => {
-        this.merchandise = items.filter(m => m.quantity > 0);
-        this.loadImages();
-      });
-  }
-
-  private loadImages(): void {
-    this.merchandise.forEach(item => {
-      this.merchService.getImage(item.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(blob => {
-          const existing = this.imageObjectUrls.get(item.id);
-          if (existing) {
-            URL.revokeObjectURL(existing);
-            this.imageObjectUrls.delete(item.id);
-            this.images.delete(item.id);
-          }
-
-          const url = URL.createObjectURL(blob);
-          this.imageObjectUrls.set(item.id, url);
-          this.images.set(item.id, this.sanitizer.bypassSecurityTrustUrl(url));
-        });
+    this.merchService.getAll().subscribe(items => {
+      this.merchandise = items.filter(m => m.quantity > 0);
+      this.loadImages();
     });
   }
 
-  private revokeAllImages(): void {
-    for (const url of this.imageObjectUrls.values()) {
-      URL.revokeObjectURL(url);
-    }
-    this.imageObjectUrls.clear();
-    this.images.clear();
+  loadImages(): void {
+    this.merchandise.forEach(item => {
+      this.merchService.getImage(item.id).subscribe(blob => {
+        const url = URL.createObjectURL(blob);
+        this.images.set(
+          item.id,
+          this.sanitizer.bypassSecurityTrustUrl(url)
+        );
+      });
+    });
   }
 
   get pagedItems(): MerchandiseDto[] {
