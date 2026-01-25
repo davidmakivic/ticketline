@@ -56,7 +56,7 @@ public class ArtistEndpointTest {
                 .param("stageName", "JD")
                 .param("artistType", "SOLO")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isCreated())  // Geändert von isOk()
+            .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.firstName").value("John"))
             .andExpect(jsonPath("$.stageName").value("JD"))
@@ -73,7 +73,7 @@ public class ArtistEndpointTest {
                 .param("stageName", "JS")
                 .param("artistType", "BAND")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isCreated())  // Geändert von isOk()
+            .andExpect(status().isOk())
             .andReturn();
 
         ArtistDto responseDto = objectMapper.readValue(result.getResponse().getContentAsString(), ArtistDto.class);
@@ -94,7 +94,7 @@ public class ArtistEndpointTest {
                 .param("stageName", "BB")
                 .param("artistType", "SOLO")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isCreated())  // Geändert von isOk()
+            .andExpect(status().isOk())
             .andReturn();
 
         ArtistDto created = objectMapper.readValue(result.getResponse().getContentAsString(), ArtistDto.class);
@@ -142,7 +142,7 @@ public class ArtistEndpointTest {
                 .param("stageName", "A1")
                 .param("artistType", "SOLO")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isCreated());  // Geändert von isOk()
+            .andExpect(status().isOk());
 
         mockMvc.perform(multipart("/api/v1/artists")
                 .file("image", new byte[0])
@@ -151,7 +151,7 @@ public class ArtistEndpointTest {
                 .param("stageName", "A2")
                 .param("artistType", "BAND")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isCreated());  // Geändert von isOk()
+            .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/v1/artists"))
             .andExpect(status().isOk())
@@ -177,7 +177,7 @@ public class ArtistEndpointTest {
                 .param("stageName", "DM")
                 .param("artistType", "SOLO")
                 .header(securityProperties.getAuthHeader(), jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
-            .andExpect(status().isCreated())  // Geändert von isOk()
+            .andExpect(status().isOk())
             .andReturn();
 
         ArtistDto created = objectMapper.readValue(result.getResponse().getContentAsString(), ArtistDto.class);
@@ -189,5 +189,4 @@ public class ArtistEndpointTest {
         mockMvc.perform(get("/api/v1/artists/" + created.getId()))
             .andExpect(status().isNotFound());
     }
-
 }

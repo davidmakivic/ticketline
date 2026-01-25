@@ -64,16 +64,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
     }
   }
 
-  private imageUrl?: string;
-
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-
-    if (this.imageUrl) {
-      URL.revokeObjectURL(this.imageUrl);
-      this.imageUrl = undefined;
-    }
   }
 
   get basePriceEuro(): number {
@@ -130,18 +123,20 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
   }
 
   private loadEventImage(): void {
-    if (!this.performance?.eventId) return;
+    if (!this.performance || !this.performance.eventId) {
+      return;
+    }
 
-    this.eventsService.getEventImage(this.performance.eventId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (blob) => {
-          if (this.imageUrl) URL.revokeObjectURL(this.imageUrl);
-
-          this.imageUrl = URL.createObjectURL(blob);
-          this.eventImage = this.sanitizer.bypassSecurityTrustUrl(this.imageUrl);
-        },
-        error: () => {}
-      });
+    this.eventsService.getEventImage(this.performance.eventId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        this.eventImage = this.sanitizer.bypassSecurityTrustUrl(url);
+      },
+      error: () => {
+        // Bild konnte nicht geladen werden
+      }
+    });
   }
 }
