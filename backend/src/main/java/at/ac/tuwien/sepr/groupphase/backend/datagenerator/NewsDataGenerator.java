@@ -8,13 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Profile("generateData")
@@ -48,7 +47,7 @@ public class NewsDataGenerator {
                 + "Tickets sind ab sofort im Vorverkauf erhältlich.")
             .withPublishedAt(LocalDateTime.now().minusDays(5))
             .build();
-        loadImageFromFile(news1, "src/main/resources/images/queen-tribute.jpg");
+        loadImageFromFile(news1, new ClassPathResource("images/queen-tribute.jpg"));
 
         News news2 = News.NewsBuilder.aMessage()
             .withTitle("Elektro Beats Festival 2025 – Lineup bekannt gegeben")
@@ -59,7 +58,7 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now().minusDays(3))
             .withEvent(eventRepository.getReferenceById(6L))
             .build();
-        loadImageFromFile(news2, "src/main/resources/images/Elektro-Beats-Festival.jpg");
+        loadImageFromFile(news2, new ClassPathResource("images/Elektro-Beats-Festival.jpg"));
 
         News news3 = News.NewsBuilder.aMessage()
             .withTitle("Mamma Mia! bricht alle Besucherrekorde")
@@ -70,7 +69,7 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now().minusDays(2))
             .withEvent(eventRepository.getReferenceById(8L))
             .build();
-        loadImageFromFile(news3, "src/main/resources/images/mamma-mia.jpg");
+        loadImageFromFile(news3, new ClassPathResource("images/mamma-mia.jpg"));
 
         News news4 = News.NewsBuilder.aMessage()
             .withTitle("Indie Summer Festival 2025 erweitert Programm")
@@ -81,7 +80,7 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now().minusDays(1))
             .withEvent(eventRepository.getReferenceById(10L))
             .build();
-        loadImageFromFile(news4, "src/main/resources/images/Indie-Summer-Festival.jpg");
+        loadImageFromFile(news4, new ClassPathResource("images/Indie-Summer-Festival.jpg"));
 
         News news5 = News.NewsBuilder.aMessage()
             .withTitle("Rock am Ring – Größtes Konzert des Jahres angekündigt")
@@ -93,23 +92,21 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now())
             .withEvent(eventRepository.getReferenceById(3L))
             .build();
-        loadImageFromFile(news5, "src/main/resources/images/Rock-am-Ring-24.png");
+        loadImageFromFile(news5, new ClassPathResource("images/Rock-am-Ring-24.png"));
 
         newsRepository.saveAll(java.util.List.of(news1, news2, news3, news4, news5));
 
         LOGGER.debug("5 news entries generated successfully");
     }
 
-    private void loadImageFromFile(News news, String filePath) {
-        try {
-            Path path = Paths.get(filePath);
-            if (Files.exists(path)) {
-                byte[] imageData = Files.readAllBytes(path);
-                news.setImageData(imageData);
-                news.setImageContentType("image/jpeg");
-            }
+    private void loadImageFromFile(News news, ClassPathResource img) {
+        try (InputStream in = img.getInputStream()) {
+
+            byte[] bytes = in.readAllBytes();
+            news.setImageData(bytes);
+            news.setImageContentType("image/jpeg");
         } catch (IOException e) {
-            LOGGER.warn("Could not load image from {}: {}", filePath, e.getMessage());
+            LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());
         }
     }
 }
