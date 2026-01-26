@@ -194,7 +194,7 @@ public class EventDataGenerator {
             }
 
             // Skaliere auf max 400px Breite
-            int targetWidth = 400;
+            int targetWidth = 100;
             int targetHeight = (int) ((double) originalImage.getHeight() / originalImage.getWidth() * targetWidth);
 
             Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
