@@ -116,13 +116,11 @@ export class EventsListComponent implements OnInit, OnDestroy {
 
     this.searchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged(),
       takeUntil(this.destroy$)
     ).subscribe(() => this.performSearch());
 
     this.dateSearchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged(),
       takeUntil(this.destroy$)
     ).subscribe(() => this.performSearch());
   }
