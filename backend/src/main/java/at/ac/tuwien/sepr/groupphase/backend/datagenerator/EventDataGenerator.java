@@ -75,7 +75,7 @@ public class EventDataGenerator {
 
         LOGGER.debug("Generating realistic demo events");
 
-        List<Event> events = new ArrayList<>();
+
 
         Event e1 = new Event("Phantom der Oper",
             "Das weltberühmte Musical über das mysteriöse Phantom im Opernhaus.",
@@ -136,6 +136,7 @@ public class EventDataGenerator {
             EventType.FESTIVAL,
             280);
         loadImageFromFile(e10, new ClassPathResource("images/Indie-Summer-Festival.jpg"));
+        List<Event> events = new ArrayList<>();
 
         events.addAll(List.of(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10));
 
