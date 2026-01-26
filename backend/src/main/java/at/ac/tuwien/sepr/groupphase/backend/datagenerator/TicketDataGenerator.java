@@ -89,9 +89,11 @@ public class TicketDataGenerator implements CommandLineRunner {
 
                 totalTickets += seats.size();
 
-                entityManager.flush();
-                entityManager.clear();
+
             }
+
+            entityManager.flush();
+            entityManager.clear();
 
             LOGGER.debug("Processed page {} of {}", page + 1, (performanceCount + batchSize - 1) / batchSize);
         }
