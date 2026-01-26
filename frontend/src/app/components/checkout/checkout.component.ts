@@ -9,6 +9,7 @@ import { Ticket } from '../../dtos/ticket';
 
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 import { ReservationsService } from '../../services/reservations.service';
 import { CartItem, isMerchItem, isTicketItem } from '../../dtos/cart-item';
@@ -64,7 +65,8 @@ export class CheckoutComponent {
     private ticketsService: TicketsService,
     private orders: OrdersService,
     private router: Router,
-    private reservationsService: ReservationsService
+    private reservationsService: ReservationsService,
+    private snackBar: MatSnackBar
   ) {}
 
   select(method: PaymentId): void {
@@ -74,7 +76,7 @@ export class CheckoutComponent {
   pay(): void {
     const items = this.cart.getCartItems();
     if (items.length === 0) {
-      alert('Warenkorb ist leer');
+      this.showErrorSnackbar('Warenkorb ist leer');
       return;
     }
 
@@ -151,7 +153,7 @@ export class CheckoutComponent {
             err?.error?.message ??
             (Array.isArray(err?.error?.errors) ? err.error.errors.join('\n') : null) ??
             'Bestellung fehlgeschlagen';
-          alert(msg);
+          this.showErrorSnackbar(msg);
         }
       });
     };
@@ -189,7 +191,7 @@ export class CheckoutComponent {
         if (badIds.length > 0) {
           badIds.forEach(id => this.cart.removeTicket(id));
 
-          alert(
+          this.showErrorSnackbar(
             `Einige Tickets sind nicht mehr reserviert oder bereits gekauft.\n` +
             `Entfernt aus Warenkorb: ${badIds.join(', ')}\n` +
             `Bitte Reservierungen neu laden.`
@@ -201,7 +203,7 @@ export class CheckoutComponent {
       },
       error: (e) => {
         console.error(e);
-        alert('Tickets konnten nicht geprüft werden');
+        this.showErrorSnackbar('Tickets konnten nicht geprüft werden');
       }
     });
   }
@@ -209,4 +211,14 @@ export class CheckoutComponent {
   toEuro(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
   }
+
+  private showErrorSnackbar(message: string): void {
+    this.snackBar.open(message, 'Schließen', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar'],
+    });
+  }
+
 }

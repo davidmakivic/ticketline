@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Globals } from '../global/globals';
-import {Observable, Subject, takeUntil} from 'rxjs';
+import { Observable } from 'rxjs';
 import { PerformanceDto } from '../dtos/performanceDto';
 import { PagedResult, EventTypeDto } from '../dtos/event';
 
 @Injectable({ providedIn: 'root' })
 export class PerformancesService {
   private baseUri = this.globals.backendUri + '/performances';
-  private destroy$ = new Subject<void>();
   constructor(private http: HttpClient, private globals: Globals) {}
 
   getById(id: number): Observable<PerformanceDto> {
@@ -45,9 +44,7 @@ export class PerformancesService {
     if (filters.startDate) params = params.set('startDate', this.formatDate(filters.startDate));
     if (filters.durationMinutes) params = params.set('durationMinutes', filters.durationMinutes.toString());
 
-    return this.http.get<PagedResult<PerformanceDto>>(`${this.baseUri}`, { params }).pipe(
-      takeUntil(this.destroy$)
-    );
+    return this.http.get<PagedResult<PerformanceDto>>(`${this.baseUri}`, { params });
   }
 
   private formatDate(date: Date): string {
@@ -56,11 +53,6 @@ export class PerformancesService {
     const month = String(localDate.getMonth() + 1).padStart(2, '0');
     const day = String(localDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
 }
