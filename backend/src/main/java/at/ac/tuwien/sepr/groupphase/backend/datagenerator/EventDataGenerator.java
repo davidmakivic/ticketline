@@ -136,23 +136,32 @@ public class EventDataGenerator {
             EventType.FESTIVAL,
             280);
         loadImageFromFile(e10, new ClassPathResource("images/Indie-Summer-Festival.jpg"));
-        List<Event> events = new ArrayList<>();
+        List<Event> initialEvents = List.of(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
+        eventRepository.saveAll(initialEvents);
+        eventRepository.flush();
 
-        events.addAll(List.of(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10));
+        // Restliche Events in Batches generieren
+        int batchSize = 50;
+        for (int i = 11; i <= 200; i += batchSize) {
+            List<Event> batch = new ArrayList<>();
+            int toIndex = Math.min(i + batchSize - 1, 200);
 
-        for (int i = 11; i <= 200; i++) {
-            EventType type = EventType.values()[i % EventType.values().length];
-            int duration = 90 + (i % 13) * 10; //90–210 Minuten Event
-            Event generated = new Event(
-                "Demo Event " + i,
-                "Automatisch generiertes Event Nummer " + i,
-                type,
-                duration);
-            loadImageFromFile(generated, pickImageForType(type, i));
-            events.add(generated);
+            for (int j = i; j <= toIndex; j++) {
+                EventType type = EventType.values()[j % EventType.values().length];
+                int duration = 90 + (j % 13) * 10;
+                Event generated = new Event(
+                    "Demo Event " + j,
+                    "Automatisch generiertes Event Nummer " + j,
+                    type, duration);
+                loadImageFromFile(generated, pickImageForType(type, j));
+                batch.add(generated);
+            }
+
+            eventRepository.saveAll(batch);
+            eventRepository.flush();
+            batch.clear();
+            LOGGER.debug("Saved events {} to {}", i, toIndex);
         }
-
-        eventRepository.saveAll(events);
 
         LOGGER.debug("200 demo events generated successfully");
     }
