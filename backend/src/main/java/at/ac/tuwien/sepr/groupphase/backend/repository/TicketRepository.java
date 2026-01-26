@@ -72,4 +72,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     void detachFromReservation(@Param("ids") List<Long> ids);
 
     List<Ticket> findByReservedByUserId(Long reservedByUserId);
+
+    boolean existsByPerformanceId(Long performanceId);
 }

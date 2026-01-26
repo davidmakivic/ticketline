@@ -58,7 +58,7 @@ public class TicketDataGenerator implements CommandLineRunner {
     }
 
     private void generateTicketData() {
-        if (!ticketRepository.findAll().isEmpty()) {
+        if (ticketRepository.count() > 0) {
             LOGGER.debug("Tickets already generated");
             return;
         }
@@ -84,6 +84,9 @@ public class TicketDataGenerator implements CommandLineRunner {
             performances = performanceRepository.findByIdsWithHallAndSectors(performanceIds);
 
             for (Performance performance : performances) {
+                if (ticketRepository.existsByPerformanceId(performance.getId())) {
+                    continue;
+                }
                 List<Seat> seats = seatRepository.findByHallIdWithSector(performance.getHall().getId());
                 ticketGenerationService.generateTicketsForPerformanceWithSeats(performance, seats);
 

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.SeatPriceProjection;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -40,25 +41,46 @@ public class TicketGenerationServiceImpl implements TicketGenerationService {
     @Override
     @Transactional
     public void generateTicketsForPerformance(Performance performance) {
-        LOGGER.info("Generating tickets for performance id={} in hall id={}",
-            performance.getId(), performance.getHall().getId());
+        Long performanceId = performance.getId();
+        Long hallId = performance.getHall().getId();
+        Long basePriceCents = performance.getBasePriceCents();
 
-        List<Seat> seats = seatRepository.findByHallIdWithSector(performance.getHall().getId());
+        LOGGER.info("Generating tickets for performance id={} in hall id={}", performanceId, hallId);
 
-        for (Seat seat : seats) {
-            Long priceInCents = calculatePrice(performance.getBasePriceCents(),
-                seat.getSector().getPriceCategory().getPrice());
+        List<SeatPriceProjection> seats = seatRepository.findSeatPriceDataByHallId(hallId);
+
+        final int chunk = 200;
+        int i = 0;
+
+        Performance perfRef = entityManager.getReference(Performance.class, performanceId);
+
+        for (SeatPriceProjection s : seats) {
+            Long seatId = s.getSeatId();
+            Long priceInCents = calculatePrice(basePriceCents, s.getPriceFactor());
 
             Ticket ticket = new Ticket();
-            ticket.setPerformance(performance);
-            ticket.setSeat(seat);
+            ticket.setPerformance(perfRef);
+            ticket.setSeat(entityManager.getReference(Seat.class, seatId));
             ticket.setPriceFinalCents(priceInCents);
             ticket.setStatus(TicketStatus.AVAILABLE);
+            ticket.setReservedUntil(null);
+            ticket.setReservedByUserId(null);
 
-            ticketRepository.save(ticket);
+            entityManager.persist(ticket);
+
+            i++;
+            if (i % chunk == 0) {
+                entityManager.flush();
+                entityManager.clear();
+
+                perfRef = entityManager.getReference(Performance.class, performanceId);
+            }
         }
 
-        LOGGER.info("Created {} tickets for performance id={}", seats.size(), performance.getId());
+        entityManager.flush();
+        entityManager.clear();
+
+        LOGGER.info("Created {} tickets for performance id={}", seats.size(), performanceId);
     }
 
     @Transactional

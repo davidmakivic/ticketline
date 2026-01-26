@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.groupphase.backend.repository;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.SeatPriceProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -50,6 +51,16 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
         WHERE sec.hall.id = :hallId
         """)
     List<Seat> findByHallIdWithSector(@Param("hallId") Long hallId);
+
+    @Query("""
+        select s.id as seatId, pc.price as priceFactor
+        from Seat s
+        join s.sector sec
+        join sec.priceCategory pc
+        where sec.hall.id = :hallId
+        order by s.id
+        """)
+    List<SeatPriceProjection> findSeatPriceDataByHallId(@Param("hallId") Long hallId);
 
 
 }
