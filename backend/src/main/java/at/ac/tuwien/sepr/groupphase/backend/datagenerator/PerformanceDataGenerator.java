@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
@@ -50,28 +51,34 @@ public class PerformanceDataGenerator {
             LOGGER.debug("Performances already generated — skipping");
             return;
         }
-        List<Event> events = eventRepository.findAll();
+
         List<Hall> halls = hallRepository.findAll();
+        long eventCount = eventRepository.count();
+        int batchSize = 10;
+        int totalPerformances = 0;
 
-        int batchSize = 20;
-        int totalCount = 0;
+        for (int offset = 0; offset < eventCount; offset += batchSize) {
+            // Lade nur 10 Events auf einmal
+            List<Event> eventBatch = eventRepository.findAll(PageRequest.of(offset / batchSize, batchSize)).getContent();
 
-        for (Event event : events) {
-            List<Performance> batch = generatePerformancesFor(event, halls);
-
-            if (!batch.isEmpty()) {
-                performanceRepository.saveAll(batch);
-                performanceRepository.flush();
-                totalCount += batch.size();
-                batch.clear(); // Speicher freigeben
-
-                if (totalCount % 100 == 0) {
-                    LOGGER.debug("Saved {} performances so far", totalCount);
+            for (Event event : eventBatch) {
+                List<Performance> performances = generatePerformancesFor(event, halls);
+                if (!performances.isEmpty()) {
+                    performanceRepository.saveAll(performances);
+                    performanceRepository.flush();
+                    totalPerformances += performances.size();
+                    performances.clear();
                 }
             }
+
+            eventBatch.clear();
+            System.gc();
+            LOGGER.debug("Processed events {} to {}", offset, Math.min(offset + batchSize, eventCount));
         }
-        LOGGER.debug("Generated {} performances with varied schedules", totalCount);
+
+        LOGGER.debug("Generated {} performances total", totalPerformances);
     }
+
 
     private Performance createPerformance(Event event, Hall hall, int seed) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
