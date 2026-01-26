@@ -194,8 +194,23 @@ public class EventServiceImpl implements EventService {
     public ResponseEntity<StreamingResponseBody> streamEventImage(Long id) {
         LOGGER.info("Streaming event image for id={}", id);
 
-        String contentType = eventRepository.findImageContentTypeById(id)
-            .orElseThrow(() -> new NotFoundException("Event not found: " + id));
+        EventImageProjection p = eventRepository.findImageById(id)
+            .orElseThrow(() -> new NotFoundException("Entity not found: " + id));
+
+        var blob = p.getImageData();
+        if (blob == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        try {
+            if (blob.length() == 0) {
+                return ResponseEntity.noContent().build();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not read image length", e);
+        }
+
+        String contentType = (p.getImageContentType() != null) ? p.getImageContentType() : MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
         StreamingResponseBody body = outputStream -> {
             try {
