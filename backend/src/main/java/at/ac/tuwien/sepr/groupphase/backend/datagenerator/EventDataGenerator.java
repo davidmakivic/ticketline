@@ -185,32 +185,13 @@ public class EventDataGenerator {
 
     private void loadImageFromFile(Event event, ClassPathResource img) {
         try (InputStream in = img.getInputStream()) {
-            BufferedImage originalImage = ImageIO.read(in);
-
-            // Prüfe ob Bild geladen werden konnte
-            if (originalImage == null) {
-                LOGGER.warn("Could not decode image from {}, skipping", img.getFilename());
-                return;
-            }
-
-            // Skaliere auf max 400px Breite
-            int targetWidth = 400;
-            int targetHeight = (int) ((double) originalImage.getHeight() / originalImage.getWidth() * targetWidth);
-
-            Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-            BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
-            outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
-
-            // Komprimiere als JPEG mit niedriger Qualität
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(outputImage, "jpg", baos);
-            byte[] bytes = baos.toByteArray();
-
+            byte[] bytes = in.readAllBytes();
             event.setImageData(new SerialBlob(bytes));
             event.setImageContentType("image/jpeg");
         } catch (IOException | SQLException e) {
             LOGGER.warn("Could not load image from {}: {}", img.getFilename(), e.getMessage());
         }
     }
+
 
 }

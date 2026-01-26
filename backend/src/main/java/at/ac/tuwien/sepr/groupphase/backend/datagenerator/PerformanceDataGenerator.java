@@ -110,7 +110,7 @@ public class PerformanceDataGenerator {
     private List<Performance> generatePerformancesFor(Event event, List<Hall> halls) {
         List<Performance> generated = new ArrayList<>();
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        int count = rnd.nextInt(1, 4);
+        int count = rnd.nextInt(1, 3);
 
         for (int i = 0; i < count; i++) {
             Hall hall = halls.get(rnd.nextInt(halls.size()));
