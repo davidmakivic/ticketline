@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 import { TicketsService } from '../../services/tickets.service';
 import { PerformancesService } from '../../services/performances.service';
@@ -67,7 +68,8 @@ export class OrdersComponent {
     private performancesService: PerformancesService,
     private eventsService: EventsService,
     private reservationsService: ReservationsService,
-    private cart: CartService
+    private cart: CartService,
+    private snackBar: MatSnackBar
   ) {
     this.load();
   }
@@ -174,7 +176,7 @@ openCancelConfirm(o: any) {
   const hasMerch = ((o?.merchItems?.length ?? 0) > 0);
 
   if (!hasTickets && !hasMerch) {
-    alert('Nichts zum Stornieren');
+    this.showErrorSnackbar('Nichts zum Stornieren');
     return;
   }
 
@@ -199,7 +201,7 @@ doCancelConfirmed() {
   const hasMerch = merchItems.length > 0;
 
   if (!hasTickets && !hasMerch) {
-    alert('Nichts zum Stornieren');
+    this.showErrorSnackbar('Nichts zum Stornieren');
     return;
   }
 
@@ -248,7 +250,7 @@ doCancelConfirmed() {
       next: (cancellation) => finalizeNavigate(cancellation, eventTitle, seats),
       error: (e: any) => {
         console.error(e);
-        alert('Stornierung fehlgeschlagen');
+        this.showErrorSnackbar('Stornierung fehlgeschlagen');
       }
     });
 
@@ -281,7 +283,7 @@ doCancelConfirmed() {
       next: (cancellation) => finalizeNavigate(cancellation, eventTitle, seats),
       error: (e: any) => {
         console.error(e);
-        alert('Stornierung fehlgeschlagen');
+        this.showErrorSnackbar('Stornierung fehlgeschlagen');
       }
     });
   });
@@ -348,7 +350,7 @@ doCancelConfirmed() {
     const selectedIds = allIds.filter(tid => (selMap[tid] ?? true) === true);
 
     if (selectedIds.length === 0) {
-      alert('Bitte wähle mindestens ein Ticket aus.');
+      this.showErrorSnackbar('Bitte wähle mindestens ein Ticket aus.');
       return;
     }
 
@@ -373,7 +375,7 @@ doCancelConfirmed() {
         next: () => this.load(),
         error: e => {
           console.error(e);
-          alert('Reservierung konnte nicht gelöscht werden');
+          this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
         }
       });
       return;
@@ -389,7 +391,8 @@ doCancelConfirmed() {
           next: () => this.load(),
           error: e => {
             console.error(e);
-            alert('Reservierung konnte nicht gelöscht werden');
+
+            this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
           }
         });
       },
@@ -399,7 +402,7 @@ doCancelConfirmed() {
           next: () => this.load(),
           error: err => {
             console.error(err);
-            alert('Reservierung konnte nicht gelöscht werden');
+            this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
           }
         });
       }
@@ -785,6 +788,15 @@ doCancelConfirmed() {
         const arr = (this.reservationSeatsById[x.rid] ||= []);
         if (!arr.includes(seat)) arr.push(seat);
       }
+    });
+  }
+
+  private showErrorSnackbar(message: string): void {
+    this.snackBar.open(message, 'Schließen', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar'],
     });
   }
 }
