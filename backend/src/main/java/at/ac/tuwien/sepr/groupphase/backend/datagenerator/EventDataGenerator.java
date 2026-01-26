@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
 import javax.sql.rowset.serial.SerialBlob;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
@@ -48,7 +52,6 @@ public class EventDataGenerator {
     };
     private static final ClassPathResource[] FESTIVAL_IMAGES = {
         new ClassPathResource("images/Kultursommer-Wien-2025-praterwiese.jpg"),
-        new ClassPathResource("images/Elektro-Beats-Festival.jpg"),
         new ClassPathResource("images/Indie-Summer-Festival.jpg"),
         new ClassPathResource("images/Napalm-Death-2026-tickets-m.jpg"),
         new ClassPathResource("images/One-Love-Festival-2026-tickets-m.jpg"),
@@ -111,7 +114,7 @@ public class EventDataGenerator {
             "Ein Festival für elektronische Musik, DJs und beeindruckende Lichtshows.",
             EventType.FESTIVAL,
             360);
-        loadImageFromFile(e6, new ClassPathResource("images/Elektro-Beats-Festival.jpg"));
+        loadImageFromFile(e6, new ClassPathResource("images/maxresdefault.jpg"));
 
         Event e7 = new Event("Symphonic Rock Night",
             "Ein außergewöhnliches Konzert, das Rock und Orchester kombiniert.",
@@ -177,16 +180,32 @@ public class EventDataGenerator {
 
     private void loadImageFromFile(Event event, ClassPathResource img) {
         try (InputStream in = img.getInputStream()) {
+            BufferedImage originalImage = ImageIO.read(in);
 
-            byte[] bytes = in.readAllBytes();
-            try {
-                event.setImageData(new SerialBlob(bytes));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            // Prüfe ob Bild geladen werden konnte
+            if (originalImage == null) {
+                LOGGER.warn("Could not decode image from {}, skipping", img.getFilename());
+                return;
             }
+
+            // Skaliere auf max 400px Breite
+            int targetWidth = 400;
+            int targetHeight = (int) ((double) originalImage.getHeight() / originalImage.getWidth() * targetWidth);
+
+            Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+            BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+            outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
+
+            // Komprimiere als JPEG mit niedriger Qualität
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(outputImage, "jpg", baos);
+            byte[] bytes = baos.toByteArray();
+
+            event.setImageData(new SerialBlob(bytes));
             event.setImageContentType("image/jpeg");
-        } catch (IOException e) {
-            LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());
+        } catch (IOException | SQLException e) {
+            LOGGER.warn("Could not load image from {}: {}", img.getFilename(), e.getMessage());
         }
     }
+
 }
