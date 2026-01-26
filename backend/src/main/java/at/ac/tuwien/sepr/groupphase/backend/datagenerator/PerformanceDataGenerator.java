@@ -32,7 +32,6 @@ public class PerformanceDataGenerator {
     private final PerformanceRepository performanceRepository;
     private final EventRepository eventRepository;
     private final HallRepository hallRepository;
-    private final List<Performance> performances = new ArrayList<>();
 
     public PerformanceDataGenerator(
         PerformanceRepository performanceRepository,
@@ -58,26 +57,28 @@ public class PerformanceDataGenerator {
         int totalPerformances = 0;
 
         for (int offset = 0; offset < eventCount; offset += batchSize) {
-            // Lade nur 10 Events auf einmal
-            List<Event> eventBatch = eventRepository.findAll(PageRequest.of(offset / batchSize, batchSize)).getContent();
+            List<Event> eventBatch = new ArrayList<>(
+                eventRepository.findAll(PageRequest.of(offset / batchSize, batchSize)).getContent()
+            );
 
             for (Event event : eventBatch) {
-                List<Performance> performances = generatePerformancesFor(event, halls);
-                if (!performances.isEmpty()) {
-                    performanceRepository.saveAll(performances);
+                List<Performance> batch = generatePerformancesFor(event, halls);
+                if (!batch.isEmpty()) {
+                    performanceRepository.saveAll(batch);
                     performanceRepository.flush();
-                    totalPerformances += performances.size();
-                    performances.clear();
+                    totalPerformances += batch.size();
+                    batch.clear();
                 }
             }
 
             eventBatch.clear();
-            System.gc();
             LOGGER.debug("Processed events {} to {}", offset, Math.min(offset + batchSize, eventCount));
         }
 
         LOGGER.debug("Generated {} performances total", totalPerformances);
     }
+
+
 
 
     private Performance createPerformance(Event event, Hall hall, int seed) {
