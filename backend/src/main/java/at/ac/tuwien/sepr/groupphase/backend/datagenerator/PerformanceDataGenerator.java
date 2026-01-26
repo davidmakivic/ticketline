@@ -53,12 +53,24 @@ public class PerformanceDataGenerator {
         List<Event> events = eventRepository.findAll();
         List<Hall> halls = hallRepository.findAll();
 
-        performances.clear();
+        int batchSize = 50;
+        int totalCount = 0;
+
         for (Event event : events) {
-            generatePerformancesFor(event, halls);
+            List<Performance> batch = generatePerformancesFor(event, halls);
+
+            if (!batch.isEmpty()) {
+                performanceRepository.saveAll(batch);
+                performanceRepository.flush();
+                totalCount += batch.size();
+                batch.clear(); // Speicher freigeben
+
+                if (totalCount % 100 == 0) {
+                    LOGGER.debug("Saved {} performances so far", totalCount);
+                }
+            }
         }
-        performanceRepository.saveAll(performances);
-        LOGGER.debug("Generated {} performances with varied schedules", performances.size());
+        LOGGER.debug("Generated {} performances with varied schedules", totalCount);
     }
 
     private Performance createPerformance(Event event, Hall hall, int seed) {
@@ -87,17 +99,19 @@ public class PerformanceDataGenerator {
         return p;
     }
 
-    private void generatePerformancesFor(Event event, List<Hall> halls) {
-        // wähle1–3 zufällige Halls für dieses Event
+    private List<Performance> generatePerformancesFor(Event event, List<Hall> halls) {
+        List<Performance> generated = new ArrayList<>();
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         int count = rnd.nextInt(1, 4);
+
         for (int i = 0; i < count; i++) {
             Hall hall = halls.get(rnd.nextInt(halls.size()));
-            performances.add(createPerformance(event, hall, i));
+            generated.add(createPerformance(event, hall, i));
         }
 
-
+        return generated;
     }
+
 }
 
 
