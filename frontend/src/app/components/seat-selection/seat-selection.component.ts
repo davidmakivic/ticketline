@@ -361,7 +361,6 @@ addSelectedToCart() {
   }
 
 
-
   onSeatClick(sectorKey: string, row: number, seat: number) {
     const seatId = this.seatIdByKey.get(this.seatKey(sectorKey, row, seat));
     if (!seatId) return;
@@ -371,9 +370,10 @@ addSelectedToCart() {
           'Bitte einloggen, um Sitzplätze auswählen zu können.',
           'Login',
           {
-            duration: 3000,
+            duration: 5000,
             horizontalPosition: 'center',
-            verticalPosition: 'bottom'
+            verticalPosition: 'bottom',
+            panelClass: ['error-snackbar']
           }
         ).onAction().subscribe(() => {
           this.router.navigate(['/login'], {
