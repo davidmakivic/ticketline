@@ -71,15 +71,20 @@ public class TicketDataGenerator implements CommandLineRunner {
         int totalTickets = 0;
 
         for (int page = 0; page < (performanceCount + batchSize - 1) / batchSize; page++) {
-            List<Performance> performances = performanceRepository.findAllWithHallAndSectors(
+            // 1. Lade nur Performance-IDs mit echter SQL-Pagination
+            List<Performance> performances = performanceRepository.findAllIds(
                 PageRequest.of(page, batchSize)
             );
 
-            for (Performance performance : performances) {
-                // Seats MIT PriceCategory VOR dem Service-Aufruf laden
-                List<Seat> seats = seatRepository.findByHallIdWithSector(performance.getHall().getId());
+            List<Long> performanceIds = performances.stream()
+                .map(Performance::getId)
+                .toList();
 
-                // Jetzt an den Service übergeben
+            // 2. Eager-load Hall + Sectors für diese IDs
+            performances = performanceRepository.findByIdsWithHallAndSectors(performanceIds);
+
+            for (Performance performance : performances) {
+                List<Seat> seats = seatRepository.findByHallIdWithSector(performance.getHall().getId());
                 ticketGenerationService.generateTicketsForPerformanceWithSeats(performance, seats);
 
                 totalTickets += seats.size();
@@ -93,5 +98,6 @@ public class TicketDataGenerator implements CommandLineRunner {
 
         LOGGER.debug("Ticket generation complete – created ~{} tickets", totalTickets);
     }
+
 
 }
