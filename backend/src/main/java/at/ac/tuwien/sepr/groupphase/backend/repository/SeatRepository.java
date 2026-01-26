@@ -43,7 +43,12 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
      * @param hallId the ID of the hall
      * @return a list of seats with their sector loaded
      */
-    @Query("select s from Seat s join fetch s.sector sec where sec.hall.id = :hallId")
+    @Query("""
+    SELECT s FROM Seat s
+    JOIN FETCH s.sector sec
+    JOIN FETCH sec.priceCategory
+    WHERE sec.hall.id = :hallId
+    """)
     List<Seat> findByHallIdWithSector(@Param("hallId") Long hallId);
 
 
