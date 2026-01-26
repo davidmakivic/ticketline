@@ -18,7 +18,6 @@ public interface PerformanceRepository extends JpaRepository<Performance, Long>,
     List<Performance> findByEventId(Long eventId);
 
 
-
     @Query("""
         SELECT p
         FROM Performance p
@@ -28,5 +27,13 @@ public interface PerformanceRepository extends JpaRepository<Performance, Long>,
         ORDER BY p.startTime
         """)
     Page<Performance> findAllWithDetails(Pageable pageable);
+
+    @Query("""
+        SELECT DISTINCT p FROM Performance p
+        JOIN FETCH p.hall h
+        JOIN FETCH h.sectors
+        """)
+    List<Performance> findAllWithHallAndSectors(Pageable pageable);
+
 
 }
