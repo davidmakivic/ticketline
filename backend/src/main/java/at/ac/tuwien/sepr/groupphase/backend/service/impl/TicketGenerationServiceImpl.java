@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import at.ac.tuwien.sepr.groupphase.backend.repository.projection.SeatPriceProjection;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -41,85 +40,33 @@ public class TicketGenerationServiceImpl implements TicketGenerationService {
     @Override
     @Transactional
     public void generateTicketsForPerformance(Performance performance) {
-        Long performanceId = performance.getId();
-        Long hallId = performance.getHall().getId();
-        Long basePriceCents = performance.getBasePriceCents();
-
-        LOGGER.info("Generating tickets for performance id={} in hall id={}", performanceId, hallId);
-
-        List<SeatPriceProjection> seats = seatRepository.findSeatPriceDataByHallId(hallId);
-
-        final int chunk = 200;
-        int i = 0;
-
-        Performance perfRef = entityManager.getReference(Performance.class, performanceId);
-
-        for (SeatPriceProjection s : seats) {
-            Long seatId = s.getSeatId();
-            Long priceInCents = calculatePrice(basePriceCents, s.getPriceFactor());
-
-            Ticket ticket = new Ticket();
-            ticket.setPerformance(perfRef);
-            ticket.setSeat(entityManager.getReference(Seat.class, seatId));
-            ticket.setPriceFinalCents(priceInCents);
-            ticket.setStatus(TicketStatus.AVAILABLE);
-            ticket.setReservedUntil(null);
-            ticket.setReservedByUserId(null);
-
-            entityManager.persist(ticket);
-
-            i++;
-            if (i % chunk == 0) {
-                entityManager.flush();
-                entityManager.clear();
-
-                perfRef = entityManager.getReference(Performance.class, performanceId);
-            }
+        if (ticketRepository.existsByPerformanceId(performance.getId())) {
+            LOGGER.debug("Tickets for performance {} already exist – skipping", performance.getId());
+            return;
         }
-
-        entityManager.flush();
-        entityManager.clear();
-
-        LOGGER.info("Created {} tickets for performance id={}", seats.size(), performanceId);
+        bulkInsert(performance);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void generateTicketsForPerformanceWithSeats(Performance performance, List<Seat> seats) {
-        LOGGER.debug("Generating {} tickets for performance id={}", seats.size(), performance.getId());
-
-        List<Ticket> ticketBatch = new ArrayList<>(BATCH_SIZE);
-
-        for (Seat seat : seats) {
-            Long priceInCents = calculatePrice(
-                performance.getBasePriceCents(),
-                seat.getSector().getPriceCategory().getPrice()
-            );
-
-            Ticket ticket = new Ticket();
-            ticket.setPerformance(performance);
-            ticket.setSeat(seat);
-            ticket.setPriceFinalCents(priceInCents);
-            ticket.setStatus(TicketStatus.AVAILABLE);
-
-            ticketBatch.add(ticket);
-
-            if (ticketBatch.size() >= BATCH_SIZE) {
-                ticketRepository.saveAll(ticketBatch);
-                entityManager.flush();
-                entityManager.clear();
-                ticketBatch.clear();
-            }
+        if (ticketRepository.existsByPerformanceId(performance.getId())) {
+            LOGGER.debug("Tickets for performance {} already exist – skipping", performance.getId());
+            return;
         }
-
-        if (!ticketBatch.isEmpty()) {
-            ticketRepository.saveAll(ticketBatch);
-            entityManager.flush();
-            entityManager.clear();
-        }
-
-        LOGGER.debug("Created {} tickets for performance id={}", seats.size(), performance.getId());
+        // Seats werden hier nicht einzeln geschrieben, sondern nur für Preisinfo genutzt (über SQL-Join).
+        bulkInsert(performance);
     }
+
+    private void bulkInsert(Performance performance) {
+        int inserted = ticketRepository.bulkInsertForPerformance(
+            performance.getId(),
+            performance.getHall().getId(),
+            performance.getBasePriceCents()
+        );
+        LOGGER.debug("Bulk-inserted {} tickets for performance {}", inserted, performance.getId());
+    }
+
 
 
     private Long calculatePrice(Long basePriceCents, double categoryPriceMultiplier) {

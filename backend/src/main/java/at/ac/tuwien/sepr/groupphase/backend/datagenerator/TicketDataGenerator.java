@@ -18,7 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Profile("generateData")
 @DependsOn({"performanceDataGenerator", "seatDataGenerator"})
@@ -34,6 +36,8 @@ public class TicketDataGenerator implements CommandLineRunner {
     private final EntityManager entityManager;
     private final TransactionTemplate transactionTemplate;
     private final SeatRepository seatRepository;
+
+    private final Map<Long, List<Seat>> seatCache = new HashMap<>();
 
     public TicketDataGenerator(
         TicketRepository ticketRepository,
@@ -58,6 +62,8 @@ public class TicketDataGenerator implements CommandLineRunner {
     }
 
     private void generateTicketData() {
+
+        seatCache.clear();
         if (ticketRepository.count() > 0) {
             LOGGER.debug("Tickets already generated");
             return;
@@ -87,12 +93,13 @@ public class TicketDataGenerator implements CommandLineRunner {
                 if (ticketRepository.existsByPerformanceId(performance.getId())) {
                     continue;
                 }
-                List<Seat> seats = seatRepository.findByHallIdWithSector(performance.getHall().getId());
+
+                Long hallId = performance.getHall().getId();
+                List<Seat> seats = seatCache.computeIfAbsent(hallId,
+                    seatRepository::findByHallIdWithSector);
+
                 ticketGenerationService.generateTicketsForPerformanceWithSeats(performance, seats);
-
                 totalTickets += seats.size();
-
-
             }
 
             entityManager.flush();
