@@ -53,7 +53,7 @@ public class PerformanceDataGenerator {
         List<Event> events = eventRepository.findAll();
         List<Hall> halls = hallRepository.findAll();
 
-        int batchSize = 50;
+        int batchSize = 20;
         int totalCount = 0;
 
         for (Event event : events) {

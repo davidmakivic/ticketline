@@ -141,7 +141,7 @@ public class EventDataGenerator {
         eventRepository.flush();
 
         // Restliche Events in Batches generieren
-        int batchSize = 50;
+        int batchSize = 20;
         for (int i = 11; i <= 200; i += batchSize) {
             List<Event> batch = new ArrayList<>();
             int toIndex = Math.min(i + batchSize - 1, 200);
