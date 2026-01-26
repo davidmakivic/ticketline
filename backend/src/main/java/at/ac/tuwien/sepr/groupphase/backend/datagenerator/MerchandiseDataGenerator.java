@@ -12,9 +12,11 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
 
 @Profile("generateData")
 @Component
@@ -288,7 +290,11 @@ public class MerchandiseDataGenerator {
         try (InputStream in = img.getInputStream()) {
 
             byte[] bytes = in.readAllBytes();
-            merchandise.setImageData(bytes);
+            try {
+                merchandise.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             merchandise.setImageContentType("image/jpeg");
         } catch (IOException e) {
             LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());

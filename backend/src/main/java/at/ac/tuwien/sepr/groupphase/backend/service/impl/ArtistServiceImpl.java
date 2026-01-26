@@ -10,6 +10,7 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.ArtistImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 import org.slf4j.Logger;
@@ -18,10 +19,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -48,7 +56,12 @@ public class ArtistServiceImpl implements ArtistService {
         Artist entity = new Artist(firstName, lastName, stageName, artistType);
 
         if (image != null && !image.isEmpty()) {
-            entity.setImageData(image.getBytes());
+            byte[] bytes = image.getBytes();
+            try {
+                entity.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             entity.setImageContentType(image.getContentType());
         }
 
@@ -70,7 +83,12 @@ public class ArtistServiceImpl implements ArtistService {
         existingArtist.setArtistType(artistType);
 
         if (image != null && !image.isEmpty()) {
-            existingArtist.setImageData(image.getBytes());
+            byte[] bytes = image.getBytes();
+            try {
+                existingArtist.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             existingArtist.setImageContentType(image.getContentType());
         }
         Artist updatedArtist = artistRepository.save(existingArtist);
@@ -84,21 +102,6 @@ public class ArtistServiceImpl implements ArtistService {
             .orElseThrow(() -> new NotFoundException("Artist not found with id " + id));
 
         return artistMapper.artistToArtistDto(artist);
-    }
-
-    @Override
-    public ResponseEntity<byte[]> getArtistImage(Long id) {
-        LOGGER.info("Fetching artist image for id={}", id);
-        Artist artist = artistRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Artist not found: " + id));
-
-        if (artist.getImageData() == null || artist.getImageData().length == 0) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(artist.getImageContentType()))
-            .body(artist.getImageData());
     }
 
 
@@ -174,5 +177,40 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public List<ArtistAutocompleteDto> findArtistAutocomplete(String name, int maxAmount) {
         return this.artistRepository.findArtistAutocompleteDto(name, PageRequest.of(0, maxAmount));
+    }
+
+    @Override
+    public ResponseEntity<StreamingResponseBody> streamArtistImage(Long id) {
+        LOGGER.info("Streaming artist image for id={}", id);
+
+        String contentType = artistRepository.findImageContentTypeById(id)
+            .orElseThrow(() -> new NotFoundException("Artist not found: " + id));
+
+        StreamingResponseBody body = outputStream -> {
+            try {
+                writeArtistImageTo(id, outputStream);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(body);
+    }
+
+    @Transactional(readOnly = true)
+    public void writeArtistImageTo(Long id, OutputStream out) throws Exception {
+        ArtistImageProjection p = artistRepository.findImageById(id)
+            .orElseThrow(() -> new NotFoundException("Artist not found: " + id));
+
+        Blob blob = p.getImageData();
+        if (blob == null || blob.length() == 0) {
+            return;
+        }
+
+        try (InputStream in = blob.getBinaryStream()) {
+            in.transferTo(out);
+        }
     }
 }

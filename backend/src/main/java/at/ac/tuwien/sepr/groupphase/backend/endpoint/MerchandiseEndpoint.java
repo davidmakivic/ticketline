@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 
 import java.lang.invoke.MethodHandles;
@@ -70,8 +71,8 @@ public class MerchandiseEndpoint {
 
     @PermitAll
     @GetMapping("/{id}/image")
-    public ResponseEntity<byte[]> getMerchandiseImage(@PathVariable Long id) {
+    public ResponseEntity<StreamingResponseBody>  getMerchandiseImage(@PathVariable Long id) {
         LOGGER.info("Fetching image for merchandise id={}", id);
-        return service.getMerchandiseImage(id);
+        return service.streamMerchandiseImage(id);
     }
 }

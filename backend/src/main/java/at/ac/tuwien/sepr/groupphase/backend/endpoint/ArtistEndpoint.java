@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -81,9 +82,9 @@ public class ArtistEndpoint {
     @PermitAll
     @GetMapping("/{id}/image")
     @Operation(summary = "Get image for a specific artist", security = @SecurityRequirement(name = "apiKey"))
-    public ResponseEntity<byte[]> getArtistImage(@PathVariable Long id) {
+    public ResponseEntity<StreamingResponseBody> getArtistImage(@PathVariable Long id) {
         LOGGER.info("Fetching image for artist id={}", id);
-        return artistService.getArtistImage(id);
+        return artistService.streamArtistImage(id);
     }
 
     @PermitAll

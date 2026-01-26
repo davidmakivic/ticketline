@@ -14,9 +14,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
 import java.util.List;
 
 @Profile("generateData")
@@ -108,7 +110,11 @@ public class ArtistDataGenerator {
         try (InputStream in = img.getInputStream()) {
 
             byte[] bytes = in.readAllBytes();
-            artist.setImageData(bytes);
+            try {
+                artist.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             artist.setImageContentType("image/jpeg");
         } catch (IOException e) {
             LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());

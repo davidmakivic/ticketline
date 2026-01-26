@@ -11,9 +11,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 @Profile("generateData")
@@ -103,7 +105,11 @@ public class NewsDataGenerator {
         try (InputStream in = img.getInputStream()) {
 
             byte[] bytes = in.readAllBytes();
-            news.setImageData(bytes);
+            try {
+                news.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             news.setImageContentType("image/jpeg");
         } catch (IOException e) {
             LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());

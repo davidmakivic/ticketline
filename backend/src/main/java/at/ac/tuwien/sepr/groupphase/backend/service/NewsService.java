@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.groupphase.backend.service;
 import at.ac.tuwien.sepr.groupphase.backend.entity.News;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,14 +39,6 @@ public interface NewsService {
     News publishMessage(String title, String summary, String text, MultipartFile image, Long eventId) throws IOException;
 
     /**
-     * Get the image associated with a news entry.
-     *
-     * @param id the id of the news entry
-     * @return ResponseEntity containing the image data and appropriate content type, or no content if no image exists
-     */
-    ResponseEntity<byte[]> getNewsImage(Long id);
-
-    /**
      * Get all unread news for a specific user.
      *
      * @param userId the id of the user
@@ -69,4 +62,6 @@ public interface NewsService {
      * @param newsId the id of the news entry to mark as read
      */
     void markAsRead(Long userId, Long newsId);
+
+    ResponseEntity<StreamingResponseBody> streamNewsImage(Long id);
 }
