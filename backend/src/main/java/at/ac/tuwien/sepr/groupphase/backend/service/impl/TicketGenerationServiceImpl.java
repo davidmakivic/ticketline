@@ -21,7 +21,7 @@ import java.util.List;
 public class TicketGenerationServiceImpl implements TicketGenerationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int BATCH_SIZE = 100;
+    private static final int BATCH_SIZE = 50;
 
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
