@@ -10,11 +10,10 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 @Profile("generateData")
@@ -100,14 +99,16 @@ public class NewsDataGenerator {
         LOGGER.debug("5 news entries generated successfully");
     }
 
-    private void loadImageFromFile(News news, String filePath) {
-        try {
-            Path path = Paths.get(filePath);
-            if (Files.exists(path)) {
-                byte[] imageData = Files.readAllBytes(path);
-                news.setImageData(imageData);
-                news.setImageContentType("image/jpeg");
+    private void loadImageFromFile(News news, ClassPathResource img) {
+        try (InputStream in = img.getInputStream()) {
+
+            byte[] bytes = in.readAllBytes();
+            try {
+                news.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
+            news.setImageContentType("image/jpeg");
         } catch (IOException e) {
             LOGGER.warn("Could not load image from {}: {}", filePath, e.getMessage());
         }

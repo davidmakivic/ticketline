@@ -8,17 +8,24 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ReadNewsRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.NewsImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.service.NewsService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -72,28 +79,17 @@ public class SimpleNewsService implements NewsService {
         }
 
         if (image != null && !image.isEmpty()) {
-            news.setImageData(image.getBytes());
+            byte[] bytes = image.getBytes();
+            try {
+                news.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             news.setImageContentType(image.getContentType());
         }
 
         return newsRepository.save(news);
     }
-
-    @Override
-    public ResponseEntity<byte[]> getNewsImage(Long id) {
-        LOGGER.info("Fetching news image for id={}", id);
-        News news = newsRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("News not found: " + id));
-
-        if (news.getImageData() == null || news.getImageData().length == 0) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(news.getImageContentType()))
-            .body(news.getImageData());
-    }
-
 
     public List<News> getUnreadNews(Long userId) {
         List<Long> readNewsIds = readNewsRepository.findReadNewsIdsByUserId(userId);
@@ -116,6 +112,41 @@ public class SimpleNewsService implements NewsService {
             readNews.setNews(newsRepository.getReferenceById(newsId));
             readNews.setReadAt(LocalDateTime.now());
             readNewsRepository.save(readNews);
+        }
+    }
+
+    @Override
+    public ResponseEntity<StreamingResponseBody> streamNewsImage(Long id) {
+        LOGGER.info("Streaming news image for id={}", id);
+
+        String contentType = newsRepository.findImageContentTypeById(id)
+            .orElseThrow(() -> new NotFoundException("News not found: " + id));
+
+        StreamingResponseBody body = outputStream -> {
+            try {
+                writeNewsImageTo(id, outputStream);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(body);
+    }
+
+    @Transactional(readOnly = true)
+    public void writeNewsImageTo(Long id, OutputStream out) throws Exception {
+        NewsImageProjection p = newsRepository.findImageById(id)
+            .orElseThrow(() -> new NotFoundException("Merchandise not found: " + id));
+
+        Blob blob = p.getImageData();
+        if (blob == null || blob.length() == 0) {
+            return;
+        }
+
+        try (InputStream in = blob.getBinaryStream()) {
+            in.transferTo(out);
         }
     }
 

@@ -113,17 +113,20 @@ export class EventsListComponent implements OnInit {
 
     this.searchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.performSearch();
-    });
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.performSearch());
 
     this.dateSearchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.performSearch();
-    });
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.performSearch());
+  }
+
+  ngOnDestroy(): void {
+    this.revokeAllEventImageUrls();
+
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   isAdmin(): boolean {
@@ -132,21 +135,30 @@ export class EventsListComponent implements OnInit {
 
   loadEvents(): void {
     this.isLoading = true;
-    this.eventsService.getEvents(this.currentPage, this.pageSize).subscribe({
+
+    this.eventsService.getEvents(this.currentPage, this.pageSize).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (pagedResult) => {
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
         this.totalPages = pagedResult.totalPages;
-        this.loadImagesForEvents(this.events);
+
+        this.syncEventImages(this.events);
+
         this.isLoading = false;
       },
-      error: (error) => {
+      error: () => {
         this.showErrorSnackbar('Fehler beim Laden der Events');
         this.isLoading = false;
       }
     });
   }
 
+  performSearch(): void {
+    this.isSearchActive = true;
+    this.currentPage = 0;
+    this.isLoading = true;
 
   performSearch(): void {
     this.isSearchActive = true;
@@ -172,7 +184,9 @@ export class EventsListComponent implements OnInit {
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
         this.totalPages = pagedResult.totalPages;
-        this.loadImagesForEvents(this.events);
+
+        this.syncEventImages(this.events);
+
         this.isLoading = false;
       },
       error: (error) => {
@@ -215,21 +229,51 @@ export class EventsListComponent implements OnInit {
     return this.eventImages.get(eventId);
   }
 
-  loadImagesForEvents(events: EventDto[]): void {
-    events.forEach(event => {
-      if (event.id && !this.eventImages.has(event.id)) {
-        this.eventsService.getEventImage(event.id).subscribe({
-          next: (blob) => {
-            const url = window.URL.createObjectURL(blob);
-            const safeUrl = this.sanitizer.bypassSecurityTrustUrl(url);
-            this.eventImages.set(event.id!, safeUrl);
-          },
-          error: (error) => {
-            console.warn(`Bild für Event ${event.id} konnte nicht geladen werden:`, error);
-          }
-        });
+  private syncEventImages(events: EventDto[]): void {
+    const currentIds = new Set<number>(
+      events.filter(e => e.id != null).map(e => e.id as number)
+    );
+
+    for (const [id, objUrl] of this.eventImageObjectUrls.entries()) {
+      if (!currentIds.has(id)) {
+        URL.revokeObjectURL(objUrl);
+        this.eventImageObjectUrls.delete(id);
+        this.eventImages.delete(id);
       }
+    }
+
+    events.forEach(event => {
+      if (!event.id) return;
+      if (this.eventImages.has(event.id)) return;
+
+      this.eventsService.getEventImage(event.id).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: (blob) => {
+          const existing = this.eventImageObjectUrls.get(event.id!);
+          if (existing) {
+            URL.revokeObjectURL(existing);
+            this.eventImageObjectUrls.delete(event.id!);
+            this.eventImages.delete(event.id!);
+          }
+
+          const url = window.URL.createObjectURL(blob);
+          this.eventImageObjectUrls.set(event.id!, url);
+          this.eventImages.set(event.id!, this.sanitizer.bypassSecurityTrustUrl(url));
+        },
+        error: (error) => {
+          console.warn(`Bild für Event ${event.id} konnte nicht geladen werden:`, error);
+        }
+      });
     });
+  }
+
+  private revokeAllEventImageUrls(): void {
+    for (const url of this.eventImageObjectUrls.values()) {
+      URL.revokeObjectURL(url);
+    }
+    this.eventImageObjectUrls.clear();
+    this.eventImages.clear();
   }
 
   openAddEventModal(eventAddModal: TemplateRef<any>): void {

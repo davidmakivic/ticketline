@@ -1,124 +1,93 @@
 package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
-import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
-import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
-import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
-import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
-import at.ac.tuwien.sepr.groupphase.backend.type.SectorType;
-import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
+import at.ac.tuwien.sepr.groupphase.backend.service.impl.TicketGenerationServiceImpl;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Profile("generateData")
 @DependsOn({"performanceDataGenerator", "seatDataGenerator"})
 @Component
+@Order(100)
 public class TicketDataGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final TicketRepository ticketRepository;
     private final PerformanceRepository performanceRepository;
+    private final TicketGenerationServiceImpl ticketGenerationService;
+    private final EntityManager entityManager;
+    private final TransactionTemplate transactionTemplate;
     private final SeatRepository seatRepository;
+
+    private final Map<Long, List<Seat>> seatCache = new HashMap<>();
 
     public TicketDataGenerator(
         TicketRepository ticketRepository,
         PerformanceRepository performanceRepository,
-        SeatRepository seatRepository
+        TicketGenerationServiceImpl ticketGenerationService,
+        EntityManager entityManager,
+        TransactionTemplate transactionTemplate, SeatRepository seatRepository
     ) {
         this.ticketRepository = ticketRepository;
         this.performanceRepository = performanceRepository;
+        this.ticketGenerationService = ticketGenerationService;
+        this.entityManager = entityManager;
+        this.transactionTemplate = transactionTemplate;
         this.seatRepository = seatRepository;
     }
 
     @PostConstruct
-    @Transactional
-    public void generateTicketData() {
-        if (!ticketRepository.findAll().isEmpty()) {
+    private void generateTickets() {
+        if (ticketRepository.count() > 0) {
             LOGGER.debug("Tickets already generated");
             return;
         }
 
-        List<Performance> performances = performanceRepository.findAll();
+        LOGGER.debug("Generating tickets for the first 50 performances");
+
+        Pageable first40 = PageRequest.of(0, 50, Sort.by("id").ascending());
+        List<Performance> performances = performanceRepository.findAllIds(first40);
+
         if (performances.isEmpty()) {
-            LOGGER.warn("No performances available – cannot generate tickets");
+            LOGGER.warn("No performances found");
             return;
         }
 
-        LOGGER.debug("Generating tickets: one ticket per seat & performance");
+        List<Long> ids = performances.stream()
+            .map(Performance::getId)
+            .toList();
 
-        int created = 0;
-        int batchSize = 50; // Batch-Verarbeitung
+        List<Performance> performancesWithDetails = performanceRepository.findByIdsWithHallAndSectors(ids);
 
-        for (Performance performance : performances) {
-            Long hallId = performance.getHall().getId();
-            List<Seat> seatsForHall = seatRepository.findByHallIdWithSector(hallId);
-
-            if (seatsForHall.isEmpty()) {
-                LOGGER.warn("No seats found for hall {} (performance id = {})",
-                    hallId, performance.getId());
-                continue;
-            }
-
-            List<Ticket> batch = new ArrayList<>(batchSize);
-
-            for (Seat seat : seatsForHall) {
-                Ticket ticket = new Ticket();
-                ticket.setPerformance(performance);
-                ticket.setSeat(seat);
-                ticket.setStatus(TicketStatus.AVAILABLE);
-
-                SectorType sectorType = seat.getSector().getType();
-                Long basePrice = performance.getBasePriceCents();
-                double multiplier = sectorMultiplier(sectorType);
-                Long finalPrice = Math.round(basePrice * multiplier);
-
-                ticket.setPriceFinalCents(finalPrice);
-                batch.add(ticket);
-
-                // Batch speichern und Speicher freigeben
-                if (batch.size() >= batchSize) {
-                    ticketRepository.saveAll(batch);
-                    ticketRepository.flush();
-                    batch.clear();
-                    created += batchSize;
-                }
-            }
-
-            // Restliche Tickets speichern
-            if (!batch.isEmpty()) {
-                ticketRepository.saveAll(batch);
-                ticketRepository.flush();
-                created += batch.size();
-                batch.clear();
-            }
+        for (Performance performance : performancesWithDetails) {
+            ticketGenerationService.generateTicketsForPerformance(performance);
+            LOGGER.debug("Tickets generated for performance {}", performance.getId());
         }
 
-        LOGGER.debug("Ticket generation complete – created {} tickets", created);
+        LOGGER.debug("Ticket generation complete for {} performances", performancesWithDetails.size());
     }
 
 
-    private double sectorMultiplier(SectorType sectorType) {
-        return switch (sectorType) {
-            case STANDING -> 1.0;
-            case SEATED -> 1.5;
-            case VIP -> 2.0;
-        };
-    }
 
 }
-

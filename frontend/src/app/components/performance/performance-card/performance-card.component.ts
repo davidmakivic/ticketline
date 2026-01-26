@@ -61,6 +61,11 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   get basePriceEuro(): number {
     return this.performance.basePriceCents / 100;
   }
@@ -115,7 +120,9 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.eventsService.getEventImage(this.performance.eventId).subscribe({
+    this.eventsService.getEventImage(this.performance.eventId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
         this.eventImage = this.sanitizer.bypassSecurityTrustUrl(url);

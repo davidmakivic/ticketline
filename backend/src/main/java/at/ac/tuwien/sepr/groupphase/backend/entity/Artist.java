@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,9 +12,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
+import java.sql.Blob;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,8 +41,10 @@ public class Artist {
     @Column(name = "artist_type")
     private ArtistType artistType;
 
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private byte[] imageData;
+    private Blob imageData;
 
     @Column(name = "image_content_type")
     private String imageContentType;
@@ -105,11 +110,11 @@ public class Artist {
         this.events = events;
     }
 
-    public byte[] getImageData() {
+    public Blob getImageData() {
         return imageData;
     }
 
-    public void setImageData(byte[] imageData) {
+    public void setImageData(Blob imageData) {
         this.imageData = imageData;
     }
 

@@ -13,11 +13,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.List;
 
 @Profile("generateData")
@@ -105,14 +104,16 @@ public class ArtistDataGenerator {
         LOGGER.debug("Artist data generated and linked to events successfully");
     }
 
-    private void loadImageFromFile(Artist artist, String filePath) {
-        try {
-            Path path = Paths.get(filePath);
-            if (Files.exists(path)) {
-                byte[] imageData = Files.readAllBytes(path);
-                artist.setImageData(imageData);
-                artist.setImageContentType("image/jpeg");
+    private void loadImageFromFile(Artist artist, ClassPathResource img) {
+        try (InputStream in = img.getInputStream()) {
+
+            byte[] bytes = in.readAllBytes();
+            try {
+                artist.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
+            artist.setImageContentType("image/jpeg");
         } catch (IOException e) {
             LOGGER.warn("Could not load image from {}: {}", filePath, e.getMessage());
         }

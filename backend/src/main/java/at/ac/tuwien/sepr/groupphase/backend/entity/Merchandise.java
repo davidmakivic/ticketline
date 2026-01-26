@@ -1,9 +1,11 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -11,6 +13,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +30,11 @@ public class Merchandise {
     private Integer price;
 
     @Lob
-    private byte[] imageData;
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+    private Blob imageData;
+
+    @Column(name = "image_content_type")
     private String imageContentType;
 
     // Varianten-Liste initialisieren, damit kein NullPointerException auftritt
@@ -69,11 +76,11 @@ public class Merchandise {
         this.price = price;
     }
 
-    public byte[] getImageData() {
+    public Blob getImageData() {
         return imageData;
     }
 
-    public void setImageData(byte[] imageData) {
+    public void setImageData(Blob imageData) {
         this.imageData = imageData;
     }
 
