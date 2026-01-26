@@ -1,4 +1,4 @@
-import {Component, OnInit, TemplateRef} from '@angular/core';
+import {Component, OnInit, OnDestroy, TemplateRef} from '@angular/core';
 import {EventsService} from '../../../services/events.service';
 import {EventDto, EventTypeDto} from '../../../dtos/event';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
@@ -28,7 +28,7 @@ import {Hall} from "../../../dtos/hall";
 import {HallsService} from "../../../services/halls.service";
 import {VenuesService} from "../../../services/venues.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
+import {debounceTime, distinctUntilChanged, Subject, takeUntil} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
@@ -61,13 +61,16 @@ import {MatSnackBar} from "@angular/material/snack-bar";
   standalone: true,
   styleUrls: ['./events-list.component.scss']
 })
-export class EventsListComponent implements OnInit {
+export class EventsListComponent implements OnInit, OnDestroy {
   events: EventDto[] = [];
+
   eventImages: Map<number, SafeUrl> = new Map();
+
+  private eventImageObjectUrls: Map<number, string> = new Map();
+
   halls: Hall[] = [];
   hallsWithVenues: { hall: Hall; venueName?: string }[] = [];
 
-  // Pagination
   currentPage: number = 0;
   pageSize: number = 10;
   totalEvents: number = 0;
@@ -87,13 +90,14 @@ export class EventsListComponent implements OnInit {
   eventTypes = Object.values(EventTypeDto);
   isLoading: boolean = false;
 
-  // Admin-Eigenschaften
   currentEvent: EventDto | null = null;
   selectedFile: File | null = null;
   isEditMode: boolean = false;
   performances: PerformanceDto[] = [];
   newPerformance: Partial<PerformanceDto> = {};
   newPerformancePriceEuros: number | null = null;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private eventsService: EventsService,
@@ -104,8 +108,7 @@ export class EventsListComponent implements OnInit {
     private hallsService: HallsService,
     private venuesService: VenuesService,
     private snackBar: MatSnackBar
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadEvents();
@@ -160,12 +163,7 @@ export class EventsListComponent implements OnInit {
     this.currentPage = 0;
     this.isLoading = true;
 
-  performSearch(): void {
-    this.isSearchActive = true;
-    this.currentPage = 0;  // Immer auf Seite 0 zurücksetzen
-    this.isLoading = true;
     let startDateFormatted: Date | undefined = undefined;
-
     if (this.selectedStartDate) {
       startDateFormatted = this.selectedStartDate instanceof Date
         ? this.selectedStartDate
@@ -179,7 +177,9 @@ export class EventsListComponent implements OnInit {
       eventType: this.selectedEventType || undefined,
       startDate: startDateFormatted,
       durationMinutes: this.selectedDuration || undefined
-    }, this.currentPage, this.pageSize).subscribe({
+    }, this.currentPage, this.pageSize).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (pagedResult) => {
         this.events = pagedResult.content;
         this.totalEvents = pagedResult.totalElements;
@@ -189,7 +189,7 @@ export class EventsListComponent implements OnInit {
 
         this.isLoading = false;
       },
-      error: (error) => {
+      error: () => {
         this.showErrorSnackbar('Fehler bei der Suche');
         this.isLoading = false;
       }
@@ -200,7 +200,6 @@ export class EventsListComponent implements OnInit {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
 
-    // Einfache Logik: Wenn isSearchActive, dann performSearch, sonst loadEvents
     if (this.isSearchActive) {
       this.performSearch();
     } else {
@@ -221,7 +220,9 @@ export class EventsListComponent implements OnInit {
     this.selectedDuration = null;
     this.currentPage = 0;
     this.isSearchActive = false;
-    this.eventImages.clear();
+
+    this.revokeAllEventImageUrls();
+
     this.loadEvents();
   }
 
@@ -286,6 +287,7 @@ export class EventsListComponent implements OnInit {
       artists: [],
       performances: []
     } as EventDto;
+
     this.selectedFile = null;
     this.performances = [];
     this.newPerformance = {};
@@ -303,9 +305,7 @@ export class EventsListComponent implements OnInit {
   performanceErrors: { [key: string]: string } = {};
 
   calculateDurationFromPerformances(): number | null {
-    if (this.performances.length === 0) {
-      return null;
-    }
+    if (this.performances.length === 0) return null;
 
     const firstPerf = this.performances[0];
     const startTime = new Date(firstPerf.startTime);
@@ -317,32 +317,25 @@ export class EventsListComponent implements OnInit {
   }
 
   addPerformanceToList(): void {
-    // Validiere Halle, Start- und Endzeit
     const baseValidation = this.eventsService.validatePerformanceBase(this.newPerformance);
     if (!baseValidation.valid) {
       this.performanceErrors = baseValidation.fieldErrors;
       return;
     }
 
-    // Validiere Preis separat
     if (this.newPerformancePriceEuros === null || this.newPerformancePriceEuros === undefined || this.newPerformancePriceEuros < 0) {
       this.performanceErrors['basePrice'] = 'Basispreis darf nicht negativ sein';
       return;
     }
 
-    // Berechne Dauer aus der ersten Performance
     if (this.performances.length === 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
       const startTime = new Date(this.newPerformance.startTime);
       const endTime = new Date(this.newPerformance.endTime);
       const durationMs = endTime.getTime() - startTime.getTime();
       const durationMinutes = Math.round(durationMs / (1000 * 60));
-
-      if (this.currentEvent) {
-        this.currentEvent.durationMinutes = durationMinutes;
-      }
+      if (this.currentEvent) this.currentEvent.durationMinutes = durationMinutes;
     }
 
-    // Validiere, dass alle Performances die gleiche Dauer haben
     if (this.performances.length > 0 && this.newPerformance.startTime && this.newPerformance.endTime) {
       const startTime = new Date(this.newPerformance.startTime);
       const endTime = new Date(this.newPerformance.endTime);
@@ -355,9 +348,8 @@ export class EventsListComponent implements OnInit {
       }
     }
 
-    // Konvertiere Preis von Euro zu Cents
     const performanceToAdd: PerformanceDto = {
-      ...this.newPerformance as PerformanceDto,
+      ...(this.newPerformance as PerformanceDto),
       basePriceCents: Math.round(this.newPerformancePriceEuros * 100),
       id: Date.now()
     };
@@ -368,27 +360,21 @@ export class EventsListComponent implements OnInit {
     this.performanceErrors = {};
   }
 
-
-
-
-
   removePerformance(index: number): void {
     this.performances.splice(index, 1);
-    // Berechne Dauer neu, wenn noch Performances vorhanden sind
+
     if (this.performances.length > 0) {
       const duration = this.calculateDurationFromPerformances();
-      if (this.currentEvent && duration) {
-        this.currentEvent.durationMinutes = duration;
-      }
+      if (this.currentEvent && duration) this.currentEvent.durationMinutes = duration;
     } else {
-      if (this.currentEvent) {
-        this.currentEvent.durationMinutes = 0;
-      }
+      if (this.currentEvent) this.currentEvent.durationMinutes = 0;
     }
   }
 
   private loadHalls(): void {
-    this.hallsService.getAll().subscribe({
+    this.hallsService.getAll().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (halls) => {
         this.hallsWithVenues = halls.map(hall => ({ hall }));
         this.loadVenuesForHalls();
@@ -402,7 +388,9 @@ export class EventsListComponent implements OnInit {
   private loadVenuesForHalls(): void {
     this.hallsWithVenues.forEach(item => {
       if (item.hall.venueId) {
-        this.venuesService.getById(item.hall.venueId).subscribe({
+        this.venuesService.getById(item.hall.venueId).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
           next: (venue) => {
             item.venueName = venue.name;
           },
@@ -437,7 +425,9 @@ export class EventsListComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.eventsService.createEvent(this.currentEvent, this.selectedFile || undefined).subscribe({
+    this.eventsService.createEvent(this.currentEvent, this.selectedFile || undefined).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (createdEvent) => {
         this.createPerformances(createdEvent.id);
         this.loadEvents();
@@ -470,7 +460,10 @@ export class EventsListComponent implements OnInit {
         endTime: perf.endTime,
         basePriceCents: perf.basePriceCents
       };
-      this.performanceService.create(perfDto).subscribe({
+
+      this.performanceService.create(perfDto).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
         error: (error) => console.error('Fehler beim Erstellen der Performance:', error)
       });
     });
@@ -483,8 +476,5 @@ export class EventsListComponent implements OnInit {
       verticalPosition: 'bottom',
       panelClass: ['error-snackbar'],
     });
-
-
   }
-
 }
