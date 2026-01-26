@@ -156,7 +156,12 @@ public class EventDataGenerator {
                     "Demo Event " + j,
                     "Automatisch generiertes Event Nummer " + j,
                     type, duration);
-                loadImageFromFile(generated, pickImageForType(type, j));
+
+                // Nur die ersten 30 Events bekommen Bilder
+                if (j <= 30) {
+                    loadImageFromFile(generated, pickImageForType(type, j));
+                }
+
                 batch.add(generated);
             }
 
