@@ -36,13 +36,8 @@ public class News {
     @Column(nullable = false, length = 10000)
     private String text;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private Blob imageData;
-
-    @Column(name = "image_content_type")
-    private String imageContentType;
+    @Column(name = "image_path")
+    private String imagePath;
 
     @ManyToOne
     @JoinColumn(name = "event")
@@ -88,20 +83,12 @@ public class News {
         this.text = text;
     }
 
-    public Blob getImageData() {
-        return imageData;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImageData(Blob imageData) {
-        this.imageData = imageData;
-    }
-
-    public String getImageContentType() {
-        return imageContentType;
-    }
-
-    public void setImageContentType(String imageContentType) {
-        this.imageContentType = imageContentType;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public Event getEvent() {

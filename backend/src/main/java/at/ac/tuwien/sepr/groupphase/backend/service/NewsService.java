@@ -63,5 +63,5 @@ public interface NewsService {
      */
     void markAsRead(Long userId, Long newsId);
 
-    ResponseEntity<StreamingResponseBody> streamNewsImage(Long id);
+    ResponseEntity<String> getNewsImagePath(Long id);
 }

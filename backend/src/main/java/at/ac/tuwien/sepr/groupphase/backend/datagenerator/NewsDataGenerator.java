@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
+import at.ac.tuwien.sepr.groupphase.backend.config.properties.FileStorageProperties;
 import at.ac.tuwien.sepr.groupphase.backend.entity.News;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.NewsRepository;
@@ -15,6 +16,10 @@ import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
@@ -26,10 +31,14 @@ public class NewsDataGenerator {
 
     private final NewsRepository newsRepository;
     private final EventRepository eventRepository;
+    private final FileStorageProperties fileStorageProperties;
 
-    public NewsDataGenerator(NewsRepository newsRepository, EventRepository eventRepository) {
+    public NewsDataGenerator(NewsRepository newsRepository,
+                             EventRepository eventRepository,
+                             FileStorageProperties fileStorageProperties) {
         this.newsRepository = newsRepository;
         this.eventRepository = eventRepository;
+        this.fileStorageProperties = fileStorageProperties;
     }
 
     @PostConstruct
@@ -49,7 +58,7 @@ public class NewsDataGenerator {
                 + "Tickets sind ab sofort im Vorverkauf erhältlich.")
             .withPublishedAt(LocalDateTime.now().minusDays(5))
             .build();
-        loadImageFromFile(news1, new ClassPathResource("images/queen-tribute.jpg"));
+        loadImageFromFile(news1, new ClassPathResource("images/queen-tribute.jpg"), "queen-tribute.jpg");
 
         News news2 = News.NewsBuilder.aMessage()
             .withTitle("Elektro Beats Festival 2025 – Lineup bekannt gegeben")
@@ -60,7 +69,7 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now().minusDays(3))
             .withEvent(eventRepository.getReferenceById(6L))
             .build();
-        loadImageFromFile(news2, new ClassPathResource("images/Elektro-Beats-Festival.jpg"));
+        loadImageFromFile(news2, new ClassPathResource("images/Elektro-Beats-Festival.jpg"), "Elektro-Beats-Festival.jpg");
 
         News news3 = News.NewsBuilder.aMessage()
             .withTitle("Mamma Mia! bricht alle Besucherrekorde")
@@ -71,7 +80,7 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now().minusDays(2))
             .withEvent(eventRepository.getReferenceById(8L))
             .build();
-        loadImageFromFile(news3, new ClassPathResource("images/mamma-mia.jpg"));
+        loadImageFromFile(news3, new ClassPathResource("images/mamma-mia.jpg"), "mamma-mia.jpg");
 
         News news4 = News.NewsBuilder.aMessage()
             .withTitle("Indie Summer Festival 2025 erweitert Programm")
@@ -82,7 +91,7 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now().minusDays(1))
             .withEvent(eventRepository.getReferenceById(10L))
             .build();
-        loadImageFromFile(news4, new ClassPathResource("images/Indie-Summer-Festival.jpg"));
+        loadImageFromFile(news4, new ClassPathResource("images/Indie-Summer-Festival.jpg"), "Indie-Summer-Festival.jpg");
 
         News news5 = News.NewsBuilder.aMessage()
             .withTitle("Rock am Ring – Größtes Konzert des Jahres angekündigt")
@@ -94,25 +103,25 @@ public class NewsDataGenerator {
             .withPublishedAt(LocalDateTime.now())
             .withEvent(eventRepository.getReferenceById(3L))
             .build();
-        loadImageFromFile(news5, new ClassPathResource("images/Rock-am-Ring-24.png"));
+        loadImageFromFile(news5, new ClassPathResource("images/Rock-am-Ring-24.png"), "Rock-am-Ring-24.png");
 
         newsRepository.saveAll(java.util.List.of(news1, news2, news3, news4, news5));
 
         LOGGER.debug("5 news entries generated successfully");
     }
 
-    private void loadImageFromFile(News news, ClassPathResource img) {
-        try (InputStream in = img.getInputStream()) {
+    private void loadImageFromFile(News news, ClassPathResource img, String filename) {
+        try {
+            Path dir = Paths.get(fileStorageProperties.getNewsImagePath());
+            Files.createDirectories(dir);
 
-            byte[] bytes = in.readAllBytes();
-            try {
-                news.setImageData(new SerialBlob(bytes));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            try (InputStream in = img.getInputStream()) {
+                Files.copy(in, dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
             }
-            news.setImageContentType("image/jpeg");
+
+            news.setImagePath(filename);
         } catch (IOException e) {
-            LOGGER.warn("Could not load image from {}: {}", img, e.getMessage());
+            LOGGER.warn("Could not copy image {}: {}", img, e.getMessage());
         }
     }
 }

@@ -14,7 +14,7 @@ public class SimpleNewsDto {
 
     private String summary;
 
-    private String imageContentType;
+    private String imagePath;
 
     private EventDto event;
 
@@ -50,12 +50,12 @@ public class SimpleNewsDto {
         this.summary = summary;
     }
 
-    public String getImageContentType() {
-        return imageContentType;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImageContentType(String imageContentType) {
-        this.imageContentType = imageContentType;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public EventDto getEvent() {
@@ -101,7 +101,7 @@ public class SimpleNewsDto {
         private LocalDateTime publishedAt;
         private String title;
         private String summary;
-        private String imageContentType;
+        private String imagePath;
         private EventDto event;
 
         private SimpleNewsDtoBuilder() {
@@ -131,8 +131,8 @@ public class SimpleNewsDto {
             return this;
         }
 
-        public SimpleNewsDtoBuilder withImageContentType(String imageContentType) {
-            this.imageContentType = imageContentType;
+        public SimpleNewsDtoBuilder withImageContentType(String imagePath) {
+            this.imagePath = imagePath;
             return this;
         }
 
@@ -147,7 +147,7 @@ public class SimpleNewsDto {
             simpleNewsDto.setPublishedAt(publishedAt);
             simpleNewsDto.setTitle(title);
             simpleNewsDto.setSummary(summary);
-            simpleNewsDto.setImageContentType(imageContentType);
+            simpleNewsDto.setImagePath(imagePath);
             simpleNewsDto.setEvent(event);
             return simpleNewsDto;
         }

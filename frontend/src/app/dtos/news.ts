@@ -6,7 +6,7 @@ export class News {
   summary: string;
   text: string;
   publishedAt: string;
-  imageContentType?: string;
+  imagePath?: string;
   event?: SimpleEventDto;
 
   get eventId(): number | undefined {

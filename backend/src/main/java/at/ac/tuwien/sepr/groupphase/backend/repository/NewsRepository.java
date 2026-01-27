@@ -27,12 +27,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
         return findByIdNotInOrderByPublishedAtDesc(ids);
     }
 
-    @Query("select a.imageContentType as imageContentType, a.imageData as imageData "
-        + "from News a where a.id = :id")
-    Optional<NewsImageProjection> findImageById(@Param("id") Long id);
-
-
-    @Query("select a.imageContentType from News a where a.id = :id")
-    Optional<String> findImageContentTypeById(@Param("id") Long id);
-
+    @Query("select n.imagePath from News n where n.id = :id")
+    Optional<String> findImagePathById(@Param("id") Long id);
 }
+

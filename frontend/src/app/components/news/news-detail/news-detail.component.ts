@@ -55,8 +55,8 @@ export class NewsDetailComponent implements OnInit {
   }
 
   private loadNewsImage(news: NewsWithImage): void {
-    if (news.imageContentType) {
-      this.newsService.getNewsImage(news.id).subscribe({
+    if (news.imagePath) {
+      this.newsService.getNewsImage(news.imagePath).subscribe({
         next: (blob: Blob) => {
           const url = URL.createObjectURL(blob);
           news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);

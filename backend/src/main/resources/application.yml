@@ -30,6 +30,11 @@ spring:
   cache:
     type: simple
 
+file:
+  storage:
+    base-storage-path: ./uploads
+    news-image-path: ./uploads/news-images
+
 security:
   auth:
     header: Authorization
