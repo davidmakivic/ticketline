@@ -186,7 +186,7 @@
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         <jvmFlags>
                             <jvmFlag>-Dspring.profiles.active=qa,generateData</jvmFlag>
-                            <jvmFlag>-Xmx512m</jvmFlag>
+                            <jvmFlag>-Xmx376m</jvmFlag>
                             <jvmFlag>-XX:+UseG1GC</jvmFlag>
                             <jvmFlag>-XX:+HeapDumpOnOutOfMemoryError</jvmFlag>
                         </jvmFlags>
