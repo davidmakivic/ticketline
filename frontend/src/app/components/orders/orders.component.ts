@@ -34,7 +34,7 @@ type ReservationTicketLine = {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './orders.component.html',
-  styleUrls: ['./orders.component.css']
+  styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent {
 
@@ -366,50 +366,57 @@ export class OrdersComponent {
     this.router.navigate(['/checkout']);
   }
 
+  confirmReservationOpen = false;
+  confirmReservation: ReservationDto | null = null;
+
+  openReservationConfirm(r: ReservationDto) {
+    this.confirmReservation = r;
+    this.confirmReservationOpen = true;
+  }
+
+  closeReservationConfirm() {
+    this.confirmReservationOpen = false;
+    this.confirmReservation = null;
+  }
+
   deleteReservation(r: ReservationDto) {
+    this.openReservationConfirm(r);
+  }
+
+  doDeleteReservationConfirmed() {
+    const r = this.confirmReservation;
+    if (!r) return;
+
+    this.closeReservationConfirm();
+
     const ids = r.ticketIds ?? [];
 
-    const ok = confirm(`Reservierung #${r.id} wirklich löschen?`);
-    if (!ok) return;
+    const doDelete = () => this.reservationsService.delete(r.id).subscribe({
+      next: () => this.load(),
+      error: e => {
+        console.error(e);
+        this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
+      }
+    });
 
     if (!ids.length) {
-      this.reservationsService.delete(r.id).subscribe({
-        next: () => this.load(),
-        error: e => {
-          console.error(e);
-          this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
-        }
-      });
+      doDelete();
       return;
     }
 
     forkJoin(
-      ids.map(tid => this.ticketsService.releaseHold(tid).pipe(
-        catchError(() => of(null))
-      ))
+      ids.map(tid =>
+        this.ticketsService.releaseHold(tid).pipe(catchError(() => of(null)))
+      )
     ).subscribe({
-      next: () => {
-        this.reservationsService.delete(r.id).subscribe({
-          next: () => this.load(),
-          error: e => {
-            console.error(e);
-
-            this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
-          }
-        });
-      },
+      next: () => doDelete(),
       error: e => {
         console.error(e);
-        this.reservationsService.delete(r.id).subscribe({
-          next: () => this.load(),
-          error: err => {
-            console.error(err);
-            this.showErrorSnackbar('Reservierung konnte nicht gelöscht werden');
-          }
-        });
+        doDelete(); // optional: trotzdem versuchen zu löschen
       }
     });
   }
+
 
   toEuro(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',') + ' €';
