@@ -189,7 +189,6 @@
                             <jvmFlag>-Xmx512m</jvmFlag>
                             <jvmFlag>-XX:+UseG1GC</jvmFlag>
                             <jvmFlag>-XX:+PrintGCDetails</jvmFlag>
-                            <jvmFlag>-XX:+PrintGCTimeStamps</jvmFlag>
                             <jvmFlag>-Xloggc:./log/gc.log.</jvmFlag>
                         </jvmFlags>
                     </container>
