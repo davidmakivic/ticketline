@@ -67,7 +67,7 @@ public class NewsDataGenerator {
                 + "Vom 15. bis 17. August findet das Festival auf dem Gelände des ehemaligen Flughafens statt. "
                 + "Über 300 Acts werden über vier Tage hinweg auftreten. Early Bird Tickets sind um 15% günstiger erhältlich.")
             .withPublishedAt(LocalDateTime.now().minusDays(3))
-            //            .withEvent(eventRepository.getReferenceById(6L))
+            .withEvent(eventRepository.getReferenceById(6L))
             .build();
         loadImageFromFile(news2, new ClassPathResource("images/Elektro-Beats-Festival.jpg"), "Elektro-Beats-Festival.jpg");
 
@@ -78,7 +78,7 @@ public class NewsDataGenerator {
                 + "Mit über 95% Auslastung in den letzten drei Wochen begeistert die Produktion täglich tausende Besucher. "
                 + "Die Verantwortlichen kündigten bereits zwei Zusatztermine an, um der großen Nachfrage gerecht zu werden.")
             .withPublishedAt(LocalDateTime.now().minusDays(2))
-            //            .withEvent(eventRepository.getReferenceById(8L))
+            .withEvent(eventRepository.getReferenceById(8L))
             .build();
         loadImageFromFile(news3, new ClassPathResource("images/mamma-mia.jpg"), "mamma-mia.jpg");
 
@@ -89,7 +89,7 @@ public class NewsDataGenerator {
                 + "Zusätzlich zu den bereits bekannten Headlinern treten nun auch 25 neue Künstler auf. "
                 + "Das Festival findet vom 22. bis 24. Juni am Donauinselpark statt und soll ein breites Publikum ansprechen.")
             .withPublishedAt(LocalDateTime.now().minusDays(1))
-            //            .withEvent(eventRepository.getReferenceById(10L))
+            .withEvent(eventRepository.getReferenceById(10L))
             .build();
         loadImageFromFile(news4, new ClassPathResource("images/Indie-Summer-Festival.jpg"), "Indie-Summer-Festival.jpg");
 
@@ -101,7 +101,7 @@ public class NewsDataGenerator {
                 + "Mit erwarteten 50.000 Besuchern wird es das Highlight des Musikjahres. "
                 + "Tickets sind seit gestern verfügbar und bereits zu 60% ausverkauft.")
             .withPublishedAt(LocalDateTime.now())
-            //            .withEvent(eventRepository.getReferenceById(3L))
+            .withEvent(eventRepository.getReferenceById(3L))
             .build();
         loadImageFromFile(news5, new ClassPathResource("images/Rock-am-Ring-24.png"), "Rock-am-Ring-24.png");
 
