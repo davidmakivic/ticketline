@@ -158,7 +158,7 @@ public class EventDataGenerator {
                     type, duration);
 
                 // Nur die ersten 30 Events bekommen Bilder
-                if (j <= 30) {
+                if (j <= 30){
                     loadImageFromFile(generated, pickImageForType(type, j));
                 }
 
