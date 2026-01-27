@@ -73,14 +73,14 @@ public class OrderDataGenerator {
 
         long order1Total = t1.getPriceFinalCents();
 
-        Order order1 = new Order(user, order1Total);
+        Order order1 = new Order(user, order1Total, 0);
         order1.setTickets(order1Tickets);
 
         orderRepository.save(order1);
         ticketRepository.save(t1);
 
         LOG.debug("Created first order (id={}) with 1 purchased ticket (id={})",
-            order1.getId(), t1.getId());
+                  order1.getId(), t1.getId());
 
         List<Ticket> order2Tickets = new ArrayList<>();
         long order2Total = 0L;
@@ -92,14 +92,14 @@ public class OrderDataGenerator {
             order2Total += t.getPriceFinalCents();
         }
 
-        Order order2 = new Order(user, order2Total);
+        Order order2 = new Order(user, order2Total, 0);
         order2.setTickets(order2Tickets);
 
         orderRepository.save(order2);
         ticketRepository.saveAll(order2Tickets);
 
         LOG.debug("Created second order (id={}) with {} purchased tickets",
-            order2.getId(), order2Tickets.size());
+                  order2.getId(), order2Tickets.size());
 
         LOG.debug("Order generation complete");
     }

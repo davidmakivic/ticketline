@@ -40,7 +40,7 @@ public class OrderMapperTest {
         Ticket t2 = new Ticket();
         t2.setId(20L);
 
-        Order order = new Order(user, 1500);
+        Order order = new Order(user, 1500, 200);
 
         order.getTickets().add(t1);
         order.getTickets().add(t2);
@@ -56,8 +56,8 @@ public class OrderMapperTest {
     void orderListToOrderDtoList_shouldMapListCorrectly() {
         ApplicationUser user = createUser();
 
-        Order o1 = new Order(user, 1000);
-        Order o2 = new Order(user, 2000);
+        Order o1 = new Order(user, 1000, 200);
+        Order o2 = new Order(user, 2000, 300);
 
         List<OrderDto> dtos = orderMapper.orderListToOrderDtoList(List.of(o1, o2));
 
