@@ -91,10 +91,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                  'AVAILABLE',
                  NULL,
                  NULL,
-                0 FROM seats s JOIN sectors sec ON s.sector_id = sec.sector_id JOIN price_categories pc ON sec.price_category_id = pc.price_category_id WHERE sec.hall_id = :hallId """, nativeQuery = true)
-    int bulkInsertForPerformance(@Param("performanceId") Long performanceId,
-                                 @Param("hallId") Long hallId,
-                                 @Param("basePriceCents") Long basePriceCents);
-
+                0 FROM seats s JOIN sectors sec ON s.sector_id = sec.sector_id JOIN price_categories pc ON sec.price_category_id = pc.price_category_id WHERE sec.sector_id = :sectorId """, nativeQuery = true)
+    int bulkInsertForPerformanceAndSector(@Param("performanceId") Long performanceId,
+                                          @Param("sectorId") Long sectorId,
+                                          @Param("basePriceCents") Long basePriceCents);
 
 }

@@ -2,8 +2,10 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Seat;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Sector;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import at.ac.tuwien.sepr.groupphase.backend.repository.SeatRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.SectorRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.service.TicketGenerationService;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
@@ -26,15 +28,17 @@ public class TicketGenerationServiceImpl implements TicketGenerationService {
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
     private final EntityManager entityManager;
+    private final SectorRepository sectorRepository;
 
     public TicketGenerationServiceImpl(
         SeatRepository seatRepository,
         TicketRepository ticketRepository,
-        EntityManager entityManager
+        EntityManager entityManager, SectorRepository sectorRepository
     ) {
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
         this.entityManager = entityManager;
+        this.sectorRepository = sectorRepository;
     }
 
     @Override
@@ -59,14 +63,19 @@ public class TicketGenerationServiceImpl implements TicketGenerationService {
     }
 
     private void bulkInsert(Performance performance) {
-        int inserted = ticketRepository.bulkInsertForPerformance(
-            performance.getId(),
-            performance.getHall().getId(),
-            performance.getBasePriceCents()
-        );
-        LOGGER.debug("Bulk-inserted {} tickets for performance {}", inserted, performance.getId());
+        List<Sector> sectors = sectorRepository.findByHallId(performance.getHall().getId());
+        int totalInserted = 0;
+        for (Sector sector : sectors) {
+            int inserted = ticketRepository.bulkInsertForPerformanceAndSector(
+                performance.getId(),
+                sector.getId(),
+                performance.getBasePriceCents()
+            );
+            totalInserted += inserted;
+            LOGGER.debug("Bulk-inserted {} tickets for performance {} and sector {}", inserted, performance.getId(), sector.getId());
+        }
+        LOGGER.debug("Total bulk-inserted {} tickets for performance {}", totalInserted, performance.getId());
     }
-
 
 
     private Long calculatePrice(Long basePriceCents, double categoryPriceMultiplier) {
