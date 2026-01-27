@@ -1,20 +1,20 @@
-import { Component, Renderer2, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import {Component, OnDestroy, Renderer2} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ActivatedRoute, Router} from '@angular/router';
 
-import { OrderDto, OrderMerchItemDto } from '../../dtos/order.dto';
-import { CartItem, isMerchItem, isTicketItem } from '../../dtos/cart-item';
-import { TicketsService } from '../../services/tickets.service';
-import { Ticket } from '../../dtos/ticket';
-import { OrdersService } from '../../services/order.service';
+import {OrderDto, OrderMerchItemDto, OrderRewardItemDto} from '../../dtos/order.dto';
+import {CartItem, isTicketItem} from '../../dtos/cart-item';
+import {TicketsService} from '../../services/tickets.service';
+import {Ticket} from '../../dtos/ticket';
+import {OrdersService} from '../../services/order.service';
 
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import {forkJoin, of} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
 
-import { PerformancesService } from '../../services/performances.service';
-import { EventsService } from '../../services/events.service';
+import {PerformancesService} from '../../services/performances.service';
+import {EventsService} from '../../services/events.service';
 
-type InvoiceType = 'tickets' | 'merch';
+type InvoiceType = 'tickets' | 'merch' | 'reward';
 
 type InvoiceState = {
   order?: OrderDto;
@@ -74,18 +74,20 @@ export class InvoiceComponent implements OnDestroy {
     this.customerName = state.customerName ?? 'Kunde';
     this.eventTitle = state.eventTitle ?? '';
 
-   const qpRaw = this.route.snapshot.queryParamMap.get('type');
-   const qpType = (qpRaw === 'merch' || qpRaw === 'tickets') ? (qpRaw as InvoiceType) : null;
+    const qpRaw = this.route.snapshot.queryParamMap.get('type');
+    const qpType = (qpRaw === 'merch' || qpRaw === 'tickets') ? (qpRaw as InvoiceType) : null;
 
-   // Default: wenn kein qpType und Order hat nur Merch -> merch anzeigen
-   const decideDefault = (o?: OrderDto): InvoiceType => {
-     const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
-     const hasMerch = (o?.merchItems?.length ?? 0) > 0;
-     if (!hasTickets && hasMerch) return 'merch';
-     return 'tickets';
-   };
+    // Default: wenn kein qpType und Order hat nur Merch -> merch anzeigen
+    const decideDefault = (o?: OrderDto): InvoiceType => {
+      const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
+      const hasMerch = (o?.merchItems?.length ?? 0) > 0;
+      const hasRewards = (o?.rewardItems?.length ?? 0) > 0;
+      if (!hasTickets && hasMerch) return 'merch';
+      if (!hasTickets && hasRewards) return 'reward';
+      return 'tickets';
+    };
 
-   this.viewType = qpType ?? decideDefault(this.order);
+    this.viewType = qpType ?? decideDefault(this.order);
 
     const idFromRoute = Number(this.route.snapshot.paramMap.get('id'));
 
@@ -191,7 +193,7 @@ export class InvoiceComponent implements OnDestroy {
 
     if (id) {
       this.router.navigate(['/invoice', id], {
-        queryParams: { type: t },
+        queryParams: {type: t},
         replaceUrl: true,
         state: history.state
       });
@@ -276,6 +278,15 @@ export class InvoiceComponent implements OnDestroy {
 
   toEuro(cents: number): string {
     return `${(cents / 100).toFixed(2).replace('.', ',')} €`;
+  }
+
+  rewardItems(): OrderRewardItemDto[] {
+    return this.order?.rewardItems ?? [];
+  }
+
+  rewardTotalPoints(): number {
+    return this.rewardItems()
+      .reduce((s, r) => s + (Number(r.unitPricePoints ?? 0) * Number(r.quantity ?? 0)), 0);
   }
 
   private initInvoiceDates(order: OrderDto): void {
@@ -407,5 +418,20 @@ export class InvoiceComponent implements OnDestroy {
 
   hasMerch(): boolean {
     return (this.order?.merchItems?.length ?? 0) > 0;
+  }
+
+  hasRewards(): boolean {
+    return (this.order?.rewardItems?.length ?? 0) > 0;
+  }
+
+  protected hasMultipleTypes() {
+    console.log('Has Tickets:', this.hasTickets());
+    console.log('Has Merch:', this.hasMerch());
+    console.log('Has Rewards:', this.hasRewards());
+    let count = 0;
+    if (this.hasTickets()) count++;
+    if (this.hasMerch()) count++;
+    if (this.hasRewards()) count++;
+    return count > 1;
   }
 }
