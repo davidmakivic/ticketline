@@ -64,37 +64,29 @@ public class TicketDataGenerator {
             return;
         }
 
-        LOGGER.debug("Generating tickets for all performances in batches");
+        LOGGER.debug("Generating tickets for the first 50 performances");
 
-        long totalPerformances = performanceRepository.count();
-        int pageSize = 20; // Anzahl pro Seite anpassen
-        int totalPages = (int) Math.ceil((double) totalPerformances / pageSize);
+        Pageable first40 = PageRequest.of(0, 50, Sort.by("id").ascending());
+        List<Performance> performances = performanceRepository.findAllIds(first40);
 
-        for (int page = 0; page < totalPages; page++) {
-            Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id").ascending());
-            List<Performance> performances = performanceRepository.findAllIds(pageable);
-
-            if (performances.isEmpty()) {
-                continue;
-            }
-
-            List<Long> ids = performances.stream()
-                .map(Performance::getId)
-                .toList();
-
-            List<Performance> performancesWithDetails = performanceRepository.findByIdsWithHallAndSectors(ids);
-
-            for (Performance performance : performancesWithDetails) {
-                ticketGenerationService.generateTicketsForPerformance(performance);
-                LOGGER.debug("Tickets generated for performance {}", performance.getId());
-            }
-
-            LOGGER.debug("Processed page {} of {}", page + 1, totalPages);
+        if (performances.isEmpty()) {
+            LOGGER.warn("No performances found");
+            return;
         }
 
-        LOGGER.debug("Ticket generation complete for all performances");
-    }
+        List<Long> ids = performances.stream()
+            .map(Performance::getId)
+            .toList();
 
+        List<Performance> performancesWithDetails = performanceRepository.findByIdsWithHallAndSectors(ids);
+
+        for (Performance performance : performancesWithDetails) {
+            ticketGenerationService.generateTicketsForPerformance(performance);
+            LOGGER.debug("Tickets generated for performance {}", performance.getId());
+        }
+
+        LOGGER.debug("Ticket generation complete for {} performances", performancesWithDetails.size());
+    }
 
 
 
