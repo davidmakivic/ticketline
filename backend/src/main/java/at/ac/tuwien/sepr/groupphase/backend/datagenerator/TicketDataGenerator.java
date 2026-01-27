@@ -59,6 +59,7 @@ public class TicketDataGenerator {
     }
 
     @PostConstruct
+    @Transactional
     public void generateTickets() {
         if (ticketRepository.count() > 0) {
             LOGGER.debug("Tickets already generated");
@@ -87,23 +88,18 @@ public class TicketDataGenerator {
             int endIndex = Math.min(i + batchSize, performancesWithDetails.size());
             List<Performance> batch = performancesWithDetails.subList(i, endIndex);
 
-            generateTicketsInBatch(batch);
+            for (Performance performance : batch) {
+                ticketGenerationService.generateTicketsForPerformance(performance);
+                LOGGER.debug("Tickets generated for performance {}", performance.getId());
+            }
+
+            // Optional: Flush nach jedem Batch, um Speicher freizugeben
+            entityManager.flush();
+            entityManager.clear();
             LOGGER.debug("Processed batch {} to {}", i, endIndex - 1);
         }
 
         LOGGER.debug("Ticket generation complete for {} performances", performancesWithDetails.size());
-    }
-
-    @Transactional
-    private void generateTicketsInBatch(List<Performance> batch) {
-        for (Performance performance : batch) {
-            ticketGenerationService.generateTicketsForPerformance(performance);
-            LOGGER.debug("Tickets generated for performance {}", performance.getId());
-        }
-
-        // Flush nach jedem Batch
-        entityManager.flush();
-        entityManager.clear();
     }
 
 
