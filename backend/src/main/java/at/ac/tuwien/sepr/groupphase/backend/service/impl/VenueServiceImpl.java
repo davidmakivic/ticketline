@@ -37,7 +37,6 @@ public class VenueServiceImpl implements VenueService {
         return venueMapper.venuetoVenueDto(saved);
     }
 
-    @Cacheable(value = "venues", key = "#id")
     @Override
     public VenueDto findById(Long id) {
         LOGGER.info("Fetching venue with id={}", id);
