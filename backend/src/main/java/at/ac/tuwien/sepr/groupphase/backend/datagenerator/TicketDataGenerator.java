@@ -80,26 +80,13 @@ public class TicketDataGenerator {
 
         List<Performance> performancesWithDetails = performanceRepository.findByIdsWithHallAndSectors(ids);
 
-        // Batch-Größe definieren
-        int batchSize = 10;
-        for (int i = 0; i < performancesWithDetails.size(); i += batchSize) {
-            int endIndex = Math.min(i + batchSize, performancesWithDetails.size());
-            List<Performance> batch = performancesWithDetails.subList(i, endIndex);
-
-            for (Performance performance : batch) {
-                ticketGenerationService.generateTicketsForPerformance(performance);
-                LOGGER.debug("Tickets generated for performance {}", performance.getId());
-            }
-
-            // Optional: Flush nach jedem Batch, um Speicher freizugeben
-            entityManager.flush();
-            entityManager.clear();
-            LOGGER.debug("Processed batch {} to {}", i, endIndex - 1);
+        for (Performance performance : performancesWithDetails) {
+            ticketGenerationService.generateTicketsForPerformance(performance);
+            LOGGER.debug("Tickets generated for performance {}", performance.getId());
         }
 
         LOGGER.debug("Ticket generation complete for {} performances", performancesWithDetails.size());
     }
-
 
 
 
