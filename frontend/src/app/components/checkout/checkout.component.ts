@@ -1,18 +1,19 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
 
-import { CartService } from '../../services/cart.service';
-import { OrdersService } from '../../services/order.service';
-import { TicketsService } from '../../services/tickets.service';
-import { Ticket } from '../../dtos/ticket';
+import {CartService} from '../../services/cart.service';
+import {OrdersService} from '../../services/order.service';
+import {TicketsService} from '../../services/tickets.service';
+import {Ticket} from '../../dtos/ticket';
 
-import { forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import {forkJoin, of} from 'rxjs';
+import {catchError, map, switchMap, tap} from 'rxjs/operators';
 import {MatSnackBar} from "@angular/material/snack-bar";
 
-import { ReservationsService } from '../../services/reservations.service';
-import { CartItem, isMerchItem, isTicketItem } from '../../dtos/cart-item';
+import {ReservationsService} from '../../services/reservations.service';
+import {CartItem, isMerchItem, isRewardItem, isTicketItem} from '../../dtos/cart-item';
+import {RewardService} from "../../services/reward.service";
 
 type PaymentId = 'card' | 'paypal' | 'klarna' | 'applepay';
 
@@ -34,10 +35,10 @@ export class CheckoutComponent {
   selectedPayment: PaymentId = 'card';
 
   paymentMethods: PaymentMethod[] = [
-    { id: 'card', label: 'Kreditkarte', logo: '/assets/payments/visa-mastercard.svg' },
-    { id: 'paypal', label: 'PayPal', logo: '/assets/payments/paypal.svg' },
-    { id: 'klarna', label: 'Klarna', logo: '/assets/payments/klarna.svg' },
-    { id: 'applepay', label: 'Apple Pay', logo: '/assets/payments/apple-pay.svg' }
+    {id: 'card', label: 'Kreditkarte', logo: '/assets/payments/visa-mastercard.svg'},
+    {id: 'paypal', label: 'PayPal', logo: '/assets/payments/paypal.svg'},
+    {id: 'klarna', label: 'Klarna', logo: '/assets/payments/klarna.svg'},
+    {id: 'applepay', label: 'Apple Pay', logo: '/assets/payments/apple-pay.svg'}
   ];
 
   readonly totalCents$ = this.cart.cartItems$.pipe(
@@ -66,8 +67,10 @@ export class CheckoutComponent {
     private orders: OrdersService,
     private router: Router,
     private reservationsService: ReservationsService,
-    private snackBar: MatSnackBar
-  ) {}
+    private snackBar: MatSnackBar,
+    private rewardService: RewardService
+  ) {
+  }
 
   select(method: PaymentId): void {
     this.selectedPayment = method;
@@ -80,11 +83,12 @@ export class CheckoutComponent {
       return;
     }
 
-    const boughtItems = items.map(i => ({ ...i })) as CartItem[];
+    const boughtItems = items.map(i => ({...i})) as CartItem[];
 
     const ticketIds = items.filter(isTicketItem).map(i => i.ticketId);
     const hasTickets = ticketIds.length > 0;
     const hasMerch = items.some(isMerchItem);
+    const hasRewards = items.some(isRewardItem);
 
     const ridRaw = sessionStorage.getItem('reservation.pay.rid');
     const rid = ridRaw ? Number(ridRaw) : null;
@@ -124,7 +128,7 @@ export class CheckoutComponent {
 
           const deleteReservation$ = this.reservationsService.delete(rid).pipe(catchError(() => of(null)));
 
-          return forkJoin({ release: release$, del: deleteReservation$ }).pipe(
+          return forkJoin({release: release$, del: deleteReservation$}).pipe(
             tap(() => cleanupReservationPayFlags()),
             map(() => order)
           );
@@ -132,14 +136,15 @@ export class CheckoutComponent {
       ).subscribe({
         next: (order) => {
           this.cart.clear();
+          this.rewardService.loadPoints();
 
           const type =
             hasTickets && !hasMerch ? 'tickets' :
-            !hasTickets && hasMerch ? 'merch' :
-            'tickets';
+              !hasTickets && hasMerch ? 'merch' :
+                'tickets';
 
           this.router.navigate(['/invoice', order.id], {
-            queryParams: { type },
+            queryParams: {type},
             state: {
               order,
               items: boughtItems,

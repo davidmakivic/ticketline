@@ -6,6 +6,7 @@ public class OrderCreateDto {
 
     private List<Long> ticketIds;
     private List<OrderMerchItemCreateDto> merchItems;
+    private List<OrderMerchItemCreateDto> rewardItems;
 
     public OrderCreateDto() {
     }
@@ -31,6 +32,14 @@ public class OrderCreateDto {
         this.merchItems = merchItems;
     }
 
+    public List<OrderMerchItemCreateDto> getRewardItems() {
+        return rewardItems;
+    }
+
+    public void setRewardItems(List<OrderMerchItemCreateDto> rewardItems) {
+        this.rewardItems = rewardItems;
+    }
+
     @Override
     public String toString() {
         return "OrderCreateDto{"
@@ -38,6 +47,8 @@ public class OrderCreateDto {
             "ticketIds=" + ticketIds
             +
             ", merchItems=" + merchItems
+            +
+            "rewardItems=" + rewardItems
             +
             '}';
     }

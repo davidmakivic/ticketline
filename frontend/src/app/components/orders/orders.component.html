@@ -100,6 +100,31 @@
         </div>
       </div>
 
+      <div class="tickets" *ngIf="($any(o).rewardItems?.length ?? 0) > 0">
+        <div class="tickets-title">Rewards</div>
+
+        <div class="res-details">
+          <div class="res-line" *ngFor="let r of ($any(o).rewardItems ?? [])">
+            <div class="res-left">
+              <div class="res-title">
+                {{ r?.merchandiseName ?? 'Reward' }}
+                <span class="muted" *ngIf="r?.size"> • Größe: {{ r.size }}</span>
+              </div>
+              <div class="res-seat muted">
+                Menge: {{ r?.quantity ?? 0 }}
+              </div>
+            </div>
+
+            <div class="res-price">
+              <div>{{ r?.unitPricePoints ?? 0 }} Punkte</div>
+              <div class="muted" style="font-size: 12px;">
+                {{ (r?.unitPricePoints ?? 0) * (r?.quantity ?? 0) }} Punkte
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="order-actions">
         <button
           class="btn-outline"

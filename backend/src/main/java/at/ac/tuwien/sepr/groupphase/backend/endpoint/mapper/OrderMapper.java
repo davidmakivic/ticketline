@@ -26,6 +26,7 @@ public interface OrderMapper {
             + "     .toList())"
     )
     @Mapping(target = "merchItems", expression = "java(java.util.List.of())")
+    @Mapping(target = "rewardItems", expression = "java(java.util.List.of())")
     OrderDto orderToOrderDto(Order order);
 
     /**

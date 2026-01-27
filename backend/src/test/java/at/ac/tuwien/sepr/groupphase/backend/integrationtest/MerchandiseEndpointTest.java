@@ -1,11 +1,11 @@
 package at.ac.tuwien.sepr.groupphase.backend.integrationtest;
 
+import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseVariantDto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
 import at.ac.tuwien.sepr.groupphase.backend.entity.MerchandiseVariant;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
-import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import at.ac.tuwien.sepr.groupphase.backend.type.MerchandiseSize;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.List;
 
@@ -62,8 +60,8 @@ public class MerchandiseEndpointTest {
     @Test
     void givenNoMerchandise_whenGetAll_thenEmptyList() throws Exception {
         MvcResult mvcResult = mockMvc.perform(get("/api/v1/merchandise")
-                .header(securityProperties.getAuthHeader(), adminToken)
-                .contentType(MediaType.APPLICATION_JSON))
+                                                  .header(securityProperties.getAuthHeader(), adminToken)
+                                                  .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -88,8 +86,8 @@ public class MerchandiseEndpointTest {
         merchandiseRepository.save(merchandise);
 
         MvcResult mvcResult = mockMvc.perform(get("/api/v1/merchandise")
-                .header(securityProperties.getAuthHeader(), adminToken)
-                .contentType(MediaType.APPLICATION_JSON))
+                                                  .header(securityProperties.getAuthHeader(), adminToken)
+                                                  .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -110,9 +108,9 @@ public class MerchandiseEndpointTest {
         String body = objectMapper.writeValueAsString(dto);
 
         MvcResult mvcResult = mockMvc.perform(post("/api/v1/merchandise")
-                .header(securityProperties.getAuthHeader(), adminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body))
+                                                  .header(securityProperties.getAuthHeader(), adminToken)
+                                                  .contentType(MediaType.APPLICATION_JSON)
+                                                  .content(body))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.name", is("Poster")))

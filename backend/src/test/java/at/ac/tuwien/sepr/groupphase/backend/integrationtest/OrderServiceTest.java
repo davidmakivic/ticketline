@@ -66,7 +66,7 @@ public class OrderServiceTest {
 
     @Test
     void getOrder_whenOrderExists_returnsOrderDto() {
-        Order order = new Order(user, 1500);
+        Order order = new Order(user, 1500, 200);
         orderRepository.save(order);
 
         OrderDto dto = orderService.getOrder(order.getId());
@@ -84,8 +84,8 @@ public class OrderServiceTest {
 
     @Test
     void getOrdersByUser_whenOrdersExist_returnsListOfOrders() {
-        orderRepository.save(new Order(user, 1000));
-        orderRepository.save(new Order(user, 2000));
+        orderRepository.save(new Order(user, 1000, 200));
+        orderRepository.save(new Order(user, 2000, 200));
 
         List<OrderDto> list = orderService.getOrdersByUser(user.getUserId().longValue());
 

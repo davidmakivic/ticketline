@@ -1,11 +1,10 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Globals } from '../global/globals';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Globals} from '../global/globals';
 
-import { OrderDto } from '../dtos/order.dto';
-import { CartItem, isMerchItem, isTicketItem } from '../dtos/cart-item';
-import { environment } from '../../environments/environment';
+import {OrderDto} from '../dtos/order.dto';
+import {CartItem, isMerchItem, isRewardItem, isTicketItem} from '../dtos/cart-item';
 
 export interface CancellationResultDto {
   orderId: number;
@@ -14,7 +13,7 @@ export interface CancellationResultDto {
   createdAt: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class OrdersService {
 
   private ordersBaseUri: string = this.globals.backendUri + '/orders';
@@ -22,7 +21,8 @@ export class OrdersService {
   constructor(
     private http: HttpClient,
     private globals: Globals
-    ) {}
+  ) {
+  }
 
   getAll(): Observable<OrderDto[]> {
     return this.http.get<OrderDto[]>(this.ordersBaseUri);
@@ -39,23 +39,34 @@ export class OrdersService {
       }))
       .filter(x => Number.isFinite(x.variantId) && Number.isFinite(x.quantity) && x.quantity > 0);
 
+    const rewardItems = items
+      .filter(isRewardItem)
+      .map(m => ({
+        variantId: Number(m.variantId),
+        quantity: Number(m.quantity)
+      }))
+      .filter(x => Number.isFinite(x.variantId) && Number.isFinite(x.quantity) && x.quantity > 0);
+
+
     return this.http.post<OrderDto>(this.ordersBaseUri, {
       ticketIds,
-      merchItems
+      merchItems,
+      rewardItems
     });
   }
 
   cancelTickets(orderId: number, ticketIds: number[]): Observable<CancellationResultDto> {
     return this.http.post<CancellationResultDto>(
       `${this.ordersBaseUri}/${orderId}/cancel`,
-      { ticketIds }
+      {ticketIds}
     );
   }
-cancelOrder(orderId: number): Observable<CancellationResultDto> {
-  return this.http.post<CancellationResultDto>(
-    `${this.ordersBaseUri}/${orderId}/cancel`,
-    {} // Backend soll dann "alles" stornieren
-  );
-}
+
+  cancelOrder(orderId: number): Observable<CancellationResultDto> {
+    return this.http.post<CancellationResultDto>(
+      `${this.ordersBaseUri}/${orderId}/cancel`,
+      {} // Backend soll dann "alles" stornieren
+    );
+  }
 
 }
