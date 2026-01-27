@@ -143,14 +143,20 @@ export class OrdersComponent {
   orderTitle(o: any): string {
     const merch = (o?.merchItems ?? []) as any[];
     const rewards = (o?.rewardItems ?? []) as any[];
-    const hasMerch = merch.length > 0 || rewards.length > 0;
+    const hasMerch = merch.length > 0;
     const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
+    const hasRewards = rewards.length > 0;
 
     if (!hasTickets && hasMerch) {
       const names = Array.from(new Set(
         merch.map(m => m?.merchandiseName ?? m?.name).filter(Boolean)
       ));
       return names.length ? names.join(' • ') : `Merchandise #${o.id}`;
+    } else if (!hasTickets && hasRewards) {
+      const names = Array.from(new Set(
+        rewards.map(r => r?.merchandiseName).filter(Boolean)
+      ));
+      return names.length ? names.join(' • ') : `Prämien #${o.id}`;
     }
 
     return this.eventTitleByOrderId[o.id]
@@ -311,11 +317,21 @@ export class OrdersComponent {
       addedAt: ''
     } as any));
 
+    const rItems = ((o as any).rewardItems ?? []).map((ri: any) => ({
+      kind: 'reward',
+      rewardId: ri.rewardId,
+      name: ri.rewardName ?? ri.name ?? 'Reward',
+      unitPricePoints: Number(ri.unitPricePoints ?? 0),
+      quantity: Number(ri.quantity ?? 0),
+      addedAt: ''
+    } as any));
+
     const hasTickets = (o.ticketIds?.length ?? 0) > 0;
     const hasMerch = (mItems?.length ?? 0) > 0;
+    const hasRewards = (rItems?.length ?? 0) > 0;
 
     const type =
-      !hasTickets && hasMerch ? 'merch' : 'tickets'; // default
+      !hasTickets && hasMerch ? 'merch' : !hasTickets && hasRewards ? 'reward' : 'tickets'; // default
 
     this.router.navigate(['/invoice', o.id], {
       queryParams: {type},

@@ -8,6 +8,7 @@ export interface OrderMerchItemDto {
 }
 
 export interface OrderRewardItemDto {
+  size: string | null;
   rewardId: number;
   variantId: number;
   merchandiseName: string;
@@ -19,6 +20,7 @@ export interface OrderDto {
   id: number;
   userId: number;
   totalPriceCents: number;
+  totalPricePoints: number;
   createdAt: string;
   ticketIds: number[];
   merchItems: OrderMerchItemDto[];
