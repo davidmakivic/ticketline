@@ -158,7 +158,9 @@ public class EventDataGenerator {
                     type, duration);
 
                 // Nur die ersten 30 Events bekommen Bilder
-                loadImageFromFile(generated, pickImageForType(type, j));
+                if (j <= 30) {
+                    loadImageFromFile(generated, pickImageForType(type, j));
+                }
 
                 batch.add(generated);
             }
