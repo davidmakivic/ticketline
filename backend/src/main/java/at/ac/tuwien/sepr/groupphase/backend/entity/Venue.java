@@ -1,19 +1,24 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "venues")
+@Table(name = "venues", indexes = {
+    @Index(name = "idx_venue_name", columnList = "name"),
+    @Index(name = "idx_venue_city", columnList = "city"),
+    @Index(name = "idx_venue_country", columnList = "country")
+})
 public class Venue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

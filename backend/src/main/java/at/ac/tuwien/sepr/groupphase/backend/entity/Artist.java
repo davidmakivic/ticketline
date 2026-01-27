@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
@@ -21,7 +22,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "artists")
+@Table(name = "artists", indexes = {
+    @Index(name = "idx_artist_stage_name", columnList = "stage_name"),
+    @Index(name = "idx_artist_type", columnList = "artist_type"),
+    @Index(name = "idx_artist_first_last_name", columnList = "first_name, last_name")
+})
+
 public class Artist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

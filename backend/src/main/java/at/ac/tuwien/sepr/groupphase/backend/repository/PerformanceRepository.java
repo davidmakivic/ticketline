@@ -29,15 +29,9 @@ public interface PerformanceRepository extends JpaRepository<Performance, Long>,
     List<Performance> findByIdsWithHallAndSectors(@Param("ids") List<Long> ids);
 
 
-    @Query("""
-        SELECT p
-        FROM Performance p
-        LEFT JOIN FETCH p.event e
-        LEFT JOIN FETCH p.hall h
-        LEFT JOIN FETCH h.venue v
-        ORDER BY p.startTime
-        """)
+    @Query("SELECT p FROM Performance p JOIN FETCH p.event JOIN FETCH p.hall")
     Page<Performance> findAllWithDetails(Pageable pageable);
+
 
     @Query("""
         SELECT DISTINCT p FROM Performance p
