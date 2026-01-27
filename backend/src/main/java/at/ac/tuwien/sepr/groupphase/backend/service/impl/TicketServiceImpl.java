@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.TicketDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.TicketMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import at.ac.tuwien.sepr.groupphase.backend.exception.ConflictException;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
@@ -31,17 +32,19 @@ public class TicketServiceImpl implements TicketService {
     private final TicketMapper ticketMapper;
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
+    private final TicketGenerationServiceImpl ticketGenerationService;
 
     public TicketServiceImpl(
         TicketRepository ticketRepository,
         TicketMapper ticketMapper,
         PerformanceRepository performanceRepository,
-        SeatRepository seatRepository
+        SeatRepository seatRepository, TicketGenerationServiceImpl ticketGenerationService
     ) {
         this.ticketRepository = ticketRepository;
         this.ticketMapper = ticketMapper;
         this.performanceRepository = performanceRepository;
         this.seatRepository = seatRepository;
+        this.ticketGenerationService = ticketGenerationService;
     }
 
     @Override
@@ -112,6 +115,14 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public List<TicketDto> findByPerformanceId(Long performanceId) {
         LOGGER.info("Fetching tickets for performance {}", performanceId);
+
+        // Prüfen, ob Tickets existieren, wenn nicht -> generieren
+        if (!ticketRepository.existsByPerformanceId(performanceId)) {
+            Performance performance = performanceRepository.findById(performanceId)
+                .orElseThrow(() -> new NotFoundException("Performance not found"));
+            ticketGenerationService.generateTicketsForPerformance(performance);
+        }
+
         Instant now = Instant.now();
         List<Ticket> tickets = ticketRepository.findByPerformanceId(performanceId);
 

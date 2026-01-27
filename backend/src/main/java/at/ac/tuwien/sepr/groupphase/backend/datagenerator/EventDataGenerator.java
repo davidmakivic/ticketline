@@ -79,7 +79,6 @@ public class EventDataGenerator {
         LOGGER.debug("Generating realistic demo events");
 
 
-
         Event e1 = new Event("Phantom der Oper",
             "Das weltberühmte Musical über das mysteriöse Phantom im Opernhaus.",
             EventType.MUSICAL,
