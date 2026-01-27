@@ -1,4 +1,4 @@
-export type CartItem = TicketCartItem | MerchCartItem;
+export type CartItem = TicketCartItem | MerchCartItem | RewardCartItem;
 
 export interface TicketCartItem {
   kind?: 'ticket';
@@ -17,8 +17,23 @@ export interface MerchCartItem {
   addedAt: string;
 }
 
+export interface RewardCartItem {
+  kind: 'reward';
+  merchandiseId: number;
+  variantId: number;
+  name: string;
+  size: string | null;
+  unitPricePoints: number;
+  quantity: number;
+  addedAt: string;
+}
+
+export function isRewardItem(x: any): x is RewardCartItem {
+  return x && (x.kind === 'reward');
+}
+
 export function isMerchItem(x: any): x is MerchCartItem {
-  return x && (x.kind === 'merch' || (x.variantId != null && emphasizeMerchShape(x)));
+  return x && (x.kind === 'merch');
 }
 
 export function isTicketItem(x: any): x is TicketCartItem {

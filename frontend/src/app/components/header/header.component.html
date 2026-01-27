@@ -93,9 +93,11 @@
     @if (authService.isLoggedIn() && !isAdmin()) {
       <button
         mat-button
-        matTooltip="Prämienpunkte einlösen">
+        matTooltip="Prämienpunkte einlösen"
+        routerLink="/reward-shop"
+      >
         <span class="">
-        {{ points$ | async }}
+        {{ points$ | async }} Punkte
         </span>
         <mat-icon fontIcon="stars" class="me-1"></mat-icon>
       </button>

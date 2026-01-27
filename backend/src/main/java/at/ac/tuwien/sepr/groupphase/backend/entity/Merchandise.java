@@ -2,7 +2,6 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,7 +33,8 @@ public class Merchandise {
     @OneToMany(mappedBy = "merchandise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MerchandiseVariant> variants = new ArrayList<>();
 
-    public Merchandise() {}
+    public Merchandise() {
+    }
 
     // Getter & Setter
     public Long getId() {

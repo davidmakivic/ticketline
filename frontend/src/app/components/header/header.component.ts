@@ -7,6 +7,7 @@ import {EventsService} from "../../services/events.service";
 import {ArtistAutocompleteDto} from "../../dtos/artist";
 import {Router} from "@angular/router";
 import {RewardService} from "../../services/reward.service";
+import {CartService} from "../../services/cart.service";
 
 @Component({
   selector: 'app-header',
@@ -20,11 +21,12 @@ export class HeaderComponent implements OnInit {
     private artistsService: ArtistsService,
     private eventsService: EventsService,
     private router: Router,
-    private rewardService: RewardService
+    private rewardService: RewardService,
+    protected cartService: CartService,
   ) {
   }
 
-  points$ = this.rewardService.points$;
+  points$ = this.cartService.availableRewardPoints$;
 
 
   searchTerm = '';
@@ -36,6 +38,9 @@ export class HeaderComponent implements OnInit {
     this.searchChangedObservable
       .pipe(debounceTime(300))
       .subscribe({next: () => this.reloadAutocompleteOptions()})
+    if (this.authService.isLoggedIn()) {
+      this.rewardService.loadPoints();
+    }
   }
 
 

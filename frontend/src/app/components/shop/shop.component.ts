@@ -1,11 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MerchandiseService } from '../../services/merchandise.service';
-import { MerchandiseDto } from '../../dtos/merchandise';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
-import { MerchandiseDialogComponent } from './shop-dialog.component';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MerchandiseService} from '../../services/merchandise.service';
+import {MerchandiseDto} from '../../dtos/merchandise';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {MatPaginatorModule, PageEvent} from '@angular/material/paginator';
+import {MatDialog} from '@angular/material/dialog';
+import {MerchandiseDialogComponent} from './shop-dialog.component';
+import {RewardService} from "../../services/reward.service";
+import {ActivatedRoute} from "@angular/router";
+
+
+export enum ShopMode {
+  CURRENCY,
+  POINTS
+}
 
 @Component({
   selector: 'app-shop',
@@ -21,21 +29,40 @@ export class ShopComponent implements OnInit {
   pageSize = 12;
   pageIndex = 0;
 
+  shopMode: ShopMode = ShopMode.CURRENCY;
+
   constructor(
     private merchService: MerchandiseService,
     private sanitizer: DomSanitizer,
-    private dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    private rewardService: RewardService,
+    private route: ActivatedRoute
+  ) {
+  }
 
   ngOnInit(): void {
+    this.shopMode = this.route.snapshot.data['shopMode'];
     this.loadMerchandise();
   }
 
   loadMerchandise(): void {
-    this.merchService.getAll().subscribe(items => {
-      this.merchandise = items.filter(m => m.quantity > 0);
-      this.loadImages();
-    });
+    console.log(this.shopMode)
+    if (this.shopMode === ShopMode.CURRENCY) {
+      this.merchService.getAll().subscribe(items => {
+        this.merchandise = items.filter(m => m.quantity > 0);
+        this.loadImages();
+      });
+    } else {
+      this.rewardService.getAll().subscribe(rewards => {
+        this.merchandise = rewards
+          .map(r => ({
+            ...r.merchandise,
+            price: r.costInPoints
+          }))
+          .filter(m => m.quantity > 0);
+        this.loadImages();
+      })
+    }
   }
 
   loadImages(): void {
@@ -62,7 +89,10 @@ export class ShopComponent implements OnInit {
   openDialog(item: MerchandiseDto): void {
     this.dialog.open(MerchandiseDialogComponent, {
       width: '420px',
-      data: item
+      data: {
+        item,
+        shopMode: this.shopMode
+      }
     });
   }
 
@@ -73,4 +103,6 @@ export class ShopComponent implements OnInit {
   hasSizes(item: MerchandiseDto): boolean {
     return (item.variants ?? []).some(v => v.size !== null);
   }
+
+  protected readonly ShopMode = ShopMode;
 }

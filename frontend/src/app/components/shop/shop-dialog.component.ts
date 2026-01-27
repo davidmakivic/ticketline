@@ -1,11 +1,14 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {Component, Inject, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {ShopMode} from './shop.component';
 
-import { MerchandiseDto, MerchandiseVariantDto } from '../../dtos/merchandise';
-import { CartService } from '../../services/cart.service';
+import {MerchandiseDto, MerchandiseVariantDto} from '../../dtos/merchandise';
+import {CartService} from '../../services/cart.service';
+import {isRewardItem} from "../../dtos/cart-item";
+import {RewardService} from "../../services/reward.service";
 
 @Component({
   standalone: true,
@@ -13,22 +16,27 @@ import { CartService } from '../../services/cart.service';
   templateUrl: './shop-dialog.component.html',
   styleUrls: ['./shop-dialog.component.scss']
 })
-export class MerchandiseDialogComponent {
+export class MerchandiseDialogComponent implements OnInit {
   quantity: number | null = 1;
   selectedSize!: MerchandiseVariantDto;
   errorMessage?: string;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public item: MerchandiseDto,
+    @Inject(MAT_DIALOG_DATA) public data: { item: MerchandiseDto, shopMode: ShopMode },
     private cart: CartService,
     private snack: MatSnackBar,
-    private ref: MatDialogRef<MerchandiseDialogComponent>
+    private ref: MatDialogRef<MerchandiseDialogComponent>,
+    private rewardService: RewardService
   ) {
-    this.selectedSize = this.item.variants?.[0]!;
+    this.selectedSize = this.data.item.variants?.[0]!;
+  }
+
+  ngOnInit(): void {
+    this.validateQuantity();
   }
 
   hasSizes(): boolean {
-    return (this.item.variants ?? []).some(v => v.size !== null);
+    return (this.data.item.variants ?? []).some(v => v.size !== null);
   }
 
   get maxQuantity(): number {
@@ -71,45 +79,82 @@ export class MerchandiseDialogComponent {
       this.errorMessage = 'Die Stückzahl muss mindestens 1 sein.';
     } else if (this.quantity > this.maxQuantity) {
       this.errorMessage = `Es sind maximal ${this.maxQuantity} Stück verfügbar.`;
+    } else if (this.shopMode === ShopMode.POINTS && !this.hasSufficientRewardPoints()) {
+      this.errorMessage = 'Du hast nicht genügend Reward-Punkte für diese Menge.';
     } else {
       this.errorMessage = undefined;
     }
   }
 
-addToCart(): void {
-  const q = Math.floor(Number(this.quantity));
 
-  if (!Number.isFinite(q) || q <= 0) {
-    this.errorMessage = 'Die Stückzahl muss mindestens 1 sein.';
-    this.quantity = 1;
-    return;
+  addToCart(): void {
+    const q = Math.floor(Number(this.quantity));
+
+    if (!Number.isFinite(q) || q <= 0) {
+      this.errorMessage = 'Die Stückzahl muss mindestens 1 sein.';
+      this.quantity = 1;
+      return;
+    }
+
+    if (q > this.maxQuantity) {
+      this.errorMessage = `Es sind maximal ${this.maxQuantity} Stück verfügbar.`;
+      this.quantity = this.maxQuantity > 0 ? this.maxQuantity : 1;
+      return;
+    }
+
+    if (this.maxQuantity <= 0) {
+      this.errorMessage = 'Dieser Artikel ist aktuell nicht verfügbar.';
+      return;
+    }
+
+    this.errorMessage = undefined;
+
+    const v = this.selectedSize;
+
+    if (this.shopMode === ShopMode.POINTS) {
+
+      this.cart.addReward({
+        merchandiseId: this.data.item.id,
+        variantId: v.id,
+        name: this.data.item.name,
+        size: v.size ?? null,
+        quantity: q,
+        unitPricePoints: this.data.item.price ?? 0
+      });
+
+    } else {
+      this.cart.addMerch({
+        merchandiseId: this.data.item.id,
+        variantId: v.id,
+        name: this.data.item.name,
+        size: v.size ?? null,
+        unitPriceCents: this.data.item.price ?? 0,
+        quantity: q
+      });
+    }
+
+    this.snack.open('In den Warenkorb hinzugefügt', 'OK', {duration: 1800});
+    this.ref.close(true);
   }
 
-  if (q > this.maxQuantity) {
-    this.errorMessage = `Es sind maximal ${this.maxQuantity} Stück verfügbar.`;
-    this.quantity = this.maxQuantity > 0 ? this.maxQuantity : 1;
-    return;
+  get item() {
+    return this.data.item;
   }
 
-  if (this.maxQuantity <= 0) {
-    this.errorMessage = 'Dieser Artikel ist aktuell nicht verfügbar.';
-    return;
+  get shopMode() {
+    return this.data.shopMode;
   }
 
-  this.errorMessage = undefined;
+  protected readonly ShopMode = ShopMode;
 
-  const v = this.selectedSize;
-  this.cart.addMerch({
-    merchandiseId: this.item.id,
-    variantId: v.id,
-    name: this.item.name,
-    size: v.size ?? null,
-    unitPriceCents: this.item.price ?? 0,
-    quantity: q
-  });
 
-  this.snack.open('In den Warenkorb hinzugefügt', 'OK', { duration: 1800 });
-  this.ref.close(true);
-}
+  private rewardPointsInCart(): number {
+    return this.cart.getCartItems()
+      .filter(isRewardItem)
+      .reduce((s, m) => s + (m.unitPricePoints ?? 0) * (m.quantity ?? 0), 0);
+  }
 
+  protected hasSufficientRewardPoints(): boolean {
+    return (this.data.item.price ?? 0) * (this.quantity ?? 0) <= this.rewardService.getCurrentPoints();
+  }
 }

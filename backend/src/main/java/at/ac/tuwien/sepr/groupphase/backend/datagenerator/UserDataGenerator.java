@@ -77,7 +77,7 @@ public class UserDataGenerator {
                     .withStreet("Street")
                     .withHouseNumber(i)
                     .withRole(Roles.USER)
-                    .withRewardPoints(i)
+                    .withRewardPoints(i * 1000)
                     .build();
 
                 if (i == 1) {

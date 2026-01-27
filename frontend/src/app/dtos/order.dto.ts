@@ -7,6 +7,14 @@ export interface OrderMerchItemDto {
   unitPriceCents: number;
 }
 
+export interface OrderRewardItemDto {
+  rewardId: number;
+  variantId: number;
+  merchandiseName: string;
+  quantity: number;
+  unitPricePoints: number;
+}
+
 export interface OrderDto {
   id: number;
   userId: number;
@@ -14,4 +22,6 @@ export interface OrderDto {
   createdAt: string;
   ticketIds: number[];
   merchItems: OrderMerchItemDto[];
+  rewardItems: OrderRewardItemDto[];
+  usedRewardPoints: number;
 }

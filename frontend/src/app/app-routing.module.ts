@@ -18,7 +18,7 @@ import {PerformancesListComponent} from "./components/performance/performances-l
 import {AdminPanelComponent} from "./components/admin-panel/admin-panel.component";
 import {ChangePasswordComponent} from "./components/account/change-password/change-password.component";
 import {ForgotPasswordComponent} from "./components/account/forgot-password/forgot-password.component";
-import { ShopComponent } from './components/shop/shop.component';
+import {ShopComponent, ShopMode} from './components/shop/shop.component';
 import {AdminCreateUserComponent} from "./components/account/admin-create-user/admin-create-user.component";
 
 
@@ -95,7 +95,13 @@ const routes: Routes = [
 
   {
     path: 'shop',
-    component: ShopComponent
+    component: ShopComponent,
+    data: {shopMode: ShopMode.CURRENCY}
+  },
+  {
+    path: 'reward-shop',
+    component: ShopComponent,
+    data: {shopMode: ShopMode.POINTS}
   },
 
   {
