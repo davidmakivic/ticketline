@@ -90,3 +90,11 @@ spring:
             enable: true
 server:
   shutdown: graceful
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+app:
+  image.dir: /app/images/

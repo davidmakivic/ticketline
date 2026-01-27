@@ -49,10 +49,8 @@ public class Event {
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private Blob imageData;
+    @Column(name = "image_path")
+    private String imagePath;
 
     @Column(name = "image_content_type")
     private String imageContentType;
@@ -118,14 +116,6 @@ public class Event {
         this.durationMinutes = durationMinutes;
     }
 
-    public Blob getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(Blob imageData) {
-        this.imageData = imageData;
-    }
-
     public String getImageContentType() {
         return imageContentType;
     }
@@ -148,5 +138,13 @@ public class Event {
 
     public void setPerformances(Set<Performance> performances) {
         this.performances = performances;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }

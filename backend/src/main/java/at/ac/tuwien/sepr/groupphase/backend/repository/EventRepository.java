@@ -3,8 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.repository;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
-import at.ac.tuwien.sepr.groupphase.backend.repository.projection.ArtistImageProjection;
-import at.ac.tuwien.sepr.groupphase.backend.repository.projection.EventImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,9 +43,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     Page<Event> findAllPaginated(Pageable pageable);
 
 
-    @Query("select a.imageContentType as imageContentType, a.imageData as imageData "
-        + "from Event a where a.id = :id")
-    Optional<EventImageProjection> findImageById(@Param("id") Long id);
 
 
     @Query("select a.imageContentType from Event a where a.id = :id")
