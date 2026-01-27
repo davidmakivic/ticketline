@@ -131,24 +131,29 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
   }
 
   private applyTicketsRefresh(tickets: Ticket[]) {
-    this.ticketBySeatId.clear();
+    try {
+      this.ticketBySeatId.clear();
 
-    for (const t of tickets) {
-      if (t.seatId == null) continue;
-      this.ticketBySeatId.set(t.seatId, t);
-    }
+      for (const t of tickets) {
+        if (t.seatId == null) continue;
+        this.ticketBySeatId.set(t.seatId, t);
+      }
 
-    this.selectedSeatIds.clear();
+      this.selectedSeatIds.clear();
 
-    if (!this.authService.isLoggedIn()) {
-      return;
-    }
+      if (!this.authService.isLoggedIn()) {
+        return;
+      }
 
-    for (const [seatId, t] of this.ticketBySeatId.entries()) {
+      for (const [seatId, t] of this.ticketBySeatId.entries()) {
         if (t.status === TicketStatus.RESERVED && t.reservedByMe) {
           this.selectedSeatIds.add(seatId);
         }
       }
+    } catch (e) {
+      console.error('Error applying ticket refresh:', e);
+    }
+
   }
 
 
@@ -172,7 +177,7 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
         this.performance = perf;
         return forkJoin({
           hall: this.hallsService.getById(perf.hallId),
-          tickets: this.ticketsService.getTicketsByPerformance(perf.id),
+          tickets: this.ticketsService.getTicketsByPerformanceShared(perf.id),
           event: this.eventsService.getEventById(perf.eventId)
         });
       }),
@@ -198,6 +203,8 @@ export class SeatSelectionComponent implements AfterViewInit, OnDestroy {
           seatsBySector: seatCalls.length ? forkJoin(seatCalls) : forkJoin([])
         });
       })
+    ).pipe(
+      takeUntil(this.destroy$)
     ).subscribe({
       next: ({ venue, seatsBySector }) => {
         this.venue = venue;
@@ -262,7 +269,9 @@ addSelectedToCart() {
   this.loading = true;
   this.error = null;
 
-  forkJoin(calls).subscribe({
+  forkJoin(calls).pipe(
+    takeUntil(this.destroy$)
+  ).subscribe({
     next: () => {
       this.loading = false;
       this.router.navigate(['/cart']);
