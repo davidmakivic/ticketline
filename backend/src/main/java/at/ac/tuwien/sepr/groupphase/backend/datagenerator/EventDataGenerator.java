@@ -79,7 +79,6 @@ public class EventDataGenerator {
         LOGGER.debug("Generating realistic demo events");
 
 
-
         Event e1 = new Event("Phantom der Oper",
             "Das weltberühmte Musical über das mysteriöse Phantom im Opernhaus.",
             EventType.MUSICAL,
@@ -158,9 +157,7 @@ public class EventDataGenerator {
                     type, duration);
 
                 // Nur die ersten 30 Events bekommen Bilder
-                if (j <= 30) {
-                    loadImageFromFile(generated, pickImageForType(type, j));
-                }
+                loadImageFromFile(generated, pickImageForType(type, j));
 
                 batch.add(generated);
             }
