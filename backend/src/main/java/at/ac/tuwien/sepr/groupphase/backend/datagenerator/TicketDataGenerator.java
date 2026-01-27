@@ -18,7 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.invoke.MethodHandles;
@@ -59,8 +58,7 @@ public class TicketDataGenerator {
     }
 
     @PostConstruct
-    @Transactional
-    public void generateTickets() {
+    private void generateTickets() {
         if (ticketRepository.count() > 0) {
             LOGGER.debug("Tickets already generated");
             return;
