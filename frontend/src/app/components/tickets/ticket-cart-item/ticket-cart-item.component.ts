@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { forkJoin, of } from 'rxjs';
+import {forkJoin, of, Subject, takeUntil} from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
 import { Ticket } from '../../../dtos/ticket';
@@ -58,6 +58,8 @@ export class TicketCartItemComponent implements OnChanges {
 
   priceEuro: number | null = null;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private performancesService: PerformancesService,
     private eventsService: EventsService,
@@ -104,6 +106,8 @@ export class TicketCartItemComponent implements OnChanges {
           this.eventTitle = event.title;
           this.eventsService.getEventImage(event.id).pipe(
             catchError(() => of(null))
+          ).pipe(
+            takeUntil(this.destroy$)
           ).subscribe(blob => {
             if (blob) {
               const url = URL.createObjectURL(blob);
@@ -177,5 +181,16 @@ export class TicketCartItemComponent implements OnChanges {
         return of(null);
       })
     );
+  }
+
+  ngOnDestroy(): void {
+    if (this.eventImageUrl) {
+      const url = this.eventImageUrl.toString();
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

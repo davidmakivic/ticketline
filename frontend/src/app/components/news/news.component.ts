@@ -17,6 +17,7 @@ import {Router} from "@angular/router";
 import {EventsService} from "../../services/events.service";
 import {EventAutocompleteDto, EventDto, SimpleEventDto} from '../../dtos/event';
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {Subject, takeUntil} from "rxjs";
 
 interface NewsWithImage extends News {
   imageUrl?: SafeUrl;
@@ -46,7 +47,8 @@ export class NewsComponent implements OnInit {
   private unreadNews: NewsWithImage[] = [];
   private readNews: NewsWithImage[] = [];
 
-  private message: NewsWithImage[];
+
+  private destroy$ = new Subject<void>();
 
   constructor(private messageService: NewsService,
               private authService: AuthService,
@@ -120,6 +122,8 @@ export class NewsComponent implements OnInit {
       message,
       this.selectedFile || undefined,
       this.selectedEventId || undefined
+    ).pipe(
+      takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.loadNews();
@@ -141,7 +145,9 @@ export class NewsComponent implements OnInit {
 
 
   private loadUnreadNews() {
-    this.messageService.getUnreadNews().subscribe({
+    this.messageService.getUnreadNews().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (messages: NewsWithImage[]) => {
         this.unreadNews = messages;
         this.unreadNews.forEach(msg => this.loadNewsImage(msg));
@@ -151,7 +157,9 @@ export class NewsComponent implements OnInit {
   }
 
   private loadReadNews() {
-    this.messageService.getReadNews().subscribe({
+    this.messageService.getReadNews().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (messages: NewsWithImage[]) => {
         this.readNews = messages;
         this.readNews.forEach(msg => this.loadNewsImage(msg));
@@ -239,5 +247,17 @@ export class NewsComponent implements OnInit {
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }
+
+  ngOnDestroy(): void {
+    if (this.currentMessage?.imageUrl) {
+      const url = this.currentMessage.imageUrl.toString();
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 
 }
