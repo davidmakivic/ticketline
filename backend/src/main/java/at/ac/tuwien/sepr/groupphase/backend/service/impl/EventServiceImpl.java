@@ -24,20 +24,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Blob;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -81,7 +76,7 @@ public class EventServiceImpl implements EventService {
     public EventDto update(Long id, String title, String description, EventType category, Integer durationMinutes, MultipartFile image) throws IOException {
         LOGGER.info("Updating event with id={}", id);
         LOGGER.debug("Payload: title={}, description={}, category={}, duration={}, imagePresent={}",
-            title, description, category, durationMinutes, image != null);
+                     title, description, category, durationMinutes, image != null);
         Event existing = eventRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Event not found: " + id));
 
@@ -102,7 +97,6 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepository.save(existing);
         return eventMapper.eventToEventDtoWithPerformances(saved);
     }
-
 
 
     @Override
@@ -131,7 +125,7 @@ public class EventServiceImpl implements EventService {
                                                 EventType eventType, Date startDate, Integer durationMinutes,
                                                 int page, int size) {
         LOGGER.info("Searching events with filters: title={}, artist={}, location={}, eventType={}, startDate={}, duration={}",
-            title, artist, location, eventType, startDate, durationMinutes);
+                    title, artist, location, eventType, startDate, durationMinutes);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
@@ -188,7 +182,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventTop10Dto> getTop10ForCurrentMonth(EventType type) {
-        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startOfMonth = LocalDateTime.now();
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
         Pageable top10 = PageRequest.of(0, 10);
         return eventRepository.findTopEventsOfMonth(startOfMonth, endOfMonth, type, type == null, top10);
