@@ -149,7 +149,7 @@ public class EventDataGenerator {
 
         // Restliche Events in Batches generieren
         int batchSize = 20;
-        for (int i = 11; i <= 200; i += batchSize) {
+        for (int i = 11; i <= 31; i += batchSize) {
             List<Event> batch = new ArrayList<>();
             int toIndex = Math.min(i + batchSize - 1, 200);
 

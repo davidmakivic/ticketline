@@ -42,14 +42,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     @Query("SELECT e FROM Event e ORDER BY e.id")
     Page<Event> findAllPaginated(Pageable pageable);
 
-
-
-
-    @Query("select a.imageContentType from Event a where a.id = :id")
-    Optional<String> findImageContentTypeById(@Param("id") Long id);
-
-
-
     @Query("""
         select new at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto(e.id, e.title, e.category,
           sum(case when t.status = at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus.PURCHASED then 1 else 0 end))
