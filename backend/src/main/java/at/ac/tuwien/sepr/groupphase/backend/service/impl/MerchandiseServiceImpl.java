@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.MerchandiseMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Merchandise;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MerchandiseRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.MerchandiseImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.service.MerchandiseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.Blob;
 import java.util.List;
 
 @Transactional(readOnly = true)
@@ -84,28 +89,37 @@ public class MerchandiseServiceImpl implements MerchandiseService {
     }
 
     @Override
-    public ResponseEntity<byte[]> getMerchandiseImage(Long id) {
-        LOGGER.info("Fetching merchandise image for id={}", id);
+    public ResponseEntity<StreamingResponseBody> streamMerchandiseImage(Long id) {
+        LOGGER.info("Streaming merchandise image for id={}", id);
 
-        Merchandise merchandise = repository.findById(id)
-            .orElseThrow(() -> {
-                LOGGER.error("Merchandise not found while fetching image, id={}", id);
-                return new RuntimeException("Merchandise not found: " + id);
-            });
+        String contentType = repository.findImageContentTypeById(id)
+            .orElseThrow(() -> new NotFoundException("Merchandise not found: " + id));
 
-        if (merchandise.getImageData() == null || merchandise.getImageData().length == 0) {
-            LOGGER.warn("No image data available for merchandise id={}", id);
-            return ResponseEntity.noContent().build();
-        }
-
-        LOGGER.debug("Returning image for merchandise id={}, contentType={}, size={} bytes",
-            id,
-            merchandise.getImageContentType(),
-            merchandise.getImageData().length
-        );
+        StreamingResponseBody body = outputStream -> {
+            try {
+                writeMerchandiseImageTo(id, outputStream);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
 
         return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(merchandise.getImageContentType()))
-            .body(merchandise.getImageData());
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(body);
+    }
+
+    @Transactional(readOnly = true)
+    public void writeMerchandiseImageTo(Long id, OutputStream out) throws Exception {
+        MerchandiseImageProjection p = repository.findImageById(id)
+            .orElseThrow(() -> new NotFoundException("Merchandise not found: " + id));
+
+        Blob blob = p.getImageData();
+        if (blob == null || blob.length() == 0) {
+            return;
+        }
+
+        try (InputStream in = blob.getBinaryStream()) {
+            in.transferTo(out);
+        }
     }
 }

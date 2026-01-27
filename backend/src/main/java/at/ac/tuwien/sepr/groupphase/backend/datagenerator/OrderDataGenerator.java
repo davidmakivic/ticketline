@@ -21,6 +21,7 @@ import java.util.List;
 @Profile("generateData")
 @DependsOn({"userDataGenerator", "ticketDataGenerator"})
 @Component
+@org.springframework.core.annotation.Order(200)
 public class OrderDataGenerator {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

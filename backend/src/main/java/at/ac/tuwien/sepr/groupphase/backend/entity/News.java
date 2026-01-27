@@ -1,14 +1,18 @@
 package at.ac.tuwien.sepr.groupphase.backend.entity;
 
+import java.sql.Blob;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
@@ -32,8 +36,10 @@ public class News {
     @Column(nullable = false, length = 10000)
     private String text;
 
-    @Column(name = "imageData", columnDefinition = "LONGBLOB")
-    private byte[] imageData;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+    private Blob imageData;
 
     @Column(name = "image_content_type")
     private String imageContentType;
@@ -82,11 +88,11 @@ public class News {
         this.text = text;
     }
 
-    public byte[] getImageData() {
+    public Blob getImageData() {
         return imageData;
     }
 
-    public void setImageData(byte[] imageData) {
+    public void setImageData(Blob imageData) {
         this.imageData = imageData;
     }
 

@@ -72,4 +72,29 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     void detachFromReservation(@Param("ids") List<Long> ids);
 
     List<Ticket> findByReservedByUserId(Long reservedByUserId);
+
+    boolean existsByPerformanceId(Long performanceId);
+
+    @Modifying
+    @Query(value = """
+        INSERT INTO tickets (
+                 performance_id,
+                 seat_id,
+                 price_final_cents,
+                 status,
+                 reserved_until,
+                 reserved_by_user_id,
+                 version )
+                 SELECT :performanceId,
+                 s.seat_id,
+                 CAST(:basePriceCents * pc.price AS BIGINT),
+                 'AVAILABLE',
+                 NULL,
+                 NULL,
+                0 FROM seats s JOIN sectors sec ON s.sector_id = sec.sector_id JOIN price_categories pc ON sec.price_category_id = pc.price_category_id WHERE sec.hall_id = :hallId """, nativeQuery = true)
+    int bulkInsertForPerformance(@Param("performanceId") Long performanceId,
+                                 @Param("hallId") Long hallId,
+                                 @Param("basePriceCents") Long basePriceCents);
+
+
 }

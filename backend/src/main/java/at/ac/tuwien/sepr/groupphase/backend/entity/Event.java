@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.entity;
 
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,10 +14,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+import java.sql.Blob;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,8 +44,10 @@ public class Event {
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private byte[] imageData;
+    private Blob imageData;
 
     @Column(name = "image_content_type")
     private String imageContentType;
@@ -108,11 +113,11 @@ public class Event {
         this.durationMinutes = durationMinutes;
     }
 
-    public byte[] getImageData() {
+    public Blob getImageData() {
         return imageData;
     }
 
-    public void setImageData(byte[] imageData) {
+    public void setImageData(Blob imageData) {
         this.imageData = imageData;
     }
 

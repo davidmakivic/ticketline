@@ -11,12 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Profile("generateData")
 @DependsOn({"eventDataGenerator", "hallDataGenerator"})
@@ -39,70 +43,82 @@ public class PerformanceDataGenerator {
         this.hallRepository = hallRepository;
     }
 
+
     @PostConstruct
     public void generatePerformanceData() {
         if (!performanceRepository.findAll().isEmpty()) {
-            LOGGER.debug("Performances already generated");
+            LOGGER.debug("Performances already generated — skipping");
             return;
         }
 
-        List<Event> events = eventRepository.findAll();
         List<Hall> halls = hallRepository.findAll();
+        long eventCount = eventRepository.count();
+        int batchSize = 10;
+        int totalPerformances = 0;
 
-        if (events.isEmpty() || halls.isEmpty()) {
-            LOGGER.warn("No events or halls available – cannot generate performances");
-            return;
-        }
+        for (int offset = 0; offset < eventCount; offset += batchSize) {
+            List<Event> eventBatch = new ArrayList<>(
+                eventRepository.findAll(PageRequest.of(offset / batchSize, batchSize)).getContent()
+            );
 
-        LOGGER.debug("Generating {} performance entries", (long) events.size() * halls.size());
-
-        var zone = java.time.ZoneId.systemDefault();
-        var baseDate = java.time.LocalDate.now(zone);
-
-        int eventIndex = 0;
-        List<Performance> batch = new ArrayList<>(50);
-
-        for (Event event : events) {
-            int hallIndex = 0;
-            for (Hall hall : halls) {
-                var eventDate = baseDate.plusDays(hallIndex * 2L);
-                int startHour = Math.min(16 + hallIndex, 21);
-
-                var startLdt = eventDate.atTime(startHour, 0);
-                var endLdt = startLdt.plusMinutes(event.getDurationMinutes());
-
-                Date start = Date.from(startLdt.atZone(zone).toInstant());
-                Date end = Date.from(endLdt.atZone(zone).toInstant());
-
-                Performance p = new Performance();
-                p.setEvent(event);
-                p.setHall(hall);
-                p.setStartTime(start);
-                p.setEndTime(end);
-                p.setBasePriceCents(2500L + (eventIndex * 500L) + (hallIndex * 100L));
-
-                batch.add(p);
-
-                // Batch speichern
-                if (batch.size() >= 50) {
+            for (Event event : eventBatch) {
+                List<Performance> batch = generatePerformancesFor(event, halls);
+                if (!batch.isEmpty()) {
                     performanceRepository.saveAll(batch);
                     performanceRepository.flush();
+                    totalPerformances += batch.size();
                     batch.clear();
                 }
-
-                hallIndex++;
             }
-            eventIndex++;
+
+            eventBatch.clear();
+            LOGGER.debug("Processed events {} to {}", offset, Math.min(offset + batchSize, eventCount));
         }
 
-        // Rest speichern
-        if (!batch.isEmpty()) {
-            performanceRepository.saveAll(batch);
-            performanceRepository.flush();
-        }
+        LOGGER.debug("Generated {} performances total", totalPerformances);
     }
 
 
+
+
+    private Performance createPerformance(Event event, Hall hall, int seed) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+        // verteile Performances auf die nächsten30 Tage
+        int dayOffset = rnd.nextInt(0, 30);
+        // wähle eine Startstunde zwischen10:00 und21:00
+        int startHour = rnd.nextInt(10, 21);
+        int startMinute = rnd.nextInt(0, 2) * 30; //00 oder30
+        LocalDateTime start = LocalDateTime.now()
+            .withHour(0).withMinute(0).withSecond(0).withNano(0)
+            .plusDays(dayOffset)
+            .withHour(startHour)
+            .withMinute(startMinute);
+
+        LocalDateTime end = start.plusMinutes(
+            event.getDurationMinutes() != null ? event.getDurationMinutes() : 90);
+
+        Performance p = new Performance();
+        p.setEvent(event);
+        p.setHall(hall);
+        p.setStartTime(Date.from(start.atZone(ZoneId.systemDefault()).toInstant()));
+        p.setEndTime(Date.from(end.atZone(ZoneId.systemDefault()).toInstant()));
+        p.setBasePriceCents(2_500L + seed * 100L + rnd.nextLong(0, 1_000));
+        return p;
+    }
+
+    private List<Performance> generatePerformancesFor(Event event, List<Hall> halls) {
+        List<Performance> generated = new ArrayList<>();
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        int count = rnd.nextInt(1, 3);
+
+        for (int i = 0; i < count; i++) {
+            Hall hall = halls.get(rnd.nextInt(halls.size()));
+            generated.add(createPerformance(event, hall, i));
+        }
+
+        return generated;
+    }
 
 }
 

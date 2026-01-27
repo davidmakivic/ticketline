@@ -9,6 +9,8 @@ import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.repository.ArtistRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.ArtistImageProjection;
+import at.ac.tuwien.sepr.groupphase.backend.repository.projection.EventImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.repository.specification.EventSpecifications;
 import at.ac.tuwien.sepr.groupphase.backend.service.EventService;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
@@ -22,10 +24,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -51,7 +60,12 @@ public class EventServiceImpl implements EventService {
         Event entity = new Event(title, description, category, durationMinutes);
 
         if (image != null && !image.isEmpty()) {
-            entity.setImageData(image.getBytes());
+            byte[] bytes = image.getBytes();
+            try {
+                entity.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             entity.setImageContentType(image.getContentType());
         }
 
@@ -73,7 +87,12 @@ public class EventServiceImpl implements EventService {
         existing.setDurationMinutes(durationMinutes);
 
         if (image != null && !image.isEmpty()) {
-            existing.setImageData(image.getBytes());
+            byte[] bytes = image.getBytes();
+            try {
+                existing.setImageData(new SerialBlob(bytes));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             existing.setImageContentType(image.getContentType());
         }
 
@@ -88,21 +107,6 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdWithPerformances(id)
             .orElseThrow(() -> new NotFoundException("Event not found with id " + id));
         return eventMapper.eventToEventDtoWithPerformances(event);
-    }
-
-    @Override
-    public ResponseEntity<byte[]> getEventImage(Long id) {
-        LOGGER.info("Fetching event image for id={}", id);
-        Event event = eventRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Event not found: " + id));
-
-        if (event.getImageData() == null || event.getImageData().length == 0) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(event.getImageContentType()))
-            .body(event.getImageData());
     }
 
     @Override
@@ -184,5 +188,55 @@ public class EventServiceImpl implements EventService {
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
         Pageable top10 = PageRequest.of(0, 10);
         return eventRepository.findTopEventsOfMonth(startOfMonth, endOfMonth, type, type == null, top10);
+    }
+
+    @Override
+    public ResponseEntity<StreamingResponseBody> streamEventImage(Long id) {
+        LOGGER.info("Streaming event image for id={}", id);
+
+        EventImageProjection p = eventRepository.findImageById(id)
+            .orElseThrow(() -> new NotFoundException("Entity not found: " + id));
+
+        var blob = p.getImageData();
+        if (blob == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        try {
+            if (blob.length() == 0) {
+                return ResponseEntity.noContent().build();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not read image length", e);
+        }
+
+        String contentType = (p.getImageContentType() != null) ? p.getImageContentType() : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+
+        StreamingResponseBody body = outputStream -> {
+            try {
+                writeEventImageTo(id, outputStream);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(body);
+    }
+
+    @Transactional(readOnly = true)
+    public void writeEventImageTo(Long id, OutputStream out) throws Exception {
+        EventImageProjection p = eventRepository.findImageById(id)
+            .orElseThrow(() -> new NotFoundException("Entity not found: " + id));
+
+        Blob blob = p.getImageData();
+        if (blob == null || blob.length() == 0) {
+            return;
+        }
+
+        try (InputStream in = blob.getBinaryStream()) {
+            in.transferTo(out);
+        }
     }
 }

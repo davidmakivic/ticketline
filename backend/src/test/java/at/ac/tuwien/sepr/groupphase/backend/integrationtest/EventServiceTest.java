@@ -223,7 +223,7 @@ public class EventServiceTest {
             image
         );
 
-        var response = eventService.getEventImage(created.getId());
+        var response = eventService.streamEventImage(created.getId());
 
         assertNotNull(response);
         assertEquals(200, response.getStatusCode().value());
@@ -232,7 +232,7 @@ public class EventServiceTest {
 
     @Test
     void testGetEventImageNotFound() {
-        assertThrows(NotFoundException.class, () -> eventService.getEventImage(999L));
+        assertThrows(NotFoundException.class, () -> eventService.streamEventImage(999L));
     }
 
     @Test
@@ -245,7 +245,7 @@ public class EventServiceTest {
             null
         );
 
-        var response = eventService.getEventImage(created.getId());
+        var response = eventService.streamEventImage(created.getId());
 
         assertEquals(204, response.getStatusCode().value());
     }

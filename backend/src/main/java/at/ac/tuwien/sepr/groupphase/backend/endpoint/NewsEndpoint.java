@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @RestController
 @RequestMapping(value = "/api/v1/news")
@@ -202,9 +203,9 @@ public class NewsEndpoint {
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
     )
-    public ResponseEntity<byte[]> getNewsImage(@PathVariable Long id) {
+    public ResponseEntity<StreamingResponseBody> getNewsImage(@PathVariable Long id) {
         LOGGER.info("GET /api/v1/news/{}/image", id);
-        return newsService.getNewsImage(id);
+        return newsService.streamNewsImage(id);
     }
 }
 

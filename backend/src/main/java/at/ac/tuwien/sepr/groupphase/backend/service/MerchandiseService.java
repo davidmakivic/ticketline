@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.service;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.MerchandiseDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.List;
 
@@ -37,12 +38,6 @@ public interface MerchandiseService {
      */
     void delete(Long id);
 
-    /**
-     * Retrieves the image of a merchandise item.
-     *
-     * @param id the ID of the merchandise
-     * @return a ResponseEntity containing the image data
-     */
-    ResponseEntity<byte[]> getMerchandiseImage(Long id);
+    ResponseEntity<StreamingResponseBody> streamMerchandiseImage(Long id);
 
 }

@@ -7,6 +7,7 @@ import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.util.Date;
@@ -56,16 +57,6 @@ public interface EventService {
      * @throws NotFoundException if event with given ID does not exist
      */
     EventDto findById(Long id);
-
-    /**
-     * Retrieves the image associated with an event.
-     *
-     * @param id the event ID (required)
-     * @return {@link ResponseEntity} containing the image bytes with appropriate content type,
-     *         or 204 No Content if no image is available
-     * @throws NotFoundException if event with given ID does not exist
-     */
-    ResponseEntity<byte[]> getEventImage(Long id);
 
     /**
      * Searches for events by title using case-insensitive partial matching.
@@ -146,4 +137,6 @@ public interface EventService {
      * @return a list of top 10 {@link EventTop10Dto} for the current month
      */
     List<EventTop10Dto> getTop10ForCurrentMonth(EventType type);
+
+    ResponseEntity<StreamingResponseBody> streamEventImage(Long id);
 }
