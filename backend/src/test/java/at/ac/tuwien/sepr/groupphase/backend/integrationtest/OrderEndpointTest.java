@@ -73,8 +73,8 @@ public class OrderEndpointTest {
     @Test
     void getAllOrders_whenNoOrdersExist_returnsEmptyList() throws Exception {
         mockMvc.perform(get(BASE_PATH)
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                            .header(securityProperties.getAuthHeader(),
+                                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(0));
     }
@@ -82,8 +82,8 @@ public class OrderEndpointTest {
     @Test
     void getOrder_whenOrderDoesNotExist_returnsNotFound() throws Exception {
         mockMvc.perform(get(BASE_PATH + "/999")
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                            .header(securityProperties.getAuthHeader(),
+                                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isNotFound());
     }
 
@@ -91,12 +91,12 @@ public class OrderEndpointTest {
     void getOrdersByUser_whenUserHasOrders_returnsOrderList() throws Exception {
         ApplicationUser u = userRepository.findAll().get(0);
 
-        Order o = new Order(u, 1500);
+        Order o = new Order(u, 1500, 200);
         orderRepository.save(o);
 
         mockMvc.perform(get(USER_PATH + u.getUserId())
-                .header(securityProperties.getAuthHeader(),
-                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
+                            .header(securityProperties.getAuthHeader(),
+                                    jwtTokenizer.getAuthToken(ADMIN_USER, ADMIN_ROLES)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].totalPriceCents").value(1500));

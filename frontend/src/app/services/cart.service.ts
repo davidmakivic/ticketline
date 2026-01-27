@@ -1,11 +1,20 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, mapTo, tap } from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
+import {catchError, map, mapTo} from 'rxjs/operators';
 
-import { CartItem, MerchCartItem, TicketCartItem, isMerchItem, isTicketItem } from '../dtos/cart-item';
-import { TicketsService } from './tickets.service';
+import {
+  CartItem,
+  isMerchItem,
+  isRewardItem,
+  isTicketItem,
+  MerchCartItem,
+  RewardCartItem,
+  TicketCartItem
+} from '../dtos/cart-item';
+import {TicketsService} from './tickets.service';
+import {RewardService} from "./reward.service";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class CartService {
   private readonly key = 'ticketline.cart.v2';
 
@@ -13,7 +22,26 @@ export class CartService {
   private readonly subject = new BehaviorSubject<CartItem[]>([]);
   readonly cartItems$ = this.subject.asObservable();
 
-  constructor(private ticketsService: TicketsService) {
+  availableRewardPoints$ = combineLatest([
+    this.rewardService.points$,
+    this.cartItems$
+  ]).pipe(
+    map(([points, items]) => {
+      const total = points ?? 0;
+
+      const used = items
+        .filter(isRewardItem)
+        .reduce(
+          (sum, r) => sum + r.unitPricePoints * r.quantity,
+          0
+        );
+
+      return total - used;
+    })
+  );
+
+
+  constructor(private ticketsService: TicketsService, private rewardService: RewardService) {
     this.items = this.load();
     this.subject.next([...this.items]);
   }
@@ -23,7 +51,7 @@ export class CartService {
     const exists = this.items.some(i => isTicketItem(i) && i.ticketId === ticketId);
     if (exists) return;
 
-    const it: TicketCartItem = { kind: 'ticket', ticketId, addedAt: new Date().toISOString() };
+    const it: TicketCartItem = {kind: 'ticket', ticketId, addedAt: new Date().toISOString()};
     this.items = [...this.items, it];
     this.persistEmit();
   }
@@ -49,7 +77,7 @@ export class CartService {
     const idx = this.items.findIndex(i => isMerchItem(i) && i.variantId === item.variantId);
     if (idx >= 0) {
       const cur = this.items[idx] as MerchCartItem;
-      const updated: MerchCartItem = { ...cur, quantity: cur.quantity + item.quantity };
+      const updated: MerchCartItem = {...cur, quantity: cur.quantity + item.quantity};
       this.items = this.items.map((x, i) => (i === idx ? updated : x));
       this.persistEmit();
       return;
@@ -76,7 +104,7 @@ export class CartService {
       return;
     }
     this.items = this.items.map(i => {
-      if (isMerchItem(i) && i.variantId === variantId) return { ...i, quantity };
+      if (isMerchItem(i) && i.variantId === variantId) return {...i, quantity};
       return i;
     });
     this.persistEmit();
@@ -93,7 +121,7 @@ export class CartService {
 
       this.items = this.items
         .filter(i => !(isMerchItem(i) && i.variantId === oldVariantId))
-        .map((i, idx) => (idx === targetIdx ? { ...target, quantity: mergedQty } : i));
+        .map((i, idx) => (idx === targetIdx ? {...target, quantity: mergedQty} : i));
 
       this.persistEmit();
       return;
@@ -101,12 +129,45 @@ export class CartService {
 
     this.items = this.items.map(i => {
       if (isMerchItem(i) && i.variantId === oldVariantId) {
-        return { ...i, variantId: next.variantId, size: next.size };
+        return {...i, variantId: next.variantId, size: next.size};
       }
       return i;
     });
     this.persistEmit();
   }
+
+
+  addReward(item: Omit<RewardCartItem, 'addedAt' | 'kind'>): void {
+    if (!item || item.quantity <= 0) return;
+
+    const now = new Date().toISOString();
+
+    const idx = this.items.findIndex(
+      i => isRewardItem(i) && i.variantId === item.variantId
+    );
+
+    if (idx >= 0) {
+      const cur = this.items[idx] as RewardCartItem;
+      this.items = this.items.map((x, i) =>
+        i === idx ? {...cur, quantity: cur.quantity + item.quantity} : x
+      );
+    } else {
+      this.items = [
+        ...this.items,
+        {kind: 'reward', addedAt: now, ...item}
+      ];
+    }
+
+    this.persistEmit();
+  }
+
+  removeReward(variantId: number): void {
+    this.items = this.items.filter(
+      i => !(isRewardItem(i) && i.variantId === variantId)
+    );
+    this.persistEmit();
+  }
+
 
   getCartItems(): CartItem[] {
     return [...this.items];
@@ -120,7 +181,8 @@ export class CartService {
   private persistEmit(): void {
     try {
       localStorage.setItem(this.key, JSON.stringify(this.items));
-    } catch {}
+    } catch {
+    }
     this.subject.next([...this.items]);
   }
 
@@ -142,23 +204,65 @@ export class CartService {
             quantity: Number(x.quantity ?? 1),
             addedAt: String(x.addedAt ?? new Date().toISOString())
           } as MerchCartItem;
+        } else if (isRewardItem(x)) {
+          return {
+            kind: 'reward',
+            merchandiseId: Number(x.merchandiseId),
+            variantId: Number(x.variantId),
+            name: String(x.name ?? ''),
+            size: x.size ?? null,
+            unitPricePoints: Number(x.unitPricePoints ?? 0),
+            quantity: Number(x.quantity ?? 1),
+            addedAt: String(x.addedAt ?? new Date().toISOString())
+          } as RewardCartItem
         }
         return {
           kind: 'ticket',
           ticketId: Number(x.ticketId),
           addedAt: String(x.addedAt ?? new Date().toISOString())
         } as TicketCartItem;
-      }).filter(x => (isMerchItem(x) ? Number.isFinite(x.variantId) : Number.isFinite((x as any).ticketId)));
+      }).filter(x =>
+        (isMerchItem(x) && Number.isFinite(x.variantId)) ||
+        (isRewardItem(x) && Number.isFinite(x.variantId)) ||
+        (isTicketItem(x) && Number.isFinite(x.ticketId)));
     } catch {
       return [];
     }
   }
 
 
-   addTicketAndHold(ticketId: number): Observable<void> {
+  addTicketAndHold(ticketId: number): Observable<void> {
 
-     this.addTicket(ticketId);
-     return of(void 0);
-   }
+    this.addTicket(ticketId);
+    return of(void 0);
+  }
 
+  usedRewardPoints(): number {
+    return this.items
+      .filter(isRewardItem)
+      .reduce(
+        (sum, r) => sum + r.unitPricePoints * r.quantity,
+        0
+      );
+  }
+
+
+  updateRewardQuantity(variantId, quantity: number) {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      this.items = this.items.filter(
+        i => !(isRewardItem(i) && i.variantId === variantId)
+      );
+      this.persistEmit();
+      return;
+    }
+
+    this.items = this.items.map(i => {
+      if (isRewardItem(i) && i.variantId === variantId) {
+        return {...i, quantity};
+      }
+      return i;
+    });
+
+    this.persistEmit();
+  }
 }

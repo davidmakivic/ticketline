@@ -90,6 +90,7 @@ public class EventDataGenerator {
             160);
         loadImageFromFile(e1, new ClassPathResource("images/phantom-der-oper.jpg"));
 
+
         Event e2 = new Event("König der Löwen",
             "Ein bewegendes Musical rund um Simba und sein Schicksal.",
             EventType.MUSICAL,
@@ -149,7 +150,7 @@ public class EventDataGenerator {
 
         // Restliche Events in Batches generieren
         int batchSize = 20;
-        for (int i = 11; i <= 31; i += batchSize) {
+        for (int i = 11; i <= 200; i += batchSize) {
             List<Event> batch = new ArrayList<>();
             int toIndex = Math.min(i + batchSize - 1, 200);
 
@@ -161,10 +162,7 @@ public class EventDataGenerator {
                     "Automatisch generiertes Event Nummer " + j,
                     type, duration);
 
-                // Nur die ersten 30 Events bekommen Bilder
-                if (j <= 30) {
-                    loadImageFromFile(generated, pickImageForType(type, j));
-                }
+                loadImageFromFile(generated, pickImageForType(type, j));
 
                 batch.add(generated);
             }
@@ -195,7 +193,6 @@ public class EventDataGenerator {
             LOGGER.warn("Could not set image path for {}: {}", img.getFilename(), e.getMessage());
         }
     }
-
 
 
 }

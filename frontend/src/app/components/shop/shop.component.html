@@ -1,27 +1,38 @@
 <div class="shop-container">
   <div class="grid">
-    <div class="card" *ngFor="let item of pagedItems" (click)="openDialog(item)">
-      <div class="image-wrapper">
-        <img [src]="getImage(item.id)" alt="{{ item.name }}" />
+    @for (item of pagedItems; track item.id) {
+      <div class="card" (click)="openDialog(item)">
+        <div class="image-wrapper">
+          <img [src]="getImage(item.id)" alt="{{ item.name }}"/>
 
-        <!-- Größen Overlay nur bei Artikeln mit echten Größen -->
-        <div class="sizes-overlay" *ngIf="hasSizes(item)">
-          <span
-            class="size-chip"
-            *ngFor="let v of item.variants"
-            [class.disabled]="v.quantity === 0"
-            [hidden]="v.size === null"
-          >
-            {{ v.size }}
-          </span>
+          <!-- Größen Overlay nur bei Artikeln mit echten Größen -->
+          @if (hasSizes(item)) {
+            <div class="sizes-overlay">
+              @for (v of item.variants; track v.id) {
+                <span
+                  class="size-chip"
+                  [class.disabled]="v.quantity === 0"
+                  [hidden]="v.size === null"
+                >
+                  {{ v.size }}
+                </span>
+              }
+
+            </div>
+          }
+
+        </div>
+
+        <div class="info">
+          <h3>{{ item.name }}</h3>
+          @if (shopMode === ShopMode.CURRENCY) {
+            <span class="price">€ {{ item.price / 100 | number:'1.2-2' }}</span>
+          } @else {
+            <span class="price">{{ item.price }} Punkte</span>
+          }
         </div>
       </div>
-
-      <div class="info">
-        <h3>{{ item.name }}</h3>
-        <span class="price">€ {{ item.price / 100 | number:'1.2-2' }}</span>
-      </div>
-    </div>
+    }
   </div>
 
   <mat-paginator

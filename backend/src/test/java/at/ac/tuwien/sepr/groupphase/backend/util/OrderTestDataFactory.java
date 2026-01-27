@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.groupphase.backend.util;
 
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderMerchItemDto;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.OrderRewardItemDto;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,7 +16,8 @@ public class OrderTestDataFactory {
             price,
             Instant.now(),
             ticketIds,
-            List.<OrderMerchItemDto>of()
+            List.<OrderMerchItemDto>of(),
+            List.<OrderRewardItemDto>of()
         );
     }
 
@@ -26,7 +28,8 @@ public class OrderTestDataFactory {
             1000L,
             Instant.now(),
             List.of(),
-            List.<OrderMerchItemDto>of()
+            List.<OrderMerchItemDto>of(),
+            List.<OrderRewardItemDto>of()
         );
     }
 }

@@ -41,7 +41,8 @@ public class Merchandise {
     @OneToMany(mappedBy = "merchandise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MerchandiseVariant> variants = new ArrayList<>();
 
-    public Merchandise() {}
+    public Merchandise() {
+    }
 
     // Getter & Setter
     public Long getId() {

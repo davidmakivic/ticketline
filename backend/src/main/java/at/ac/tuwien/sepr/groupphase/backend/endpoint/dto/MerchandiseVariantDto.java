@@ -6,7 +6,7 @@ public class MerchandiseVariantDto {
 
     private Long id;
     private MerchandiseSize size;
-    private Integer quantity;
+    private long quantity;
 
     public MerchandiseVariantDto() {
     }
@@ -40,11 +40,11 @@ public class MerchandiseVariantDto {
         this.size = size;
     }
 
-    public Integer getQuantity() {
+    public long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(long quantity) {
         this.quantity = quantity;
     }
 }

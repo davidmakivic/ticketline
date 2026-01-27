@@ -45,6 +45,12 @@ public class Order {
     @Column(name = "total_price_cents", nullable = false)
     private long totalPriceCents;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<OrderRewardItem> rewardItems = new LinkedHashSet<>();
+
+    @Column(name = "used_reward_points", nullable = false)
+    private long usedRewardPoints;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -52,9 +58,10 @@ public class Order {
     public Order() {
     }
 
-    public Order(ApplicationUser user, long totalPriceCents) {
+    public Order(ApplicationUser user, long totalPriceCents, long usedRewardPoints) {
         this.user = user;
         this.totalPriceCents = totalPriceCents;
+        this.usedRewardPoints = usedRewardPoints;
     }
 
     public Long getId() {
@@ -81,6 +88,22 @@ public class Order {
         return createdAt;
     }
 
+    public Set<OrderRewardItem> getRewardItems() {
+        return rewardItems;
+    }
+
+    public long getUsedRewardPoints() {
+        return usedRewardPoints;
+    }
+
+    public void setRewardItems(Set<OrderRewardItem> rewardItems) {
+        this.rewardItems = rewardItems;
+    }
+
+    public void setUsedRewardPoints(long usedRewardPoints) {
+        this.usedRewardPoints = usedRewardPoints;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -104,5 +127,10 @@ public class Order {
     public void addMerchItem(OrderMerchItem item) {
         item.setOrder(this);
         this.merchItems.add(item);
+    }
+
+    public void addRewardItem(OrderRewardItem item) {
+        item.setOrder(this);
+        this.rewardItems.add(item);
     }
 }

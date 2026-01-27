@@ -1,22 +1,22 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatIconModule } from '@angular/material/icon';
+import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
+import {MatCardModule} from '@angular/material/card';
+import {MatButtonModule} from '@angular/material/button';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatIconModule} from '@angular/material/icon';
 
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import {forkJoin, Observable, of} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
 
-import { CartService } from '../../services/cart.service';
-import { TicketsService } from '../../services/tickets.service';
-import { Ticket } from '../../dtos/ticket';
-import { TicketCartItemComponent } from '../tickets/ticket-cart-item/ticket-cart-item.component';
-import { AuthService } from '../../services/auth.service';
+import {CartService} from '../../services/cart.service';
+import {TicketsService} from '../../services/tickets.service';
+import {Ticket} from '../../dtos/ticket';
+import {TicketCartItemComponent} from '../tickets/ticket-cart-item/ticket-cart-item.component';
+import {AuthService} from '../../services/auth.service';
 
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { MerchandiseService } from '../../services/merchandise.service';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {MerchandiseService} from '../../services/merchandise.service';
 
 @Component({
   selector: 'app-cart',
@@ -36,6 +36,7 @@ export class CartComponent {
   loading = false;
   tickets: Ticket[] = [];
   merchItems: any[] = [];
+  rewardItems: any[] = [];
   private merchImages = new Map<number, SafeUrl>();
 
   constructor(
@@ -58,15 +59,15 @@ export class CartComponent {
 
     const release$ = ids.length
       ? forkJoin(
-          ids.map(id =>
-            this.cart.removeTicketAndRelease(id).pipe(
-              catchError(err => {
-                console.error('Release failed for ticket', id, err);
-                return of(null);
-              })
-            )
+        ids.map(id =>
+          this.cart.removeTicketAndRelease(id).pipe(
+            catchError(err => {
+              console.error('Release failed for ticket', id, err);
+              return of(null);
+            })
           )
         )
+      )
       : of([]);
 
     release$.subscribe({
@@ -91,7 +92,8 @@ export class CartComponent {
 
   removeTicket(ticket: Ticket): void {
     this.cart.removeTicketAndRelease(ticket.id).subscribe({
-      next: () => {},
+      next: () => {
+      },
       error: (e) => console.error(e)
     });
   }
@@ -148,14 +150,14 @@ export class CartComponent {
   }
 
   get hasAnyItems(): boolean {
-    return (this.tickets?.length ?? 0) > 0 || (this.merchItems?.length ?? 0) > 0;
+    return (this.tickets?.length ?? 0) > 0 || (this.merchItems?.length ?? 0) > 0 || (this.rewardItems?.length ?? 0) > 0;
   }
 
   onBuy(): void {
     if (!this.hasAnyItems) return;
 
     if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login'], { queryParams: { redirect: '/checkout' } });
+      this.router.navigate(['/login'], {queryParams: {redirect: '/checkout'}});
       return;
     }
 
@@ -178,11 +180,17 @@ export class CartComponent {
     this.merchItems = (items ?? []).filter(i =>
       i &&
       !(Number.isFinite(Number(i?.ticketId)) && Number(i.ticketId) > 0) &&
-      (i?.variantId != null || i?.merchandiseId != null)
+      (i?.variantId != null || i?.merchandiseId != null) && i.kind === 'merch'
+    );
+
+    this.rewardItems = (items ?? []).filter(i =>
+      i &&
+      !(Number.isFinite(Number(i?.ticketId)) && Number(i.ticketId) > 0) &&
+      (i?.variantId != null || i?.merchandiseId != null) && i.kind === 'reward'
     );
 
     this.loadTickets(ticketIds);
-    this.loadMerchImages(this.merchItems);
+    this.loadMerchImages([...this.merchItems, ...this.rewardItems]);
   }
 
   private loadTickets(ids: number[]): void {
@@ -230,30 +238,51 @@ export class CartComponent {
           const url = URL.createObjectURL(blob);
           this.merchImages.set(id, this.sanitizer.bypassSecurityTrustUrl(url));
         },
-        error: () => {}
+        error: () => {
+        }
       });
     });
   }
-merchQty(m: any): number {
-  const q = Number(m?.quantity ?? 1);
-  return Number.isFinite(q) && q > 0 ? Math.floor(q) : 1;
-}
 
-incMerchQty(m: any): void {
-  this.setMerchQty(m, this.merchQty(m) + 1);
-}
+  merchQty(m: any): number {
+    const q = Number(m?.quantity ?? 1);
+    return Number.isFinite(q) && q > 0 ? Math.floor(q) : 1;
+  }
 
-decMerchQty(m: any): void {
-  this.setMerchQty(m, this.merchQty(m) - 1);
-}
+  incMerchQty(m: any): void {
+    this.setMerchQty(m, this.merchQty(m) + 1);
+  }
 
-private setMerchQty(m: any, qty: number): void {
-  const newQty = Math.max(1, Math.floor(Number(qty) || 1));
-  (m as any).quantity = newQty;
+  decMerchQty(m: any): void {
+    this.setMerchQty(m, this.merchQty(m) - 1);
+  }
 
-  (this as any).cart?.setMerchQuantity?.((m as any).variantId ?? (m as any).id, newQty);
-  (this as any).cart?.updateMerchQuantity?.((m as any).variantId ?? (m as any).id, newQty);
-  (this as any).cart?.persist?.();
-}
+  private setMerchQty(m: any, qty: number): void {
+    const newQty = Math.max(1, Math.floor(Number(qty) || 1));
+    if (m.kind === 'merch') {
+      this.cart.updateMerchQuantity(m.variantId, newQty);
+      return;
+    }
+    if (m.kind === 'reward') {
+      this.cart.updateRewardQuantity(m.variantId, newQty);
+      return;
+    }
 
+    (this as any).cart?.persist?.();
+  }
+
+  canIncreaseReward(r: any): Observable<boolean> {
+    return this.cart.availableRewardPoints$.pipe(
+      map(points => points >= r.unitPricePoints)
+    );
+  }
+
+  getUsedRewardPoints(): number {
+    return this.cart.usedRewardPoints();
+  }
+
+  protected removeReward(r: any) {
+    if (!r || r.kind !== 'reward') return;
+    this.cart.removeReward(r.variantId);
+  }
 }

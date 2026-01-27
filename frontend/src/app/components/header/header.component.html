@@ -29,45 +29,45 @@
 
 
         @if (artists.length > 0) {
-        <mat-optgroup label="Künstler">
-          @for (artist of artists; track artist) {
-          <mat-option [value]="artist.stageName" (onSelectionChange)="openArtistDetail(artist.id)">
-            <div class="d-flex align-items-center gap-2">
-              <div class="autocomplete-image-wrapper mt-2">
-                <img class="autocomplete-image me-2" [src]="artist.image" alt="">
-              </div>
-              <span>{{ artist.stageName}}</span>
-            </div>
-          </mat-option>
-          }
-        </mat-optgroup>
+          <mat-optgroup label="Künstler">
+            @for (artist of artists; track artist) {
+              <mat-option [value]="artist.stageName" (onSelectionChange)="openArtistDetail(artist.id)">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="autocomplete-image-wrapper mt-2">
+                    <img class="autocomplete-image me-2" [src]="artist.image" alt="">
+                  </div>
+                  <span>{{ artist.stageName }}</span>
+                </div>
+              </mat-option>
+            }
+          </mat-optgroup>
 
-        @if (artists.length > 0 && events.length > 0) {
-        <mat-divider></mat-divider>
-        }
+          @if (artists.length > 0 && events.length > 0) {
+            <mat-divider></mat-divider>
+          }
         }
 
 
         @if (events.length > 0) {
-        <mat-optgroup label="Veranstaltungen">
-          @for (event of events; track event.id) {
-          <mat-option
-            [value]="event.title"
-            (onSelectionChange)="openEventDetail(event.id)"
-          >
-            <div class="d-flex align-items-center gap-2">
-              <div class="autocomplete-image-wrapper mt-2">
-                <img
-                  class="autocomplete-image me-2"
-                  [src]="event.image"
-                  alt=""
-                >
-              </div>
-              <span>{{ event.title }}</span>
-            </div>
-          </mat-option>
-          }
-        </mat-optgroup>
+          <mat-optgroup label="Veranstaltungen">
+            @for (event of events; track event.id) {
+              <mat-option
+                [value]="event.title"
+                (onSelectionChange)="openEventDetail(event.id)"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <div class="autocomplete-image-wrapper mt-2">
+                    <img
+                      class="autocomplete-image me-2"
+                      [src]="event.image"
+                      alt=""
+                    >
+                  </div>
+                  <span>{{ event.title }}</span>
+                </div>
+              </mat-option>
+            }
+          </mat-optgroup>
         }
 
       </mat-autocomplete>
@@ -90,6 +90,23 @@
       </button>
     }
 
+    @if (authService.isLoggedIn() && !isAdmin()) {
+      <button
+        mat-button
+        matTooltip="Prämienpunkte einlösen"
+        routerLink="/reward-shop"
+      >
+        <span class="">
+        {{ points$ | async }} Punkte
+        </span>
+        <mat-icon fontIcon="stars" class="me-1"></mat-icon>
+      </button>
+
+      <div class="d-flex align-items-center me-2 reward-points">
+
+      </div>
+    }
+
     <button
       mat-icon-button
       aria-label="Warenkorb" routerLink="cart" matTooltip="Warenkorb">
@@ -100,10 +117,10 @@
 
 
     @if (!authService.isLoggedIn()) {
-    <a class="nav-link" routerLink="/login" routerLinkActive="active"
-       matTooltip="Login" matTooltipPosition="below">
-      <i class="bi bi-box-arrow-right"></i>
-    </a>
+      <a class="nav-link" routerLink="/login" routerLinkActive="active"
+         matTooltip="Login" matTooltipPosition="below">
+        <i class="bi bi-box-arrow-right"></i>
+      </a>
     }
 
     @if (authService.isLoggedIn()) {

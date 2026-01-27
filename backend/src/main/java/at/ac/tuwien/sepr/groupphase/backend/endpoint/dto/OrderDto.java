@@ -12,6 +12,7 @@ public class OrderDto {
     private Instant createdAt;
     private List<Long> ticketIds = new ArrayList<>();
     private List<OrderMerchItemDto> merchItems = new ArrayList<>();
+    private List<OrderRewardItemDto> rewardItems = new ArrayList<>();
 
     public OrderDto() {
     }
@@ -21,7 +22,7 @@ public class OrderDto {
                     Long totalPriceCents,
                     Instant createdAt,
                     List<Long> ticketIds) {
-        this(id, userId, totalPriceCents, createdAt, ticketIds, List.of());
+        this(id, userId, totalPriceCents, createdAt, ticketIds, List.of(), List.of());
     }
 
     public OrderDto(Long id,
@@ -29,13 +30,15 @@ public class OrderDto {
                     Long totalPriceCents,
                     Instant createdAt,
                     List<Long> ticketIds,
-                    List<OrderMerchItemDto> merchItems) {
+                    List<OrderMerchItemDto> merchItems,
+                    List<OrderRewardItemDto> rewardItems) {
         this.id = id;
         this.userId = userId;
         this.totalPriceCents = totalPriceCents;
         this.createdAt = createdAt;
         this.ticketIds = ticketIds != null ? ticketIds : List.of();
         this.merchItems = merchItems != null ? merchItems : List.of();
+        this.rewardItems = rewardItems != null ? rewardItems : List.of();
     }
 
     public Long getId() {
@@ -60,6 +63,14 @@ public class OrderDto {
 
     public List<OrderMerchItemDto> getMerchItems() {
         return merchItems;
+    }
+
+    public List<OrderRewardItemDto> getRewardItems() {
+        return rewardItems;
+    }
+
+    public void setRewardItems(List<OrderRewardItemDto> rewardItems) {
+        this.rewardItems = rewardItems;
     }
 
     public void setId(Long id) {
