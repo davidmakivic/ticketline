@@ -2,8 +2,10 @@ package at.ac.tuwien.sepr.groupphase.backend.datagenerator;
 
 import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Order;
+import at.ac.tuwien.sepr.groupphase.backend.entity.Performance;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Ticket;
 import at.ac.tuwien.sepr.groupphase.backend.repository.OrderRepository;
+import at.ac.tuwien.sepr.groupphase.backend.repository.PerformanceRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.TicketRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
 import at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus;
@@ -12,6 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
@@ -27,80 +32,130 @@ public class OrderDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String DEMO_USER_EMAIL = "user@email.com";
+    private static final int TARGET_ORDERS = 15;
+
+    private static final int PERFORMANCE_CANDIDATES = 60;
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
+    private final PerformanceRepository performanceRepository;
 
     public OrderDataGenerator(OrderRepository orderRepository,
                               UserRepository userRepository,
-                              TicketRepository ticketRepository) {
+                              TicketRepository ticketRepository,
+                              PerformanceRepository performanceRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
+        this.performanceRepository = performanceRepository;
     }
 
     @PostConstruct
     public void generateOrders() {
-        if (!orderRepository.findAll().isEmpty()) {
-            LOG.debug("orders already generated");
+        long existingOrders = orderRepository.count();
+        if (existingOrders >= TARGET_ORDERS) {
+            LOG.debug("Orders already generated ({} >= {})", existingOrders, TARGET_ORDERS);
             return;
         }
-
-        LOG.debug("Generating demo orders for user {}", DEMO_USER_EMAIL);
 
         ApplicationUser user = userRepository.findUserByEmail(DEMO_USER_EMAIL);
         if (user == null) {
             LOG.warn("Demo user {} not found — cannot generate demo orders", DEMO_USER_EMAIL);
             return;
         }
-        List<Ticket> availableTickets = ticketRepository.findAll().stream()
-            .filter(t -> t.getStatus() == TicketStatus.AVAILABLE)
-            .toList();
 
-        if (availableTickets.size() < 4) {
-            LOG.warn("Not enough available tickets ({} found) — need at least 4", availableTickets.size());
+        int ordersToCreate = (int) Math.max(0, TARGET_ORDERS - existingOrders);
+        int created = 0;
+
+
+        Pageable page = PageRequest.of(0, PERFORMANCE_CANDIDATES, Sort.by("id").ascending());
+        List<Performance> performances = performanceRepository.findAllIds(page);
+
+        if (performances.isEmpty()) {
+            LOG.warn("No performances found — cannot generate orders");
             return;
         }
 
-        int index = 0;
+        for (int performanceIndex = 0; performanceIndex < performances.size() && created < ordersToCreate; performanceIndex++) {
 
-        Ticket t1 = availableTickets.get(index++);
-        t1.setStatus(TicketStatus.PURCHASED);
 
-        List<Ticket> order1Tickets = new ArrayList<>();
-        order1Tickets.add(t1);
+            Long performanceId = performances.get(performanceIndex).getId();
+            if (performanceId == null) {
+                continue;
+            }
 
-        long order1Total = t1.getPriceFinalCents();
+            List<Ticket> performanceTickets = ticketRepository.findByPerformanceId(performanceId).stream()
+                .filter(t -> t.getStatus() == TicketStatus.AVAILABLE)
+                .toList();
 
-        Order order1 = new Order(user, order1Total, 0);
-        order1.setTickets(order1Tickets);
+            int desiredTickets = ((created + 1) % 3 == 0) ? 3 : 2;
 
-        orderRepository.save(order1);
-        ticketRepository.save(t1);
+            if (performanceTickets.size() < desiredTickets) {
+                continue;
+            }
 
-        LOG.debug("Created first order (id={}) with 1 purchased ticket (id={})",
-                  order1.getId(), t1.getId());
+            List<Ticket> orderTickets = new ArrayList<>(desiredTickets);
+            long total = 0L;
 
-        List<Ticket> order2Tickets = new ArrayList<>();
-        long order2Total = 0L;
+            for (int i = 0; i < desiredTickets; i++) {
+                Ticket t = performanceTickets.get(i);
+                t.setStatus(TicketStatus.PURCHASED);
+                orderTickets.add(t);
 
-        for (int i = 0; i < 3; i++) {
-            Ticket t = availableTickets.get(index++);
-            t.setStatus(TicketStatus.PURCHASED);
-            order2Tickets.add(t);
-            order2Total += t.getPriceFinalCents();
+                Long price = t.getPriceFinalCents();
+                total += (price == null ? 0L : price);
+            }
+
+            Order order = new Order(user, total, 0);
+            order.setTickets(orderTickets);
+
+            Order saved = orderRepository.save(order);
+            ticketRepository.saveAll(orderTickets);
+
+            created++;
+            LOG.debug("Created order {} (id={}) for performance {} with {} tickets (total={} cents)",
+                created, saved.getId(), performanceId, orderTickets.size(), total);
         }
 
-        Order order2 = new Order(user, order2Total, 0);
-        order2.setTickets(order2Tickets);
+        if (created < ordersToCreate) {
+            List<Ticket> remainingTickets = ticketRepository.findAll().stream()
+                .filter(t -> t.getStatus() == TicketStatus.AVAILABLE)
+                .toList();
 
-        orderRepository.save(order2);
-        ticketRepository.saveAll(order2Tickets);
+            int idx = 0;
+            while (created < ordersToCreate && idx < remainingTickets.size()) {
 
-        LOG.debug("Created second order (id={}) with {} purchased tickets",
-                  order2.getId(), order2Tickets.size());
+                int desiredTickets = ((created + 1) % 3 == 0) ? 3 : 2;
 
-        LOG.debug("Order generation complete");
+                List<Ticket> orderTickets = new ArrayList<>(desiredTickets);
+                long total = 0L;
+
+                for (int i = 0; i < desiredTickets && idx < remainingTickets.size(); i++) {
+                    Ticket t = remainingTickets.get(idx++);
+                    t.setStatus(TicketStatus.PURCHASED);
+                    orderTickets.add(t);
+
+                    Long price = t.getPriceFinalCents();
+                    total += (price == null ? 0L : price);
+                }
+
+                if (orderTickets.isEmpty()) {
+                    break;
+                }
+
+                Order order = new Order(user, total, 0);
+                order.setTickets(orderTickets);
+
+                Order saved = orderRepository.save(order);
+                ticketRepository.saveAll(orderTickets);
+
+                created++;
+                LOG.debug("Created fallback order {} (id={}) with {} tickets (total={} cents)",
+                    created, saved.getId(), orderTickets.size(), total);
+            }
+        }
+
+        LOG.debug("Order generation complete. created={}, existingBefore={}", created, existingOrders);
     }
 }
