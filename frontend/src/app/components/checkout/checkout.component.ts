@@ -14,6 +14,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {ReservationsService} from '../../services/reservations.service';
 import {CartItem, isMerchItem, isRewardItem, isTicketItem} from '../../dtos/cart-item';
 import {RewardService} from "../../services/reward.service";
+import {MatDivider} from "@angular/material/divider";
 
 type PaymentId = 'card' | 'paypal' | 'klarna' | 'applepay';
 
@@ -26,7 +27,7 @@ interface PaymentMethod {
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatDivider],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
 })
@@ -141,7 +142,8 @@ export class CheckoutComponent {
           const type =
             hasTickets && !hasMerch ? 'tickets' :
               !hasTickets && hasMerch ? 'merch' :
-                'tickets';
+                !hasTickets && hasRewards ? 'rewards' :
+                  'tickets';
 
           this.router.navigate(['/invoice', order.id], {
             queryParams: {type},
@@ -224,6 +226,10 @@ export class CheckoutComponent {
       verticalPosition: 'bottom',
       panelClass: ['error-snackbar'],
     });
+  }
+
+  getRewardPoints(): number {
+    return this.cart.usedRewardPoints();
   }
 
 }

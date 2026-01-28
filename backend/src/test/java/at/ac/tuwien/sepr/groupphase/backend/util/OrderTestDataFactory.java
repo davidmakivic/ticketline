@@ -9,11 +9,12 @@ import java.util.List;
 
 public class OrderTestDataFactory {
 
-    public static OrderDto create(Long userId, long price, List<Long> ticketIds) {
+    public static OrderDto create(Long userId, long price, long pricePoints, List<Long> ticketIds) {
         return new OrderDto(
             null,
             userId,
             price,
+            pricePoints,
             Instant.now(),
             ticketIds,
             List.<OrderMerchItemDto>of(),
@@ -26,6 +27,7 @@ public class OrderTestDataFactory {
             null,
             userId,
             1000L,
+            0L,
             Instant.now(),
             List.of(),
             List.<OrderMerchItemDto>of(),

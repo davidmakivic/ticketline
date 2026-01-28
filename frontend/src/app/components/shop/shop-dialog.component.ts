@@ -155,6 +155,6 @@ export class MerchandiseDialogComponent implements OnInit {
   }
 
   protected hasSufficientRewardPoints(): boolean {
-    return (this.data.item.price ?? 0) * (this.quantity ?? 0) <= this.rewardService.getCurrentPoints();
+    return (this.data.item.price ?? 0) * (this.quantity ?? 0) <= this.rewardService.getCurrentPoints() - this.rewardPointsInCart();
   }
 }

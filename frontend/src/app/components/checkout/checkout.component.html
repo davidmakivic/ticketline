@@ -1,34 +1,45 @@
 <div class="checkout-wrapper">
   <div class="checkout-card">
 
-    <h1>Zahlungsart auswählen</h1>
+    @if ((totalCents$ | async) !== 0) {
+      <h1>Zahlungsart auswählen</h1>
 
-    <div class="payment-list">
-      <div
-        class="payment-card"
-        *ngFor="let method of paymentMethods"
-        [class.active]="method.id === selectedPayment"
-        (click)="select(method.id)">
+      <div class="payment-list">
+        <div
+          class="payment-card"
+          *ngFor="let method of paymentMethods"
+          [class.active]="method.id === selectedPayment"
+          (click)="select(method.id)">
 
-        <input
-          type="radio"
-          [checked]="method.id === selectedPayment"
-          readonly />
+          <input
+            type="radio"
+            [checked]="method.id === selectedPayment"
+            readonly/>
 
-        <span class="payment-label">
-          {{ method.label }}
+          <span class="payment-label">
+            {{ method.label }}
         </span>
 
-        <img
-          class="payment-logo"
-          [src]="method.logo"
-          [alt]="method.label" />
+          <img
+            class="payment-logo"
+            [src]="method.logo"
+            [alt]="method.label"/>
+        </div>
       </div>
-    </div>
+      <mat-divider></mat-divider>
+    }
 
     <div class="summary">
       <span>Gesamt</span>
-      <strong>{{ toEuro((totalCents$ | async) ?? 0) }}</strong>
+
+      <div class="d-flex row">
+        @if ((totalCents$ | async) !== 0) {
+          <strong>{{ toEuro((totalCents$ | async) ?? 0) }}</strong>
+        }
+        @if (getRewardPoints() > 0) {
+          <strong>{{ getRewardPoints() }} Punkte</strong>
+        }
+      </div>
     </div>
 
     <button class="pay-btn" (click)="pay()">

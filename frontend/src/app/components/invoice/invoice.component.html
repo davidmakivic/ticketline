@@ -7,13 +7,14 @@
       <h1 class="title">
         RECHNUNG
         <span style="font-weight:600; opacity:.8;">
-          – {{ viewType === 'merch' ? 'Merchandise' : 'Tickets' }}
+          – {{ viewType === 'merch' ? 'Merchandise' : viewType === 'reward' ? 'Prämien' : 'Tickets' }}
         </span>
       </h1>
 
-      <div class="no-print" style="display:flex; gap:10px; margin-top:10px;" *ngIf="hasTickets() && hasMerch()">
-        <button class="btn secondary" (click)="setType('tickets')">Ticket-Rechnung</button>
-        <button class="btn secondary" (click)="setType('merch')">Merch-Rechnung</button>
+      <div class="no-print" style="display:flex; gap:10px; margin-top:10px;" *ngIf="hasMultipleTypes()">
+        <button class="btn secondary" *ngIf="hasTickets()" (click)="setType('tickets')">Ticket-Rechnung</button>
+        <button class="btn secondary" *ngIf="hasMerch()" (click)="setType('merch')">Merch-Rechnung</button>
+        <button class="btn secondary" *ngIf="hasRewards()" (click)="setType('reward')">Prämien-Rechnung</button>
       </div>
 
       <p class="subtitle" *ngIf="viewType === 'tickets' && eventTitle">
@@ -32,8 +33,13 @@
 
       <div class="info-box">
         <h3>Zahlung</h3>
-        <div><strong>Zahlungsart:</strong> {{ paymentLabel() }}</div>
-        <div class="muted">Preise inkl. Steuern & Gebühren</div>
+        @if (viewType === 'reward') {
+          <div><strong>Zahlungsart:</strong> Prämienpunkte</div>
+        } @else {
+          <div><strong>Zahlungsart:</strong> {{ paymentLabel() }}</div>
+          <div class="muted">Preise inkl. Steuern & Gebühren</div>
+        }
+
       </div>
     </div>
 
@@ -87,6 +93,34 @@
       </table>
     </div>
 
+    <div class="content-box" *ngIf="viewType === 'reward'">
+      <h2>Prämien</h2>
+
+      <table class="table">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Artikel</th>
+          <th>Größe</th>
+          <th class="right">Menge</th>
+          <th class="right">Einzelpreis</th>
+          <th class="right">Summe</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let m of rewardItems(); let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ m.merchandiseName }}</td>
+          <td class="muted">{{ m.size ?? 'One Size' }}</td>
+          <td class="right">{{ m.quantity }}</td>
+          <td class="right">{{ (m.unitPricePoints) }} Punkte</td>
+          <td class="right">{{ ((m.unitPricePoints ?? 0) * (m.quantity ?? 0)) }} Punkte</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+
     <div class="summary-grid">
       <div class="content-box" *ngIf="viewType === 'tickets'">
         <h3>Plätze</h3>
@@ -98,9 +132,13 @@
       <div class="content-box total-box">
         <div class="total-row">
           <span>Gesamtbetrag </span>
-          <strong>
-            {{ viewType === 'merch' ? toEuro(merchTotalCents()) : toEuro(ticketTotalCents()) }}
-          </strong>
+          @if (viewType === 'reward') {
+            <strong>{{ rewardTotalPoints() }} Punkte</strong>
+          } @else {
+            <strong>
+              {{ viewType === 'merch' ? toEuro(merchTotalCents()) : toEuro(ticketTotalCents()) }}
+            </strong>
+          }
         </div>
       </div>
     </div>

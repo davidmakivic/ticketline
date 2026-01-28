@@ -70,12 +70,15 @@ h1 {
 }
 
 .summary {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #333;
   display: flex;
   justify-content: space-between;
   font-size: 18px;
+}
+
+mat-divider {
+  margin-bottom: 16px;
+  margin-top: 24px;
+  border-color: #333;
 }
 
 .pay-btn {
