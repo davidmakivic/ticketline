@@ -179,6 +179,19 @@
     </div>
   </div>
 
+  <div class="confirm-backdrop" *ngIf="confirmReservationOpen">
+    <div class="confirm-modal">
+      <div class="confirm-title">
+        Reservierung #{{ confirmReservation?.id }} wirklich stornieren?
+      </div>
+
+      <div class="confirm-actions">
+        <button class="btn-outline" (click)="closeReservationConfirm()">Abbrechen</button>
+        <button class="btn-danger" (click)="doDeleteReservationConfirmed()">OK</button>
+      </div>
+    </div>
+  </div>
+
   <div *ngIf="showReservations" style="margin-top:18px;">
     <h2 class="orders-title">Reservierungen</h2>
 

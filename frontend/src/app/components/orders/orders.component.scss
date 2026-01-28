@@ -286,3 +286,13 @@
   font-weight: 800;
   white-space: nowrap;
 }
+
+.confirm-modal .btn-outline{
+  color: #111;
+  border-color: rgba(0,0,0,0.18);
+  background: rgba(0,0,0,0.04);
+}
+
+.confirm-modal .btn-outline:hover{
+  background: rgba(0,0,0,0.08);
+}

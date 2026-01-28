@@ -32,15 +32,15 @@ public class PriceCategoryDataGenerator {
 
         PriceCategory cheap = new PriceCategory();
         cheap.setName("A");
-        cheap.setPrice(10.90);
+        cheap.setPrice(2);
 
         PriceCategory medium = new PriceCategory();
         medium.setName("B");
-        medium.setPrice(15.50);
+        medium.setPrice(5);
 
         PriceCategory premium = new PriceCategory();
         premium.setName("C");
-        premium.setPrice(21.00);
+        premium.setPrice(10);
 
         repository.save(cheap);
         repository.save(medium);
