@@ -103,6 +103,7 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    @Transactional
     public ArtistDto findById(Long id) {
         LOGGER.info("Fetching artist with id={}", id);
         Artist artist = artistRepository.findById(id)
@@ -156,6 +157,7 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    @Transactional
     public List<EventDto> findEventsByArtistId(Long artistId) {
         LOGGER.info("Fetching events for artist {}", artistId);
         Artist artist = artistRepository.findById(artistId)
