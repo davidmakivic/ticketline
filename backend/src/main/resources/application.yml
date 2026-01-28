@@ -1,7 +1,7 @@
 logging:
   file.name: ./log/backend.log
   level:
-    root: INFO
+    root: DEBUG
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
   pattern:
     level: r=%X{r} ip=%X{ip} u=%X{u} %5p
@@ -27,6 +27,15 @@ spring:
         batch_versioned_data: true
         connection:
           provider_disables_autocommit: true
+  cache:
+    type: simple
+  frontend:
+    url: http://localhost:4200
+
+file:
+  storage:
+    base-storage-path: ./uploads
+    news-image-path: ./uploads/news-images
 
 security:
   auth:
@@ -75,16 +84,15 @@ spring:
       on-cloud-platform: kubernetes
   lifecycle:
     timeout-per-shutdown-phase: 30s
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ticketlineee@gmail.com
-    password: swba xfne xidx iofa
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  frontend:
+    url: https://25ws-se-pr-inso-09-kw57aaouf8kweztfkm5gf.apps.student.inso-w.at
 server:
   shutdown: graceful
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+app:
+  image.dir: /app/images/

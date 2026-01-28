@@ -17,10 +17,7 @@ import {Router} from "@angular/router";
 import {EventsService} from "../../services/events.service";
 import {EventAutocompleteDto, EventDto, SimpleEventDto} from '../../dtos/event';
 import {MatSnackBar} from "@angular/material/snack-bar";
-
-interface NewsWithImage extends News {
-  imageUrl?: SafeUrl;
-}
+import {Subject, takeUntil} from "rxjs";
 
 @Component({
     selector: 'app-message',
@@ -35,7 +32,7 @@ export class NewsComponent implements OnInit {
   // After first submission attempt, form validation will start
   submitted = false;
 
-  currentMessage: NewsWithImage;
+  currentMessage: News;
   selectedFile: File | null = null;
   isEditMode: boolean = false;
 
@@ -43,10 +40,11 @@ export class NewsComponent implements OnInit {
   selectedEventId?: number;
 
   showUnreadOnly: boolean = true;
-  private unreadNews: NewsWithImage[] = [];
-  private readNews: NewsWithImage[] = [];
+  private unreadNews: News[] = [];
+  private readNews: News[] = [];
 
-  private message: NewsWithImage[];
+
+  private destroy$ = new Subject<void>();
 
   constructor(private messageService: NewsService,
               private authService: AuthService,
@@ -71,7 +69,7 @@ export class NewsComponent implements OnInit {
 
   openAddModal(messageAddModal: TemplateRef<any>) {
     this.isEditMode = false;
-    this.currentMessage = new News() as NewsWithImage;
+    this.currentMessage = new News() as News;
     this.selectedFile = null;
     this.modalService.open(messageAddModal, {ariaLabelledBy: 'modal-basic-title'});
     this.loadAvailableEvents();
@@ -106,7 +104,7 @@ export class NewsComponent implements OnInit {
     }
   }
 
-  getMessage(): NewsWithImage[] {
+  getMessage(): News[] {
     if (!this.isLoggedIn()) {
       return [...this.unreadNews, ...this.readNews];
     }
@@ -115,11 +113,13 @@ export class NewsComponent implements OnInit {
 
 
 
-  private createMessage(message: NewsWithImage) {
+  private createMessage(message: News) {
     this.messageService.createMessage(
       message,
       this.selectedFile || undefined,
       this.selectedEventId || undefined
+    ).pipe(
+      takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.loadNews();
@@ -141,8 +141,10 @@ export class NewsComponent implements OnInit {
 
 
   private loadUnreadNews() {
-    this.messageService.getUnreadNews().subscribe({
-      next: (messages: NewsWithImage[]) => {
+    this.messageService.getUnreadNews().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (messages: News[]) => {
         this.unreadNews = messages;
         this.unreadNews.forEach(msg => this.loadNewsImage(msg));
       },
@@ -151,8 +153,10 @@ export class NewsComponent implements OnInit {
   }
 
   private loadReadNews() {
-    this.messageService.getReadNews().subscribe({
-      next: (messages: NewsWithImage[]) => {
+    this.messageService.getReadNews().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (messages: News[]) => {
         this.readNews = messages;
         this.readNews.forEach(msg => this.loadNewsImage(msg));
       },
@@ -179,18 +183,14 @@ export class NewsComponent implements OnInit {
   }
 
 
-  private loadNewsImage(news: NewsWithImage) {
-    if (news.imageContentType) {
-      this.messageService.getNewsImage(news.id).subscribe({
-        next: (blob: Blob) => {
-          const url = URL.createObjectURL(blob);
-          news.imageUrl = this.sanitizer.bypassSecurityTrustUrl(url);
-        },
-        error: () => {
-          // Bild konnte nicht geladen werden
-        }
-      });
+  private loadNewsImage(news: News) {
+    if (news.imagePath) {
+      this.messageService.getNewsImage(news.imagePath);
     }
+  }
+
+  newsImageUrl(filename: string): string {
+    return this.messageService.getImageURL(filename);
   }
 
   loadAvailableEvents() {
@@ -227,7 +227,7 @@ export class NewsComponent implements OnInit {
   }
 
   private clearForm() {
-    this.currentMessage = new News() as NewsWithImage;
+    this.currentMessage = new News() as News;
     this.selectedFile = null;
     this.submitted = false;
   }
@@ -239,5 +239,17 @@ export class NewsComponent implements OnInit {
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }
+
+  ngOnDestroy(): void {
+    if (this.currentMessage?.imagePath) {
+      const url = this.currentMessage.imagePath.toString();
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 
 }

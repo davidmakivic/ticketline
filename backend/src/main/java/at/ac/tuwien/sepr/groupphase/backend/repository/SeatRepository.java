@@ -22,8 +22,8 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     /**
      * Finds a specific seat by sector, row number and seat number.
      *
-     * @param sectorId  the ID of the sector
-     * @param rowNumber the row number of the seat
+     * @param sectorId   the ID of the sector
+     * @param rowNumber  the row number of the seat
      * @param seatNumber the seat number
      * @return the matching Seat entity
      */
@@ -48,8 +48,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
         WHERE s.sector.hall.id = :hallId
         """)
     List<Seat> findByHallIdWithSector(@Param("hallId") Long hallId);
-
-
 
 
 }

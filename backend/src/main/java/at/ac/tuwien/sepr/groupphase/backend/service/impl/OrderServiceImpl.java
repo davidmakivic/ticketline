@@ -30,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Objects;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
@@ -136,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (!hasTickets && !hasMerch && !hasRewards) {
             throw new ValidationException("No items provided",
-                                          List.of("ticketIds or merchItems must not be empty"));
+                List.of("ticketIds or merchItems must not be empty"));
         }
 
         List<Ticket> tickets = new ArrayList<>();
@@ -170,7 +171,7 @@ public class OrderServiceImpl implements OrderService {
             for (OrderMerchItemCreateDto mi : merchCreate) {
                 if (mi.getVariantId() == null || mi.getQuantity() == null || mi.getQuantity() <= 0) {
                     throw new ValidationException("Invalid merchandise item",
-                                                  List.of("variantId must not be null and quantity must be > 0"));
+                        List.of("variantId must not be null and quantity must be > 0"));
                 }
 
                 MerchandiseVariant variant = merchVariantRepository.findById(mi.getVariantId())
@@ -179,7 +180,7 @@ public class OrderServiceImpl implements OrderService {
                 Integer stock = variant.getQuantity();
                 if (stock == null || stock < mi.getQuantity()) {
                     throw new ConflictException("Not enough stock",
-                                                List.of("variantId " + mi.getVariantId() + " has only " + stock));
+                        List.of("variantId " + mi.getVariantId() + " has only " + stock));
                 }
 
                 variant.setQuantity(stock - mi.getQuantity());
@@ -199,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
             for (OrderMerchItemCreateDto ri : dtoRewardItems) {
                 if (ri.getVariantId() == null || ri.getQuantity() == null || ri.getQuantity() <= 0) {
                     throw new ValidationException("Invalid merchandise item",
-                                                  List.of("variantId must not be null and quantity must be > 0"));
+                        List.of("variantId must not be null and quantity must be > 0"));
                 }
 
                 MerchandiseVariant variant = merchVariantRepository.findById(ri.getVariantId())
@@ -208,7 +209,7 @@ public class OrderServiceImpl implements OrderService {
                 Integer stock = variant.getQuantity();
                 if (stock == null || stock < ri.getQuantity()) {
                     throw new ConflictException("Not enough stock",
-                                                List.of("variantId " + ri.getVariantId() + " has only " + stock));
+                        List.of("variantId " + ri.getVariantId() + " has only " + stock));
                 }
 
                 variant.setQuantity(stock - ri.getQuantity());
@@ -217,7 +218,7 @@ public class OrderServiceImpl implements OrderService {
                 Optional<Reward> rewardOptional = rewardRepository.findByMerchandiseId(variant.getMerchandise().getId());
                 if (!rewardOptional.isPresent()) {
                     throw new ConflictException("Not in stock",
-                                                List.of("Merchandise id " + variant.getMerchandise().getId() + " is not a reward"));
+                        List.of("Merchandise id " + variant.getMerchandise().getId() + " is not a reward"));
                 }
 
 
@@ -228,7 +229,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (user.getRewardPoints() < totalRewardPoints) {
             throw new ConflictException("Conflict when creating order",
-                                        List.of("You do not have enough points"));
+                List.of("You do not have enough points"));
         }
 
         long ticketTotal = tickets.stream()
@@ -311,18 +312,29 @@ public class OrderServiceImpl implements OrderService {
                 org.springframework.http.HttpStatus.FORBIDDEN, "Not allowed");
         }
 
-        // Neu: wenn leer/null -> ganze Bestellung stornieren (Tickets + Merch)
         boolean cancelAll = (ticketIds == null || ticketIds.isEmpty());
 
         List<Long> idsToCancel = cancelAll
-            ? order.getTickets().stream().map(Ticket::getId).toList()
-            : ticketIds;
+            ? order.getTickets().stream()
+            .map(Ticket::getId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList()
+            : (ticketIds == null ? List.of() : ticketIds.stream()
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList());
+
 
         long ticketsRefund = 0;
         List<Long> cancelled = new ArrayList<>();
 
         if (idsToCancel != null && !idsToCancel.isEmpty()) {
-            var orderTicketIds = order.getTickets().stream().map(Ticket::getId).toList();
+            var orderTicketIds = order.getTickets().stream()
+                .map(Ticket::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
             for (Long tid : idsToCancel) {
                 if (!orderTicketIds.contains(tid)) {
                     throw new org.springframework.web.server.ResponseStatusException(
@@ -354,7 +366,6 @@ public class OrderServiceImpl implements OrderService {
 
         long merchRefund = 0;
 
-        // Merch nur bei cancelAll stornieren
         if (cancelAll) {
             var merchItemsCopy = new ArrayList<>(order.getMerchItems());
 

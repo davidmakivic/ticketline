@@ -13,21 +13,18 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface NewsMapper {
 
     @Named("simpleNews")
-    @Mapping(source = "imageContentType", target = "imageContentType")
     @Mapping(source = "event", target = "event", qualifiedByName = "eventWithoutPerformances")
     SimpleNewsDto newsToSimpleNewsDto(News news);
 
     @IterableMapping(qualifiedByName = "simpleNews")
     List<SimpleNewsDto> newsToSimpleNewsDto(List<News> news);
 
-    @Mapping(source = "imageContentType", target = "imageContentType")
     @Mapping(source = "event", target = "event", qualifiedByName = "eventWithoutPerformances")
     DetailedNewsDto newsToDetailedNewsDto(News news);
-
 
     @Named("eventWithoutPerformances")
     @Mapping(target = "performances", ignore = true)
@@ -40,7 +37,6 @@ public interface NewsMapper {
     NewsInquiryDto newsToNewsInquiryDto(News news);
 
     List<SimpleNewsDto> newsListToSimpleNewsDtoList(List<News> newsList);
-
-
 }
+
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Globals } from '../global/globals';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Observable, shareReplay} from 'rxjs';
 
 import { Ticket, TicketStatus } from '../dtos/ticket';
 
@@ -35,6 +35,13 @@ export class TicketsService {
     return this.httpClient.get<Ticket[]>(
       `${this.ticketsBaseUri}?performanceId=${performanceId}`
     );
+  }
+
+  getTicketsByPerformanceShared(performanceId: number): Observable<Ticket[]> {
+    return this.httpClient.get<Ticket[]>(`${this.ticketsBaseUri}?performanceId=${performanceId}`)
+      .pipe(
+        shareReplay({refCount: false, scheduler: undefined, bufferSize: 1, windowTime: 5000 }) // Cache für 5 Sekunden
+      );
   }
 
 

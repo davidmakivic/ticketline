@@ -65,6 +65,12 @@ export class PerformanceCardComponent implements OnInit, OnChanges {
   }
 
   ngOnDestroy(): void {
+    if (this.eventImage) {
+      const url = this.eventImage.toString();
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }

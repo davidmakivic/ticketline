@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
@@ -24,7 +25,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "events")
+@Table(name = "events", indexes = {
+    @Index(name = "idx_event_title", columnList = "title"),
+    @Index(name = "idx_event_category", columnList = "category"),
+    @Index(name = "idx_event_duration", columnList = "duration_minutes")
+})
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,10 +49,8 @@ public class Event {
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private Blob imageData;
+    @Column(name = "image_path")
+    private String imagePath;
 
     @Column(name = "image_content_type")
     private String imageContentType;
@@ -113,14 +116,6 @@ public class Event {
         this.durationMinutes = durationMinutes;
     }
 
-    public Blob getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(Blob imageData) {
-        this.imageData = imageData;
-    }
-
     public String getImageContentType() {
         return imageContentType;
     }
@@ -143,5 +138,13 @@ public class Event {
 
     public void setPerformances(Set<Performance> performances) {
         this.performances = performances;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }

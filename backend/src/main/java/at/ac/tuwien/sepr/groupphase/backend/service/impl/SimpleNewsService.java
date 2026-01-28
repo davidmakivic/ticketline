@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.groupphase.backend.service.impl;
 
+import at.ac.tuwien.sepr.groupphase.backend.config.properties.FileStorageProperties;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
 import at.ac.tuwien.sepr.groupphase.backend.entity.News;
 import at.ac.tuwien.sepr.groupphase.backend.entity.ReadNews;
@@ -38,12 +39,14 @@ public class SimpleNewsService implements NewsService {
     private final EventRepository eventRepository;
     private final ReadNewsRepository readNewsRepository;
     private final UserRepository userRepository;
+    FileStorageProperties fileStorageProperties;
 
-    public SimpleNewsService(NewsRepository newsRepository, EventRepository eventRepository, ReadNewsRepository readNewsRepository, UserRepository userRepository) {
+    public SimpleNewsService(NewsRepository newsRepository, EventRepository eventRepository, ReadNewsRepository readNewsRepository, UserRepository userRepository, FileStorageProperties fileStorageProperties) {
         this.newsRepository = newsRepository;
         this.eventRepository = eventRepository;
         this.readNewsRepository = readNewsRepository;
         this.userRepository = userRepository;
+        this.fileStorageProperties = fileStorageProperties;
     }
 
     @Override
@@ -79,13 +82,8 @@ public class SimpleNewsService implements NewsService {
         }
 
         if (image != null && !image.isEmpty()) {
-            byte[] bytes = image.getBytes();
-            try {
-                news.setImageData(new SerialBlob(bytes));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            news.setImageContentType(image.getContentType());
+            String filename = storeNewsImage(image);
+            news.setImagePath(filename);
         }
 
         return newsRepository.save(news);
@@ -116,39 +114,42 @@ public class SimpleNewsService implements NewsService {
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> streamNewsImage(Long id) {
-        LOGGER.info("Streaming news image for id={}", id);
+    public ResponseEntity<String> getNewsImagePath(Long id) {
+        LOGGER.info("Returning news image path for id={}", id);
 
-        String contentType = newsRepository.findImageContentTypeById(id)
+        News news = newsRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("News not found: " + id));
 
-        StreamingResponseBody body = outputStream -> {
-            try {
-                writeNewsImageTo(id, outputStream);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        String path = news.getImagePath();
+        if (path == null || path.isBlank()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(path);
+    }
+
+
+    private String storeNewsImage(MultipartFile image) throws IOException {
+        var dir = java.nio.file.Paths.get(fileStorageProperties.getNewsImagePath());
+        java.nio.file.Files.createDirectories(dir);
+
+        String original = image.getOriginalFilename();
+        String ext = "";
+        if (original != null) {
+            int dot = original.lastIndexOf('.');
+            if (dot >= 0) {
+                ext = original.substring(dot);
             }
-        };
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(contentType))
-            .body(body);
-    }
-
-    @Transactional(readOnly = true)
-    public void writeNewsImageTo(Long id, OutputStream out) throws Exception {
-        NewsImageProjection p = newsRepository.findImageById(id)
-            .orElseThrow(() -> new NotFoundException("Merchandise not found: " + id));
-
-        Blob blob = p.getImageData();
-        if (blob == null || blob.length() == 0) {
-            return;
         }
 
-        try (InputStream in = blob.getBinaryStream()) {
-            in.transferTo(out);
-        }
-    }
+        String filename = java.util.UUID.randomUUID() + ext;
 
+        try (var in = image.getInputStream()) {
+            java.nio.file.Files.copy(in, dir.resolve(filename),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        return filename;
+    }
 
 }

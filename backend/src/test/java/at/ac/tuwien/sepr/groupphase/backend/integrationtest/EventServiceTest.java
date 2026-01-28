@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -75,7 +77,8 @@ public class EventServiceTest {
 
         Event eventFromDb = eventRepository.findById(created.getId()).orElse(null);
         assertNotNull(eventFromDb);
-        assertNotNull(eventFromDb.getImageData());
+        assertNotNull(eventFromDb.getImagePath());
+        assertTrue(Files.exists(Paths.get(eventFromDb.getImagePath())));
         assertEquals("image/jpeg", eventFromDb.getImageContentType());
     }
 
@@ -112,7 +115,8 @@ public class EventServiceTest {
 
         Event eventFromDb = eventRepository.findById(updated.getId()).orElse(null);
         assertNotNull(eventFromDb);
-        assertNotNull(eventFromDb.getImageData());
+        assertNotNull(eventFromDb.getImagePath());
+        assertTrue(Files.exists(Paths.get(eventFromDb.getImagePath())));
     }
 
     @Test
@@ -143,7 +147,8 @@ public class EventServiceTest {
 
         Event eventFromDb = eventRepository.findById(updated.getId()).orElse(null);
         assertNotNull(eventFromDb);
-        assertNotNull(eventFromDb.getImageData());
+        assertNotNull(eventFromDb.getImagePath());
+        assertTrue(Files.exists(Paths.get(eventFromDb.getImagePath())));
         assertEquals("image/png", eventFromDb.getImageContentType());
     }
 

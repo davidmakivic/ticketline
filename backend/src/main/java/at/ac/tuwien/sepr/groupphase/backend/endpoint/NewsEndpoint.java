@@ -203,9 +203,9 @@ public class NewsEndpoint {
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
     )
-    public ResponseEntity<StreamingResponseBody> getNewsImage(@PathVariable Long id) {
+    public ResponseEntity<String> getNewsImage(@PathVariable Long id) {
         LOGGER.info("GET /api/v1/news/{}/image", id);
-        return newsService.streamNewsImage(id);
+        return newsService.getNewsImagePath(id);
     }
 }
 

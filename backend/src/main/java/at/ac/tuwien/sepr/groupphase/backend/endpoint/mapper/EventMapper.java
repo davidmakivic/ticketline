@@ -29,14 +29,14 @@ public interface EventMapper {
     List<EventDto> eventToEventDtoList(List<Event> events);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "imageData", ignore = true)
+    @Mapping(target = "imagePath", ignore = true)
     @Mapping(target = "imageContentType", ignore = true)
     @Mapping(target = "artists", ignore = true)
     Event eventDtoToEvent(EventDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "imageData", ignore = true)
+    @Mapping(target = "imagePath", ignore = true)
     @Mapping(target = "imageContentType", ignore = true)
     @Mapping(target = "artists", ignore = true)
     void updateEntityFromDto(EventDto dto, @MappingTarget Event entity);

@@ -45,8 +45,15 @@ export class NewsService {
     return this.httpClient.post<News>(this.newsBaseUri, formData);
   }
 
-  getNewsImage(id: number): Observable<Blob> {
-    return this.httpClient.get(`${this.newsBaseUri}/${id}/image`, { responseType: 'blob' });
+  getNewsImage(filename: string): Observable<Blob> {
+    return this.httpClient.get(
+      `${this.globals.backendUri}/files/news-images/${encodeURIComponent(filename)}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  getImageURL(filename: string): string {
+    return `${this.globals.backendUri}/files/news-images/${encodeURIComponent(filename)}`;
   }
 
   getUnreadNews(): Observable<News[]> {

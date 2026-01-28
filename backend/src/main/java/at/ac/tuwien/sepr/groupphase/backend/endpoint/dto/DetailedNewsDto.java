@@ -7,7 +7,7 @@ public class DetailedNewsDto extends SimpleNewsDto {
 
     private String text;
 
-    private String imageContentType;
+    private String imagePath;
 
     private EventDto event;
 
@@ -19,12 +19,12 @@ public class DetailedNewsDto extends SimpleNewsDto {
         this.text = text;
     }
 
-    public String getImageContentType() {
-        return imageContentType;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImageContentType(String imageContentType) {
-        this.imageContentType = imageContentType;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public EventDto getEvent() {

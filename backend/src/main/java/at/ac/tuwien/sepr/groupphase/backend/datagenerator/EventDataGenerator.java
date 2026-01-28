@@ -18,9 +18,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Profile("generateData")
 @Component
@@ -62,6 +66,7 @@ public class EventDataGenerator {
 
 
     };
+    private static final String IMAGE_DIR = "resources/images/";
 
     private final EventRepository eventRepository;
 
@@ -79,12 +84,12 @@ public class EventDataGenerator {
         LOGGER.debug("Generating realistic demo events");
 
 
-
         Event e1 = new Event("Phantom der Oper",
             "Das weltberühmte Musical über das mysteriöse Phantom im Opernhaus.",
             EventType.MUSICAL,
             160);
         loadImageFromFile(e1, new ClassPathResource("images/phantom-der-oper.jpg"));
+
 
         Event e2 = new Event("König der Löwen",
             "Ein bewegendes Musical rund um Simba und sein Schicksal.",
@@ -157,10 +162,7 @@ public class EventDataGenerator {
                     "Automatisch generiertes Event Nummer " + j,
                     type, duration);
 
-                // Nur die ersten 30 Events bekommen Bilder
-                if (j <= 30) {
-                    loadImageFromFile(generated, pickImageForType(type, j));
-                }
+                loadImageFromFile(generated, pickImageForType(type, j));
 
                 batch.add(generated);
             }
@@ -184,12 +186,11 @@ public class EventDataGenerator {
 
 
     private void loadImageFromFile(Event event, ClassPathResource img) {
-        try (InputStream in = img.getInputStream()) {
-            byte[] bytes = in.readAllBytes();
-            event.setImageData(new SerialBlob(bytes));
+        try {
+            event.setImagePath("classpath:" + img.getPath());
             event.setImageContentType("image/jpeg");
-        } catch (IOException | SQLException e) {
-            LOGGER.warn("Could not load image from {}: {}", img.getFilename(), e.getMessage());
+        } catch (Exception e) {
+            LOGGER.warn("Could not set image path for {}: {}", img.getFilename(), e.getMessage());
         }
     }
 

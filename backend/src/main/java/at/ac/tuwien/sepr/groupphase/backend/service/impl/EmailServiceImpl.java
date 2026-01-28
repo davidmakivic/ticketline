@@ -4,7 +4,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -16,13 +17,25 @@ public class EmailServiceImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final ObjectProvider<JavaMailSender> mailSenderProvider;
+
+    public EmailServiceImpl(ObjectProvider<JavaMailSender> mailSenderProvider) {
+        this.mailSenderProvider = mailSenderProvider;
+    }
+
+    @Value("${spring.frontend.url:http://localhost:4200}")
+    private String frontedUrl;
+
 
     public void sendPasswordResetEmail(String token, String receiver) throws MessagingException {
         LOGGER.info("Sending password reset email to {}", receiver);
         LOGGER.debug("Reset token={}", token);
-        String link = "http://localhost:4200/#/account/change-password?token=" + escapeHtml(token);
+        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+        if (mailSender == null) {
+            LOGGER.warn("No mail sender available");
+            return;
+        }
+        String link = frontedUrl + "/#/account/change-password?token=" + escapeHtml(token);
 
         String html = "<!doctype html><html><head><meta charset='utf-8'></head><body>"
             + "<h2>Passwort zurücksetzen</h2>"
@@ -43,6 +56,7 @@ public class EmailServiceImpl {
         helper.setText(html, true);
 
         mailSender.send(message);
+
     }
 
     private String escapeHtml(String s) {

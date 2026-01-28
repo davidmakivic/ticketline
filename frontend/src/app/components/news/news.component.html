@@ -27,8 +27,8 @@
       <div class="modal-body">
         @if (isEditMode) {
           <!-- Edit Mode: Nur Anzeige -->
-          @if (currentMessage.imageUrl) {
-            <img [src]="currentMessage.imageUrl" alt="News Bild"
+          @if (currentMessage.imagePath) {
+            <img [src]="newsImageUrl(currentMessage.imagePath)" alt="News Bild"
                  style="width: 100%; max-height: 300px; object-fit: cover; margin-bottom: 16px; border-radius: 4px;">
           }
           <h6>{{ currentMessage.title }}</h6>
@@ -100,9 +100,9 @@
             </div>
 
 
-            @if (currentMessage.imageUrl) {
+            @if (currentMessage.imagePath) {
               <div class="mt-3">
-                <img [src]="currentMessage.imageUrl" alt="News Bild" class="img-thumbnail"
+                <img [src]="newsImageUrl(currentMessage.imagePath)" alt="News Bild" class="img-thumbnail"
                      style="max-width: 100%; height: auto;">
               </div>
             }
@@ -127,8 +127,8 @@
     @for (message of getMessage(); track message) {
       <div class="col-xl-3 col-lg-4 p-2">
         <div class="card">
-          @if (message.imageUrl) {
-            <img [src]="message.imageUrl" alt="News Bild: {{ message.title }}" class="card-img-top">
+          @if (message.imagePath) {
+            <img [src]="newsImageUrl(message.imagePath)" alt="News Bild: {{ message.title }}" class="card-img-top">
           }
           <div class="card-body">
             <h5 class="card-title">{{ message.title }}</h5>

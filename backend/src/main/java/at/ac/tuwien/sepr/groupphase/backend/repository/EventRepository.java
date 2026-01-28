@@ -3,8 +3,6 @@ package at.ac.tuwien.sepr.groupphase.backend.repository;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Event;
-import at.ac.tuwien.sepr.groupphase.backend.repository.projection.ArtistImageProjection;
-import at.ac.tuwien.sepr.groupphase.backend.repository.projection.EventImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.type.EventType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +13,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,20 +37,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     List<EventAutocompleteDto> findEventAutocompleteDto(@Param("title") String title, Pageable pageable);
 
 
-
     @Query("SELECT e FROM Event e ORDER BY e.id")
     Page<Event> findAllPaginated(Pageable pageable);
-
-
-    @Query("select a.imageContentType as imageContentType, a.imageData as imageData "
-        + "from Event a where a.id = :id")
-    Optional<EventImageProjection> findImageById(@Param("id") Long id);
-
-
-    @Query("select a.imageContentType from Event a where a.id = :id")
-    Optional<String> findImageContentTypeById(@Param("id") Long id);
-
-
 
     @Query("""
         select new at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventTop10Dto(e.id, e.title, e.category,
@@ -65,7 +50,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
           and p.startTime < :startOfNextMonth
           and (:allCategories = true or e.category = :category)
         group by e.id, e.title, e.category
-        order by e.title, sum(case when t.status = at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus.PURCHASED then 1 else 0 end) desc
+        order by sum(case when t.status = at.ac.tuwien.sepr.groupphase.backend.type.TicketStatus.PURCHASED then 1 else 0 end) desc
         """)
     List<EventTop10Dto> findTopEventsOfMonth(
         LocalDateTime startOfMonth,
