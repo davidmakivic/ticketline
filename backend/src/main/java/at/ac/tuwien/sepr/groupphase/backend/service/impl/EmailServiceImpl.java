@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,10 +17,10 @@ public class EmailServiceImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final JavaMailSender mailSender;
+    private final ObjectProvider<JavaMailSender> mailSenderProvider;
 
-    public EmailServiceImpl(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailServiceImpl(ObjectProvider<JavaMailSender> mailSenderProvider) {
+        this.mailSenderProvider = mailSenderProvider;
     }
 
     @Value("${spring.frontend.url:http://localhost:4200}")
@@ -29,6 +30,11 @@ public class EmailServiceImpl {
     public void sendPasswordResetEmail(String token, String receiver) throws MessagingException {
         LOGGER.info("Sending password reset email to {}", receiver);
         LOGGER.debug("Reset token={}", token);
+        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+        if (mailSender == null) {
+            LOGGER.warn("No mail sender available");
+            return;
+        }
         String link = frontedUrl + "/#/account/change-password?token=" + escapeHtml(token);
 
         String html = "<!doctype html><html><head><meta charset='utf-8'></head><body>"
