@@ -29,6 +29,8 @@ spring:
           provider_disables_autocommit: true
   cache:
     type: simple
+  frontend:
+    url: http://localhost:4200
 
 file:
   storage:
@@ -82,17 +84,8 @@ spring:
       on-cloud-platform: kubernetes
   lifecycle:
     timeout-per-shutdown-phase: 30s
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ticketlineee@gmail.com
-    password: swba xfne xidx iofa
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  frontend:
+    url: https://25ws-se-pr-inso-09-kw57aaouf8kweztfkm5gf.apps.student.inso-w.at
 server:
   shutdown: graceful
 
