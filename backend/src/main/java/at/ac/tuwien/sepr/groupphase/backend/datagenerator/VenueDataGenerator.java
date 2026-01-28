@@ -38,10 +38,18 @@ public class VenueDataGenerator {
             "Graz", "Austria", "8010");
         Venue v3 = new Venue("Linz Music Hall", "Donauufer 10",
             "Linz", "Austria", "4020");
+        Venue v4 = new Venue("Salzburg Dome", "Domplatz 1",
+            "Salzburg", "Austria", "5020");
 
         venueRepository.save(v1);
         venueRepository.save(v2);
         venueRepository.save(v3);
+        venueRepository.save(v4);
+
+        for (int i = 0; i < 21; i++) {
+            venueRepository.save(new Venue("Demo Venue " + (i + 1), "Demo Street " + (i + 1),
+                "Demo City " + (i + 1), "Austria", "9000" + (i + 1)));
+        }
 
         LOG.debug("Venue generation complete");
     }

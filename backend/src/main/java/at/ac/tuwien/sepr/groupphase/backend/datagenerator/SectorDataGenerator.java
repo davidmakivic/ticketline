@@ -70,8 +70,17 @@ public class SectorDataGenerator {
             Sector s6 = new Sector(hall, "C2", SectorType.STANDING, catC, "6");
             Sector s7 = new Sector(hall, "D1", SectorType.SEATED, catA, "7");
             Sector s8 = new Sector(hall, "D2", SectorType.SEATED, catA, "8");
+            Sector s9 = new Sector(hall, "E1", SectorType.STANDING, catC, "9");
+            Sector s10 = new Sector(hall, "E2", SectorType.VIP,      catB, "10");
+            Sector s11 = new Sector(hall, "F2", SectorType.SEATED, catA, "11");
+            Sector s12 = new Sector(hall, "F1", SectorType.SEATED, catA, "12");
+            Sector s13 = new Sector(hall, "G1", SectorType.SEATED,   catA, "13");
+            Sector s14 = new Sector(hall, "G2", SectorType.SEATED,   catA, "14");
+            Sector s15 = new Sector(hall, "H1", SectorType.VIP,      catB, "15");
+            Sector s16 = new Sector(hall, "H2", SectorType.VIP,      catB, "16");
+            Sector s17 = new Sector(hall, "I1", SectorType.SEATED, catA, "17");
 
-            sectorRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7, s8));
+            sectorRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17));
         }
 
         LOG.debug("Sector generation complete");

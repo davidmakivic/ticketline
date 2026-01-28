@@ -453,6 +453,24 @@ addSelectedToCart() {
   private selectOneStanding(sectorKey: string) {
     const seatIds = this.seatIdsBySectorKey.get(sectorKey) ?? [];
 
+    if (!this.authService.isLoggedIn()) {
+      this.snackBar.open(
+        'Bitte einloggen, um Sitzplätze auswählen zu können.',
+        'Login',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['error-snackbar']
+        }
+      ).onAction().subscribe(() => {
+        this.router.navigate(['/login'], {
+          queryParams: { redirect: this.router.url }
+        });
+      });
+      return;
+    }
+
     // pick first AVAILABLE + not already selected
     for (const seatId of seatIds) {
       const t = this.ticketBySeatId.get(seatId);

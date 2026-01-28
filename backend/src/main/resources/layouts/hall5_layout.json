@@ -1,0 +1,24 @@
+{
+    "version": 1,
+    "name": "HALL NAME 5 layout",
+    "aspect": { "w": 3, "h": 2 },
+    "elements": [
+        {
+            "type": "stage",
+            "id": "stage",
+            "label": "Bühne",
+            "rectN": { "x": 0.35, "y": 0.10, "w": 0.30, "h": 0.30 }
+        },
+
+        {
+            "type": "seatBlock",
+            "id": "I1",
+            "label": "I1",
+            "sectorKey": "17",
+            "originN": { "x": 0.33, "y": 0.62 },
+            "rows": 5,
+            "seatsPerRow": 10,
+            "spacingN": { "dx": 0.040, "dy": 0.056 }
+        }
+    ]
+}

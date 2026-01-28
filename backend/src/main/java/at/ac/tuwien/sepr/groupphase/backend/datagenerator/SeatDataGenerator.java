@@ -51,7 +51,7 @@ public class SeatDataGenerator {
 
         for (Sector sector : sectors) {
 
-            if (sector.getSectorKey().equals("7") || sector.getSectorKey().equals("8")) {
+            if (sector.getSectorKey().equals("7") || sector.getSectorKey().equals("8") || sector.getSectorKey().equals("11") || sector.getSectorKey().equals("12")) {
 
                 for (int row = 1; row <= 10; row++) {
                     for (int seatNo = 1; seatNo <= 5; seatNo++) {

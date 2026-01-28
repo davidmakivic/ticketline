@@ -66,6 +66,9 @@ public class HallDataGenerator {
         // Layout wird einmal geladen und anschließend für jede Hall gesetzt
         JsonNode layout1 = loadLayout("hall1_layout.json");
         JsonNode layout2 = loadLayout("hall2_layout.json");
+        JsonNode layout3 = loadLayout("hall3_layout.json");
+        JsonNode layout4 = loadLayout("hall4_layout.json");
+        JsonNode layout5 = loadLayout("hall5_layout.json");
 
         LOGGER.debug("Generating halls for venues");
 
@@ -84,7 +87,35 @@ public class HallDataGenerator {
 
                 hallRepository.save(mnHall);
                 hallRepository.save(slHall);
-            } else {
+            }  else if (venue.getName() == "Linz Music Hall") {
+                Hall mainHall = new Hall();
+                mainHall.setName("Saal A");
+                mainHall.setVenue(venue);
+                mainHall.setLayoutMetadata(layout3);
+
+                Hall smallHall = new Hall();
+                smallHall.setName("Saal B");
+                smallHall.setVenue(venue);
+                smallHall.setLayoutMetadata(layout3);
+
+                hallRepository.save(mainHall);
+                hallRepository.save(smallHall);
+
+            } else if (venue.getName() == "Salzburg Dome") {
+                Hall mainHall = new Hall();
+                mainHall.setName("Saal A");
+                mainHall.setVenue(venue);
+                mainHall.setLayoutMetadata(layout4);
+
+                Hall smallHall = new Hall();
+                smallHall.setName("Saal B");
+                smallHall.setVenue(venue);
+                smallHall.setLayoutMetadata(layout4);
+
+                hallRepository.save(mainHall);
+                hallRepository.save(smallHall);
+
+            } else if (venue.getName() == "Wiener Stadthalle") {
 
                 Hall mainHall = new Hall();
                 mainHall.setName("Saal A");
@@ -95,6 +126,19 @@ public class HallDataGenerator {
                 smallHall.setName("Saal B");
                 smallHall.setVenue(venue);
                 smallHall.setLayoutMetadata(layout1);
+
+                hallRepository.save(mainHall);
+                hallRepository.save(smallHall);
+            } else {
+                Hall mainHall = new Hall();
+                mainHall.setName("Saal A");
+                mainHall.setVenue(venue);
+                mainHall.setLayoutMetadata(layout5);
+
+                Hall smallHall = new Hall();
+                smallHall.setName("Saal B");
+                smallHall.setVenue(venue);
+                smallHall.setLayoutMetadata(layout5);
 
                 hallRepository.save(mainHall);
                 hallRepository.save(smallHall);
