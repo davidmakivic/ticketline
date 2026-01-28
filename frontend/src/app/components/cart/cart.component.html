@@ -27,6 +27,9 @@
         </div>
       }
 
+      <!-- füge direkt nach dem "Leeren"-Button ein -->
+      <div class="reward-note">Achtung: Prämienpunkte werden erst nach Ende des Events verliehen</div>
+
       @if (merchItems.length > 0) {
         <div class="merch-section">
           <h2 class="merch-title">Merchandise</h2>
@@ -153,7 +156,9 @@
     </div>
 
     <div class="cart-footer">
-      <button mat-stroked-button (click)="clear()">Leeren</button>
+      <button class="btn-danger" (click)="clear()">Leeren</button>
+
+
 
       <div class="summary">
         <div class="total">
@@ -172,7 +177,7 @@
 
         <button
           mat-raised-button
-          color="primary"
+          class="qty-btn"
           (click)="onBuy()"
           [disabled]="loading || !hasAnyItems">
           Kaufen

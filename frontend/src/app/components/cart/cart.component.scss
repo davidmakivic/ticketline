@@ -1,3 +1,5 @@
+/* src/app/components/cart/cart.component.scss */
+
 .cart-page {
   padding: 2rem;
 }
@@ -70,11 +72,11 @@
     color: var(--mat-sys-on-surface-variant);
   }
 
- .value {
-   font-size: 18px;
-   font-weight: 800;
-   color: var(--mat-sys-on-surface);
- }
+  .value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--mat-sys-on-surface);
+  }
 }
 
 @media (max-width: 900px) {
@@ -186,8 +188,11 @@
   align-items: center;
   gap: 0.75rem;
   justify-self: end;
+  /* ensure content aligns correctly and the qty block can be pushed to the far right */
+  min-width: 0;
 }
 
+/* Preis rechts, Menge und Papierkorb optisch an 'Kaufen' Button angelehnt */
 .merch-price {
   color: var(--mat-sys-on-surface);
   font-weight: 800;
@@ -195,21 +200,88 @@
   white-space: nowrap;
 }
 
+/* Menge-Steuerung nach rechts schieben */
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto; /* verschiebt die Menge nach rechts */
+  align-self: center;
+}
+
+/* Buttons an primäre 'Kaufen'-Optik angelehnt */
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: background-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background: var(--mat-sys-primary-container);
+  transform: translateY(-1px);
+}
+
+.qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.qty-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  color: inherit;
+}
+
+.qty-value {
+  min-width: 28px;
+  text-align: center;
+  color: var(--mat-sys-on-surface);
+  font-weight: 800;
+}
+
+/* Papierkorb: dezenterer Primärstil, aber konsistent */
 .trash-btn {
   width: 44px;
   height: 44px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(239, 68, 68, 0.92);
+  color: var(--mat-sys-on-surface);
   cursor: pointer;
   display: grid;
   place-items: center;
   padding: 0;
+  transition: background-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
 
-.trash-btn:hover {
-  background: rgba(255, 255, 255, 0.10);
+.btn-danger {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(239, 68, 68, 0.92);
+  transition: transform .12s ease, filter .12s ease;
 }
+
+.trash-btn:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.92);
+  transform: translateY(-1px);
+}
+
 
 .trash-btn mat-icon {
   font-size: 20px;
@@ -218,6 +290,7 @@
   line-height: 20px;
 }
 
+/* responsive: mobile layout bleibt lesbar */
 @media (max-width: 700px) {
   .merch-card {
     grid-template-columns: 90px 1fr;
@@ -239,45 +312,54 @@
   .merch-meta {
     white-space: normal;
   }
-.qty-controls {
+
+  .qty-controls {
+    margin-left: 0; /* auf mobile: nicht mehr automatisch nach rechts schieben */
+  }
+
+  .qty-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .trash-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .qty-value {
+    min-width: 28px;
+    text-align: center;
+    color: var(--mat-sys-on-surface);
+    font-weight: 800;
+  }
+
+
+}
+
+/* src/app/components/cart/cart.component.scss */
+
+.reward-note {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.qty-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  padding: 0;
-}
-
-.qty-btn:hover {
-  background: rgba(255, 255, 255, 0.10);
-}
-
-.qty-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.qty-btn mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  line-height: 18px;
-}
-
-.qty-value {
-  min-width: 28px;
+  justify-content: end;
+  width: 100%;
   text-align: center;
-  color: var(--mat-sys-on-surface);
-  font-weight: 800;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 1.05rem; /* etwas größer */
+  font-weight: 700;   /* auffälliger */
+  margin: 12px 0;
+  padding: 0 12px;
+  max-width: 720px;   /* verhindert zu breite Zeilen auf großen Bildschirmen */
+  align-self: center;
 }
 
+/* auf kleinen Bildschirmen etwas anpassen */
+@media (max-width: 900px) {
+  .reward-note {
+    font-size: 1rem;
+    margin: 10px 0;
+    text-align: center;
+    padding: 0 8px;
+  }
 }
+
