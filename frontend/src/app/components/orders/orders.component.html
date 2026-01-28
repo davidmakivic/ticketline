@@ -29,9 +29,18 @@
           <span class="mono">#{{ o.id }}</span>
         </div>
 
-        <div class="order-total">
-          {{ toEuro(o.totalPriceCents) }}
-        </div>
+        @if (o.totalPricePoints !== 0 || o.totalPriceCents !== 0) {
+          <div class="order-total">
+            @if (o.totalPriceCents !== null && o.totalPriceCents !== 0) {
+              <div>{{ toEuro(o.totalPriceCents) }}</div>
+            }
+
+            @if (o.totalPricePoints !== null && o.totalPricePoints !== 0) {
+              <div>{{ o.totalPricePoints }} Punkte</div>
+            }
+          </div>
+        }
+
       </div>
 
       <div class="order-meta">
@@ -48,6 +57,15 @@
         <div class="meta-item">
           <span class="meta-label">Merch</span>
           <div class="meta-value">{{ ($any(o).merchItems?.length ?? 0) }}</div>
+        </div>
+
+        <div class="meta-item">
+
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Prämien</span>
+          <div class="meta-value">{{ ($any(o).rewardItems?.length ?? 0) }}</div>
         </div>
 
         <div class="meta-item">
@@ -128,7 +146,7 @@
       <div class="order-actions">
         <button
           class="btn-outline"
-          *ngIf="!isCancelled(o) && ((o.ticketIds?.length ?? 0) > 0 || (($any(o).merchItems?.length ?? 0) > 0))"
+          *ngIf="!isCancelled(o) && ((o.ticketIds?.length ?? 0) > 0 || (($any(o).merchItems?.length ?? 0) > 0) || (($any(o).rewardItems?.length ?? 0) > 0))"
           (click)="openInvoice(o)">
           Rechnung drucken
         </button>

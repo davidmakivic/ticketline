@@ -420,6 +420,7 @@ public class OrderServiceImpl implements OrderService {
             o.getId(),
             o.getUser().getUserId(),
             o.getTotalPriceCents(),
+            o.getTotalPricePoints(),
             o.getCreatedAt(),
             ticketIds,
             merchDtos,

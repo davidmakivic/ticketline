@@ -49,7 +49,7 @@ public class Order {
     private Set<OrderRewardItem> rewardItems = new LinkedHashSet<>();
 
     @Column(name = "used_reward_points", nullable = false)
-    private long usedRewardPoints;
+    private long totalPricePoints;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -58,10 +58,10 @@ public class Order {
     public Order() {
     }
 
-    public Order(ApplicationUser user, long totalPriceCents, long usedRewardPoints) {
+    public Order(ApplicationUser user, long totalPriceCents, long totalPricePoints) {
         this.user = user;
         this.totalPriceCents = totalPriceCents;
-        this.usedRewardPoints = usedRewardPoints;
+        this.totalPricePoints = totalPricePoints;
     }
 
     public Long getId() {
@@ -92,16 +92,16 @@ public class Order {
         return rewardItems;
     }
 
-    public long getUsedRewardPoints() {
-        return usedRewardPoints;
+    public long getTotalPricePoints() {
+        return totalPricePoints;
     }
 
     public void setRewardItems(Set<OrderRewardItem> rewardItems) {
         this.rewardItems = rewardItems;
     }
 
-    public void setUsedRewardPoints(long usedRewardPoints) {
-        this.usedRewardPoints = usedRewardPoints;
+    public void setTotalPricePoints(long usedRewardPoints) {
+        this.totalPricePoints = usedRewardPoints;
     }
 
     public void setId(Long id) {
