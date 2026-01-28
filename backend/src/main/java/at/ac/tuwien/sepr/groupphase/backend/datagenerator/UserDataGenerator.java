@@ -16,7 +16,7 @@ import java.lang.invoke.MethodHandles;
 @Component
 public class UserDataGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int NUMBER_OF_USERS_TO_GENERATE = 10;
+    private static final int NUMBER_OF_USERS_TO_GENERATE = 998;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
