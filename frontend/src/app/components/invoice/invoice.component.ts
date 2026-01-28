@@ -75,13 +75,14 @@ export class InvoiceComponent implements OnDestroy {
     this.eventTitle = state.eventTitle ?? '';
 
     const qpRaw = this.route.snapshot.queryParamMap.get('type');
-    const qpType = (qpRaw === 'merch' || qpRaw === 'tickets') ? (qpRaw as InvoiceType) : null;
+    const qpType = (qpRaw === 'merch' || qpRaw === 'tickets' || qpRaw === 'reward') ? (qpRaw as InvoiceType) : null;
 
     // Default: wenn kein qpType und Order hat nur Merch -> merch anzeigen
     const decideDefault = (o?: OrderDto): InvoiceType => {
       const hasTickets = (o?.ticketIds?.length ?? 0) > 0;
       const hasMerch = (o?.merchItems?.length ?? 0) > 0;
       const hasRewards = (o?.rewardItems?.length ?? 0) > 0;
+      console.log("has rewards:", hasRewards);
       if (!hasTickets && hasMerch) return 'merch';
       if (!hasTickets && hasRewards) return 'reward';
       return 'tickets';
@@ -104,7 +105,15 @@ export class InvoiceComponent implements OnDestroy {
           if (!qpType) {
             const hasTickets = (o.ticketIds?.length ?? 0) > 0;
             const hasMerch = (o.merchItems?.length ?? 0) > 0;
-            this.viewType = (!hasTickets && hasMerch) ? 'merch' : 'tickets';
+            const hasRewards = (o.rewardItems?.length ?? 0) > 0;
+
+            if (!hasTickets && hasMerch) {
+              this.viewType = 'merch';
+            } else if (!hasTickets && hasRewards) {
+              this.viewType = 'reward';
+            } else {
+              this.viewType = 'tickets';
+            }
           }
 
 
