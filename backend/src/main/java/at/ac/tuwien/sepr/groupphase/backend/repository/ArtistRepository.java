@@ -37,4 +37,6 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     @Query("select a.imageContentType from Artist a where a.id = :id")
     Optional<String> findImageContentTypeById(@Param("id") Long id);
+
+
 }

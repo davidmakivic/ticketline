@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistAutocompleteDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.ArtistDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.EventDto;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -18,7 +19,8 @@ public interface ArtistService {
 
     ArtistDto findById(Long id);
 
-    List<ArtistDto> findAll();
+    Page<ArtistDto> findAll(int page, int size);
+
 
     void addEvent(Long artistId, Long eventId);
 

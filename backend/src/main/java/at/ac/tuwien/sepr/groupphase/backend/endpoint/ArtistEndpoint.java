@@ -100,9 +100,7 @@ public class ArtistEndpoint {
     @Operation(summary = "Get list of all artists", security = @SecurityRequirement(name = "apiKey"))
     public List<ArtistDto> getAll() {
         LOGGER.info("Fetching all artists");
-        return artistService.findAll()
-            .stream()
-            .toList();
+        return artistService.findAll(0, 50).getContent();
     }
 
     @Secured("ROLE_ADMIN")

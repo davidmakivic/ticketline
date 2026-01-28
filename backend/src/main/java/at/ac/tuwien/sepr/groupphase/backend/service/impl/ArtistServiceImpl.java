@@ -13,9 +13,13 @@ import at.ac.tuwien.sepr.groupphase.backend.repository.EventRepository;
 import at.ac.tuwien.sepr.groupphase.backend.repository.projection.ArtistImageProjection;
 import at.ac.tuwien.sepr.groupphase.backend.service.ArtistService;
 import at.ac.tuwien.sepr.groupphase.backend.type.ArtistType;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,7 +34,10 @@ import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -106,10 +113,21 @@ public class ArtistServiceImpl implements ArtistService {
 
 
     @Override
-    public List<ArtistDto> findAll() {
-        LOGGER.info("Fetching all artists");
-        return artistMapper.artistToArtistDtoList(artistRepository.findAll());
+    @Transactional(readOnly = true)
+    public Page<ArtistDto> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<Artist> artistPage = artistRepository.findAll(pageable);
+
+        for (Artist artist : artistPage.getContent()) {
+            List<Event> limited = eventRepository.findEventsByArtistId(
+                artist.getId(), PageRequest.of(0, 10, Sort.by("id").ascending()));
+            artist.setEvents(new java.util.HashSet<>(limited));
+        }
+
+        return artistPage.map(artistMapper::artistToArtistDto);
     }
+
+
 
     @Override
     public void addEvent(Long artistId, Long eventId) {

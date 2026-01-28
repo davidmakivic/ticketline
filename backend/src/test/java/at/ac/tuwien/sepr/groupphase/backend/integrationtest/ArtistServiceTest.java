@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -73,9 +74,9 @@ public class ArtistServiceTest {
         artistService.create("Test", "TestLastName", "TestStage", ArtistType.SOLO, null);
         artistService.create("Test2", "TestLastName2", "TestStage2", ArtistType.BAND, null);
 
-        List<ArtistDto> result = artistService.findAll();
+        Page<ArtistDto> result = artistService.findAll(0, 10);
 
-        assertThat(result).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
     }
 
     @Transactional

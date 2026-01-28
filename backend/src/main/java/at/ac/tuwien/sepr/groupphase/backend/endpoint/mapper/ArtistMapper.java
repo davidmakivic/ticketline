@@ -12,6 +12,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {EventMapper.class})
 public interface ArtistMapper {
+
     @Mapping(source = "imageContentType", target = "imageContentType")
     @Mapping(target = "events", source = "events", qualifiedByName = "withoutPerformances")
     ArtistDto artistToArtistDto(Artist artist);

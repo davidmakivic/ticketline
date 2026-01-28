@@ -55,7 +55,7 @@ public class Artist {
     @Column(name = "image_content_type")
     private String imageContentType;
 
-    @ManyToMany(mappedBy = "artists", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "artists", fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<Event> events = new HashSet<>();
 
